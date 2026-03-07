@@ -111,6 +111,31 @@ h2{
   color:var(--text-sub);
 }
 
+.level-panel{
+  max-width:860px;
+  margin:0 auto 12px;
+}
+
+.level-toggle{
+  width:100%;
+  max-width:420px;
+  padding:10px 14px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(180deg,#2680ff,#1356cc);
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(10,37,130,0.3);
+}
+
+#selectedMembersWrap{
+  margin-top:10px;
+}
+
+#selectedMembersWrap.hidden{
+  display:none;
+}
+
 .controls{
   display:flex;
   justify-content:center;
@@ -386,12 +411,17 @@ input[type="range"]{
     </div>
   </div>
 
+  <div class="level-panel">
+    <button id="levelToggle" class="level-toggle">▼ レベル表</button>
+    <div id="selectedMembersWrap">
+      <div id="selectedMembers"></div>
+    </div>
+  </div>
+
   <div class="controls">
     <button id="backBtn">タイトルにもどる</button>
     <button id="restartBtn">リスタート</button>
   </div>
-
-  <div id="selectedMembers"></div>
 
   <div class="game-wrap">
     <div id="game">
@@ -458,6 +488,8 @@ const finalScoreEl = document.getElementById("finalScore");
 const nextImgEl = document.getElementById("nextImg");
 const nextNameEl = document.getElementById("nextName");
 const selectedMembersEl = document.getElementById("selectedMembers");
+const selectedMembersWrapEl = document.getElementById("selectedMembersWrap");
+const levelToggleBtn = document.getElementById("levelToggle");
 const dropGuideEl = document.getElementById("dropGuide");
 const dropGhostEl = document.getElementById("dropGhost");
 const dropGhostImgEl = document.getElementById("dropGhostImg");
@@ -495,6 +527,16 @@ selectedMembersEl.innerHTML = members.map((m, index) => `
     <div>${displayName(m.name)}</div>
   </div>
 `).join("");
+
+levelToggleBtn.addEventListener("click", () => {
+  selectedMembersWrapEl.classList.toggle("hidden");
+
+  if (selectedMembersWrapEl.classList.contains("hidden")) {
+    levelToggleBtn.textContent = "▶ レベル表";
+  } else {
+    levelToggleBtn.textContent = "▼ レベル表";
+  }
+});
 
 const engine = Engine.create();
 const world = engine.world;
