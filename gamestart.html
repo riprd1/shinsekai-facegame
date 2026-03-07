@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>顔マージゲーム</title>
+
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+
+<style>
+
+body{
+margin:0;
+background:#050B4A;
+color:white;
+text-align:center;
+font-family:sans-serif;
+}
+
+#game{
+margin:auto;
+width:420px;
+height:620px;
+border:3px solid #3aa7ff;
+border-radius:15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>顔マージゲーム</h2>
+
+<div id="game"></div>
+
+<script>
+
+const members=JSON.parse(localStorage.getItem("members"))
+
+if(!members){
+location.href="index.html"
+}
+
+const {Engine,Render,Runner,World,Bodies,Events}=Matter
+
+const engine=Engine.create()
+const world=engine.world
+
+const render=Render.create({
+element:document.getElementById("game"),
+engine:engine,
+options:{
+width:420,
+height:620,
+wireframes:false
+}
+})
+
+Render.run(render)
+
+Runner.run(Runner.create(),engine)
+
+const ground=Bodies.rectangle(210,610,420,40,{isStatic:true})
+
+World.add(world,ground)
+
+let next=members[Math.floor(Math.random()*members.length)]
+
+document.addEventListener("click",e=>{
+
+const x=e.clientX
+
+const body=Bodies.circle(x,50,30,{
+render:{
+sprite:{
+texture:next.img,
+xScale:0.12,
+yScale:0.12
+}
+}
+})
+
+World.add(world,body)
+
+next=members[Math.floor(Math.random()*members.length)]
+
+})
+
+</script>
+
+</body>
+</html>
