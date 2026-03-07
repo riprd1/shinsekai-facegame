@@ -109,6 +109,8 @@ h2{
 #nextName{
   font-size:13px;
   color:var(--text-sub);
+  min-width:110px;
+  text-align:left;
 }
 
 .level-panel{
@@ -246,21 +248,26 @@ button:hover{
   top:18px;
   left:50%;
   transform:translateX(-50%);
-  width:48px;
-  height:48px;
+  width:92px;
+  height:92px;
   border-radius:50%;
   overflow:hidden;
   border:3px solid rgba(143,211,255,0.95);
-  background:#fff;
+  background:rgba(255,255,255,0.08);
   box-shadow:0 8px 20px rgba(25,45,120,0.24);
-  transition:left 0.03s linear,width 0.1s ease,height 0.1s ease;
+  transition:left 0.03s linear;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 #dropGhost img{
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain;
   object-position:center;
+  transform-origin:center center;
+  transition:transform 0.12s ease;
 }
 
 #effects{
@@ -613,9 +620,12 @@ function updateNext() {
   nextNameEl.textContent = `Lv${next.evoIndex + 1} ${displayName(next.member.name)}`;
   dropGhostImgEl.src = getGameImg(next.member);
 
-  const size = SIZE[next.evoIndex] * 2;
-  dropGhostEl.style.width = `${size}px`;
-  dropGhostEl.style.height = `${size}px`;
+  const previewBase = 88;
+  const actualSize = SIZE[next.evoIndex] * 2;
+  const previewScale = Math.min(actualSize / previewBase, 1);
+
+  dropGhostImgEl.style.transform = `scale(${previewScale})`;
+
   updateGhostPosition();
 }
 
