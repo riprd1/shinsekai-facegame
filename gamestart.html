@@ -480,9 +480,17 @@ function displayName(name){
   return name.split("(")[0].trim();
 }
 
+function getSelectImg(member){
+  return member.selectImg || member.img;
+}
+
+function getGameImg(member){
+  return member.gameImg || member.img;
+}
+
 selectedMembersEl.innerHTML = members.map(m => `
   <div class="selected-mini">
-    <img src="${m.img}" alt="${displayName(m.name)}">
+    <img src="${getSelectImg(m)}" alt="${displayName(m.name)}">
     <div>${displayName(m.name)}</div>
   </div>
 `).join("");
@@ -523,19 +531,20 @@ const imageSizeMap = new Map();
 
 function preloadImages() {
   return Promise.all(members.map(m => new Promise(resolve => {
+    const targetImg = getGameImg(m);
     const img = new Image();
     img.onload = () => {
-      imageSizeMap.set(m.img, {
+      imageSizeMap.set(targetImg, {
         width: img.naturalWidth || 512,
         height: img.naturalHeight || 512
       });
       resolve();
     };
     img.onerror = () => {
-      imageSizeMap.set(m.img, { width: 512, height: 512 });
+      imageSizeMap.set(targetImg, { width: 512, height: 512 });
       resolve();
     };
-    img.src = m.img;
+    img.src = targetImg;
   })));
 }
 
@@ -554,9 +563,9 @@ function createNext() {
 }
 
 function updateNext() {
-  nextImgEl.src = next.member.img;
+  nextImgEl.src = getGameImg(next.member);
   nextNameEl.textContent = `${displayName(next.member.name)} Lv.${next.level + 1}`;
-  dropGhostImgEl.src = next.member.img;
+  dropGhostImgEl.src = getGameImg(next.member);
 
   const size = SIZE[next.level] * 2;
   dropGhostEl.style.width = `${size}px`;
@@ -578,7 +587,8 @@ function spawn(x) {
 
   const safeX = getSafeX(x);
   const r = SIZE[next.level];
-  const scale = getUniformScale(next.member.img, r * 2);
+  const gameImg = getGameImg(next.member);
+  const scale = getUniformScale(gameImg, r * 2);
 
   const body = Bodies.circle(safeX, DROP_Y, r, {
     restitution: 0.15,
@@ -586,7 +596,7 @@ function spawn(x) {
     frictionAir: 0.01,
     render: {
       sprite: {
-        texture: next.member.img,
+        texture: gameImg,
         xScale: scale.xScale,
         yScale: scale.yScale
       }
@@ -836,7 +846,8 @@ Events.on(engine, "collisionStart", event => {
     const x = (a.position.x + b.position.x) / 2;
     const y = (a.position.y + b.position.y) / 2;
     const r = SIZE[level];
-    const scale = getUniformScale(newMember.img, r * 2);
+    const newGameImg = getGameImg(newMember);
+    const scale = getUniformScale(newGameImg, r * 2);
 
     const body = Bodies.circle(x, y, r, {
       restitution: 0.12,
@@ -844,7 +855,7 @@ Events.on(engine, "collisionStart", event => {
       frictionAir: 0.01,
       render: {
         sprite: {
-          texture: newMember.img,
+          texture: newGameImg,
           xScale: scale.xScale,
           yScale: scale.yScale
         }
