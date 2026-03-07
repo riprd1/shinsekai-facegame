@@ -181,7 +181,7 @@ const members = [
 {name:"加藤 大樹(K.DAIKI)", img:"https://i.imgur.com/4fRk2EB.png", selectImg:"https://i.imgur.com/4fRk2EB.png", gameImg:"https://i.imgur.com/tWBvK3b.png"},
 {name:"カク・ドンミン(DONGMIN)", img:"https://i.imgur.com/xZSQqMh.png", selectImg:"https://i.imgur.com/xZSQqMh.png", gameImg:"https://i.imgur.com/R83HfAf.png"},
 {name:"末川 瑛太(EITA)", img:"https://i.imgur.com/alEjKCP.png", selectImg:"https://i.imgur.com/alEjKCP.png", gameImg:"https://i.imgur.com/6Ocie8o.png"},
-{name:"保里 瑛都(H.EITO)", img:"https://i.imgur.com/IAhs4ZA.png", selectImg:"https://i.imgur.com/IAhs4ZA.png", gameImg:"https://i.imgur.com/IAhs4ZA.png"},
+{name:"保里 瑛都(H.EITO)", img:"https://i.imgur.com/IAhs4ZA.png", selectImg:"https://i.imgur.com/IAhs4ZA.png", gameImg:"https://i.imgur.com/lMv70i9.png"},
 {name:"金田 栄都(K.EITO)", img:"https://i.imgur.com/tF7i1du.png", selectImg:"https://i.imgur.com/tF7i1du.png", gameImg:"https://i.imgur.com/RNRi4Uj.png"},
 {name:"櫻井 楓真(FUMA)", img:"https://i.imgur.com/WIWI8Sx.png", selectImg:"https://i.imgur.com/WIWI8Sx.png", gameImg:"https://i.imgur.com/gCEguL8.png"},
 {name:"小笠原ジュゼッペ慧(GIUSEPPE)", img:"https://i.imgur.com/2oKn3Ma.jpeg", selectImg:"https://i.imgur.com/2oKn3Ma.jpeg", gameImg:"https://i.imgur.com/67Zbgst.png"},
@@ -299,54 +299,73 @@ const members = [
 
 ];
 
-const picker=document.getElementById("picker")
+const picker=document.getElementById("picker");
+const countEl=document.getElementById("count");
 
-let selected=[]
+let selected=[];
+
+function shuffle(array){
+  const arr=[...array];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function updateCount(){
+  countEl.textContent=selected.length;
+}
 
 members.forEach(m=>{
 
-const div=document.createElement("div")
-div.className="member"
+const div=document.createElement("div");
+div.className="member";
 
-div.innerHTML=`<img src="${m.selectImg || m.img}"><br>${m.name}`
+div.innerHTML=`<img src="${m.selectImg || m.img}"><br>${m.name}`;
 
 div.onclick=()=>{
 
 if(selected.includes(m)){
-selected=selected.filter(x=>x!=m)
-div.classList.remove("selected")
+selected=selected.filter(x=>x!=m);
+div.classList.remove("selected");
 }else{
 
 if(selected.length>=11){
-alert("11人までです")
-return
+alert("11人までです");
+return;
 }
 
-selected.push(m)
-div.classList.add("selected")
+selected.push(m);
+div.classList.add("selected");
 
 }
 
-}
+updateCount();
 
-picker.appendChild(div)
+};
 
-})
+picker.appendChild(div);
+
+});
 
 document.getElementById("startBtn").onclick=()=>{
 
 if(selected.length!==11){
-alert("11人選んでください")
-return
+alert("11人選んでください");
+return;
 }
 
-localStorage.setItem("members",JSON.stringify(selected))
-localStorage.setItem("selectedMembers",JSON.stringify(selected))
+const evolutionOrder = shuffle(selected);
 
-location.href="gamestart.html"
+localStorage.setItem("members",JSON.stringify(evolutionOrder));
+localStorage.setItem("selectedMembers",JSON.stringify(evolutionOrder));
 
-}
+location.href="gamestart.html";
 
+};
+
+updateCount();
 </script>
 
 </body>
