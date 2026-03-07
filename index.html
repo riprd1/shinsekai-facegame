@@ -98,6 +98,32 @@ h1{
   border:2px solid rgba(145,201,255,0.45);
 }
 
+.secret-member{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+}
+
+.secret-icon{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 6px;
+  background:#fff;
+  border:2px solid rgba(145,201,255,0.45);
+  font-size:28px;
+  color:#1673FF;
+}
+
+.secret-member.unlocked img{
+  border:2px solid rgba(255,221,87,0.8);
+  box-shadow:0 0 12px rgba(255,221,87,0.35);
+}
+
 .selected{
   outline:none;
   border:2px solid #3aa7ff;
@@ -160,6 +186,12 @@ button:hover{
   .member img{
     width:56px;
     height:56px;
+  }
+
+  .secret-icon{
+    width:56px;
+    height:56px;
+    font-size:26px;
   }
 
   h1{
@@ -333,6 +365,25 @@ const countEl=document.getElementById("count");
 
 let selected=[];
 
+const secretCharacters = [
+  {
+    unlockKey:"facegame_special_unlock_1",
+    name:"仲宗根 梨乃",
+    img:"https://i.imgur.com/zODWDAC.png",
+    lockedLabel:"???",
+    messageLocked:"隠しキャラ①\nLv.11達成で解放",
+    messageUnlocked:"隠しキャラ①\n仲宗根 梨乃\n解放済み！"
+  },
+  {
+    unlockKey:"facegame_special_unlock_2",
+    name:"ディーンフジオカ",
+    img:"https://i.imgur.com/x52sjzD.png",
+    lockedLabel:"???",
+    messageLocked:"隠しキャラ②\n1ゲームでLv.11を2つ作成で解放",
+    messageUnlocked:"隠しキャラ②\nディーンフジオカ\n解放済み！"
+  }
+];
+
 function shuffle(array){
   const arr=[...array];
   for(let i=arr.length-1;i>0;i--){
@@ -376,6 +427,24 @@ updateCount();
 
 picker.appendChild(div);
 
+});
+
+secretCharacters.forEach(secret => {
+const unlocked = localStorage.getItem(secret.unlockKey) === "true";
+const div = document.createElement("div");
+div.className = `member secret-member${unlocked ? " unlocked" : ""}`;
+
+if(unlocked){
+  div.innerHTML = `<img src="${secret.img}" alt="${secret.name}"><br>${secret.name}`;
+}else{
+  div.innerHTML = `<div class="secret-icon">🔓</div><br>${secret.lockedLabel}`;
+}
+
+div.onclick = () => {
+  alert(unlocked ? secret.messageUnlocked : secret.messageLocked);
+};
+
+picker.appendChild(div);
 });
 
 document.getElementById("startBtn").onclick=()=>{
