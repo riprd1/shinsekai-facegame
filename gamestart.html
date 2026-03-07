@@ -360,6 +360,60 @@ button:hover{
   font-size:28px;
 }
 
+#unlockOverlay{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(2,7,40,0.72);
+  z-index:12;
+  backdrop-filter:blur(4px);
+}
+
+.unlock-card{
+  width:300px;
+  background:linear-gradient(180deg, rgba(24,38,115,0.96), rgba(7,18,82,0.96));
+  border-radius:20px;
+  padding:24px 18px 20px;
+  border:1px solid rgba(255,230,134,0.72);
+  box-shadow:0 0 24px rgba(255,218,92,0.45), 0 16px 42px rgba(0,0,0,0.32);
+  text-align:center;
+}
+
+.unlock-card h3{
+  margin:0 0 12px;
+  color:#ffe98a;
+  font-size:28px;
+  letter-spacing:0.05em;
+  text-shadow:0 0 14px rgba(255,234,138,0.6);
+}
+
+.unlock-card img{
+  width:96px;
+  height:96px;
+  border-radius:50%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+  margin:0 auto 12px;
+  background:#fff;
+  border:3px solid #ffe98a;
+  box-shadow:0 0 18px rgba(255,230,134,0.42);
+}
+
+.unlock-card p{
+  margin:6px 0;
+  line-height:1.7;
+  color:#fff;
+}
+
+.unlock-card .unlock-name{
+  font-size:18px;
+  color:#ffe98a;
+  font-weight:700;
+}
+
 #panel{
   position:absolute;
   top:56px;
@@ -472,6 +526,17 @@ input[type="range"]{
         <button id="retryBtn">もう一回</button>
       </div>
     </div>
+
+    <div id="unlockOverlay">
+      <div class="unlock-card">
+        <h3>NEW UNLOCK!</h3>
+        <img id="unlockImg" src="" alt="スペシャルキャラ">
+        <p class="unlock-name" id="unlockName"></p>
+        <p>スペシャルキャラが解放されました！</p>
+        <p>タイトル画面で確認できます！</p>
+        <button id="unlockCloseBtn">OK</button>
+      </div>
+    </div>
   </div>
 
   <div id="panel">
@@ -527,6 +592,21 @@ const SCORE_TABLE = {
   10: 5120
 };
 
+const SPECIAL_CHARACTERS = [
+  {
+    key: "facegame_special_unlock_1",
+    name: "仲宗根 梨乃",
+    img: "https://i.imgur.com/zODWDAC.png",
+    need: 1
+  },
+  {
+    key: "facegame_special_unlock_2",
+    name: "ディーンフジオカ",
+    img: "https://i.imgur.com/x52sjzD.png",
+    need: 2
+  }
+];
+
 const gameEl = document.getElementById("game");
 const scoreEl = document.getElementById("score");
 const finalScoreEl = document.getElementById("finalScore");
@@ -540,6 +620,9 @@ const dropGhostEl = document.getElementById("dropGhost");
 const dropGhostImgEl = document.getElementById("dropGhostImg");
 const effectsEl = document.getElementById("effects");
 const gameOverOverlayEl = document.getElementById("gameOverOverlay");
+const unlockOverlayEl = document.getElementById("unlockOverlay");
+const unlockImgEl = document.getElementById("unlockImg");
+const unlockNameEl = document.getElementById("unlockName");
 const settingsBtn = document.getElementById("settings");
 const panelEl = document.getElementById("panel");
 const bgmVolEl = document.getElementById("bgmVol");
@@ -615,6 +698,7 @@ let aimX = GAME_WIDTH / 2;
 let overLineStart = null;
 let isGameOver = false;
 let isTouchDragging = false;
+let lv11CreatedThisRun = 0;
 
 const imageSizeMap = new Map();
 
@@ -683,6 +767,27 @@ function addScoreByNextIndex(nextIndex){
   scoreEl.textContent = score;
   finalScoreEl.textContent = score;
   return gained;
+}
+
+function showUnlockPopup(character){
+  unlockImgEl.src = character.img;
+  unlockNameEl.textContent = character.name;
+  unlockOverlayEl.style.display = "flex";
+}
+
+function closeUnlockPopup(){
+  unlockOverlayEl.style.display = "none";
+}
+
+function checkSpecialUnlock() {
+  for (const character of SPECIAL_CHARACTERS) {
+    const alreadyUnlocked = localStorage.getItem(character.key) === "true";
+    if (!alreadyUnlocked && lv11CreatedThisRun >= character.need) {
+      localStorage.setItem(character.key, "true");
+      showUnlockPopup(character);
+      break;
+    }
+  }
 }
 
 function spawn(x) {
@@ -867,18 +972,30 @@ document.getElementById("retryBtn").onclick = async () => {
   restart();
 };
 
+document.getElementById("unlockCloseBtn").onclick = () => {
+  closeUnlockPopup();
+};
+
+unlockOverlayEl.addEventListener("click", e => {
+  if (e.target === unlockOverlayEl) {
+    closeUnlockPopup();
+  }
+});
+
 function restart() {
   Composite.allBodies(world).forEach(body => {
     if (!body.isStatic) World.remove(world, body);
   });
 
   score = 0;
+  lv11CreatedThisRun = 0;
   scoreEl.textContent = "0";
   finalScoreEl.textContent = "0";
   overLineStart = null;
   isGameOver = false;
   lineEl.classList.remove("danger");
   gameOverOverlayEl.style.display = "none";
+  unlockOverlayEl.style.display = "none";
   effectsEl.innerHTML = "";
   next = createNext();
   updateNext();
@@ -955,9 +1072,11 @@ Events.on(engine, "collisionStart", async event => {
     World.remove(world, b);
 
     if (nextIndex >= members.length) {
+      lv11CreatedThisRun += 1;
       addScoreByNextIndex(nextIndex);
       mergeEffect(x, y, 88, "MAX", nextIndex, true);
       playMaxSound();
+      checkSpecialUnlock();
       continue;
     }
 
