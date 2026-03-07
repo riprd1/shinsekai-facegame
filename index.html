@@ -1,1515 +1,269 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PRODUCE 101 JAPAN 新世界 顔マージゲーム</title>
-  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
-  <style>
-    :root {
-      --bg-main: #050b4a;
-      --bg-deep: #020735;
-      --bg-mid: #0a2c86;
-      --accent: #1673ff;
-      --accent-2: #66d9e6;
-      --accent-3: #8fe7ff;
-      --text-main: #f5f8ff;
-      --text-sub: #d8e3ff;
-      --panel: rgba(255, 255, 255, 0.08);
-      --panel-strong: rgba(255, 255, 255, 0.12);
-      --panel-border: rgba(103, 154, 255, 0.42);
-      --glow: rgba(26, 115, 255, 0.35);
-      --danger: #86d3ff;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Segoe UI", sans-serif;
-      color: var(--text-main);
-      background:
-        radial-gradient(circle at top, rgba(32, 92, 255, 0.18), transparent 28%),
-        linear-gradient(180deg, #07105b 0%, #03083d 45%, #020735 100%);
-      overflow-x: hidden;
-    }
-
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    body::before {
-      background:
-        linear-gradient(135deg, rgba(102, 217, 230, 0.18) 0 6%, transparent 6% 100%),
-        linear-gradient(225deg, rgba(22, 115, 255, 0.12) 0 9%, transparent 9% 100%),
-        linear-gradient(315deg, rgba(143, 231, 255, 0.08) 0 4%, transparent 4% 100%);
-      opacity: 0.55;
-      mix-blend-mode: screen;
-    }
-
-    body::after {
-      background:
-        radial-gradient(circle at 8% 20%, rgba(201, 212, 15, 0.18) 0 2%, transparent 2.1%),
-        radial-gradient(circle at 12% 36%, rgba(215, 133, 169, 0.22) 0 2.2%, transparent 2.3%),
-        radial-gradient(circle at 88% 63%, rgba(22, 115, 255, 0.18) 0 7%, transparent 7.2%),
-        radial-gradient(circle at 80% 88%, rgba(143, 231, 255, 0.2) 0 5%, transparent 5.2%);
-      opacity: 0.45;
-    }
-
-    .app {
-      position: relative;
-      z-index: 1;
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 0 16px 40px;
-      text-align: center;
-    }
-
-    .hero-header {
-      width: 100%;
-      max-width: 980px;
-      margin: 0 auto 18px;
-      padding-top: 14px;
-    }
-
-    .hero-header-img {
-      width: 100%;
-      display: block;
-      border-radius: 20px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.24);
-      border: 1px solid rgba(126, 214, 255, 0.18);
-    }
-
-    .brand-block {
-      margin: 4px auto 18px;
-    }
-
-    .brand-logo {
-      width: min(420px, 82vw);
-      display: block;
-      margin: 0 auto;
-      filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.28));
-      border-radius: 12px;
-    }
-
-    .topbar {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-      color: var(--text-main);
-    }
-
-    .score-chip,
-    .next-wrap,
-    .status-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      padding: 8px 12px;
-      border-radius: 999px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.16);
-    }
-
-    #nextPreview {
-      width: 42px;
-      height: 42px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid rgba(138, 189, 255, 0.65);
-      background: #fff;
-    }
-
-    .controls {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-      color: var(--text-sub);
-    }
-
-    label.toggle-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-sub);
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      padding: 10px 14px;
-      border-radius: 999px;
-      backdrop-filter: blur(8px);
-    }
-
-    button {
-      font: inherit;
-      padding: 9px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(124, 175, 255, 0.4);
-      background: linear-gradient(180deg, rgba(28, 97, 255, 0.92), rgba(9, 53, 166, 0.92));
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(10, 37, 130, 0.32);
-      transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    button:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-      box-shadow: 0 10px 24px rgba(10, 37, 130, 0.38);
-    }
-
-    button:disabled {
-      opacity: 0.42;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .picker-info {
-      margin: 10px 0 12px;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-
-    .picker-sub {
-      margin-top: 4px;
-      font-size: 12px;
-      color: var(--text-sub);
-      opacity: 0.92;
-    }
-
-    .member-picker {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      max-width: 1040px;
-      margin: 0 auto 18px;
-    }
-
-    .member-card {
-      width: 78px;
-      padding: 6px;
-      border-radius: 14px;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, background 0.15s ease;
-      user-select: none;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
-    }
-
-    .member-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .member-card.selected {
-      border-color: rgba(115, 197, 255, 0.95);
-      background: rgba(28, 95, 255, 0.2);
-      box-shadow:
-        0 0 0 1px rgba(115, 197, 255, 0.5),
-        0 10px 24px rgba(17, 92, 255, 0.28);
-    }
-
-    .member-card.locked {
-      opacity: 0.38;
-    }
-
-    .member-card img {
-      width: 58px;
-      height: 58px;
-      object-fit: cover;
-      border-radius: 50%;
-      display: block;
-      margin: 0 auto 6px;
-      background: #fff;
-      border: 2px solid rgba(145, 201, 255, 0.45);
-    }
-
-    .member-card .name {
-      font-size: 10px;
-      line-height: 1.3;
-      color: var(--text-main);
-      word-break: break-word;
-    }
-
-    .roster {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 0 auto 14px;
-      max-width: 860px;
-      min-height: 76px;
-    }
-
-    .roster-item {
-      width: 72px;
-      font-size: 11px;
-      line-height: 1.3;
-      color: var(--text-main);
-    }
-
-    .roster-item img {
-      width: 56px;
-      height: 56px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid rgba(145, 201, 255, 0.55);
-      background: white;
-      display: block;
-      margin: 0 auto 4px;
-    }
-
-    .game-wrap {
-      width: 420px;
-      height: 620px;
-      margin: 0 auto;
-      position: relative;
-    }
-
-    #game {
-      width: 420px;
-      height: 620px;
-      border: 3px solid rgba(117, 175, 255, 0.55);
-      border-radius: 20px;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at top, rgba(86, 187, 255, 0.22), transparent 25%),
-        linear-gradient(180deg, #09145f 0%, #071050 40%, #03083b 100%);
-      position: relative;
-      box-shadow:
-        0 0 0 1px rgba(140, 199, 255, 0.15),
-        0 18px 40px rgba(0, 0, 0, 0.35);
-    }
-
-    .game-over-line {
-      position: absolute;
-      left: 0;
-      width: 100%;
-      height: 0;
-      border-top: 3px dashed rgba(134, 211, 255, 0.95);
-      z-index: 6;
-      pointer-events: none;
-      box-shadow: 0 0 10px rgba(118, 204, 255, 0.45);
-    }
-
-    .game-over-line-label {
-      position: absolute;
-      right: 8px;
-      top: -18px;
-      background: rgba(44, 128, 255, 0.95);
-      color: #fff;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      line-height: 1;
-      letter-spacing: 0.04em;
-    }
-
-    .drop-guide {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 7;
-    }
-
-    .drop-guide::before {
-      content: "";
-      position: absolute;
-      top: 16px;
-      bottom: 0;
-      left: 50%;
-      width: 2px;
-      transform: translateX(-50%);
-      background: linear-gradient(to bottom, rgba(120, 140, 255, 0.5), rgba(120, 140, 255, 0));
-      opacity: 0;
-      transition: opacity 0.15s ease;
-    }
-
-    .drop-guide.active::before {
-      opacity: 1;
-    }
-
-    .drop-ghost {
-      position: absolute;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid rgba(134, 211, 255, 0.95);
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow:
-        0 0 18px rgba(60, 146, 255, 0.35),
-        0 8px 20px rgba(25, 45, 120, 0.24);
-      transition: left 0.03s linear, width 0.1s ease, height 0.1s ease;
-    }
-
-    .drop-ghost img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .merge-effects {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 10;
-      overflow: hidden;
-    }
-
-    .merge-burst {
-      position: absolute;
-      border-radius: 50%;
-      transform: translate(-50%, -50%) scale(0.2);
-      border: 4px solid rgba(133, 224, 255, 0.98);
-      background: rgba(70, 157, 255, 0.2);
-      animation: mergeBurst 0.45s ease-out forwards;
-      box-shadow: 0 0 24px rgba(87, 189, 255, 0.42);
-    }
-
-    .merge-text {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      font-weight: 700;
-      font-size: 14px;
-      color: #dff4ff;
-      text-shadow: 0 0 10px rgba(74, 170, 255, 0.7);
-      animation: mergeTextFloat 0.7s ease-out forwards;
-      white-space: nowrap;
-    }
-
-    .max-ring {
-      position: absolute;
-      border-radius: 50%;
-      transform: translate(-50%, -50%) scale(0.3);
-      border: 6px solid rgba(135, 233, 255, 0.98);
-      box-shadow:
-        0 0 30px rgba(95, 185, 255, 0.58),
-        0 0 60px rgba(103, 233, 224, 0.35);
-      animation: maxRing 0.85s ease-out forwards;
-    }
-
-    .max-stars {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      font-size: 28px;
-      animation: maxStars 0.9s ease-out forwards;
-      white-space: nowrap;
-    }
-
-    @keyframes mergeBurst {
-      0% {
-        opacity: 0.95;
-        transform: translate(-50%, -50%) scale(0.2);
-      }
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1.8);
-      }
-    }
-
-    @keyframes mergeTextFloat {
-      0% {
-        opacity: 0;
-        transform: translate(-50%, -30%) scale(0.8);
-      }
-      20% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -95px) scale(1.08);
-      }
-    }
-
-    @keyframes maxRing {
-      0% {
-        opacity: 0.95;
-        transform: translate(-50%, -50%) scale(0.3);
-      }
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(2.2);
-      }
-    }
-
-    @keyframes maxStars {
-      0% {
-        opacity: 0;
-        transform: translate(-50%, -20%) scale(0.5);
-      }
-      15% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -120px) scale(1.2);
-      }
-    }
-
-    .max-level-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 16;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-
-    .max-level-badge {
-      margin-top: 66px;
-      background: rgba(6, 18, 84, 0.88);
-      border: 1px solid rgba(126, 214, 255, 0.75);
-      border-radius: 999px;
-      padding: 12px 18px;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.24);
-      animation: maxBadgePop 0.9s ease;
-    }
-
-    .max-level-title {
-      font-weight: 800;
-      font-size: 18px;
-      color: #8fe7ff;
-      letter-spacing: 0.06em;
-    }
-
-    .max-level-name {
-      margin-top: 3px;
-      font-size: 13px;
-      color: #f3f8ff;
-    }
-
-    @keyframes maxBadgePop {
-      0% {
-        opacity: 0;
-        transform: translateY(-12px) scale(0.85);
-      }
-      25% {
-        opacity: 1;
-        transform: translateY(0) scale(1.03);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .game-over-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(2, 7, 40, 0.55);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 20;
-      border-radius: 18px;
-      backdrop-filter: blur(4px);
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .game-over-card {
-      width: 280px;
-      background: rgba(7, 18, 82, 0.92);
-      border-radius: 18px;
-      padding: 22px 18px;
-      border: 1px solid rgba(126, 214, 255, 0.5);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
-      color: var(--text-main);
-    }
-
-    .game-over-card h2 {
-      margin: 0 0 10px;
-      font-size: 28px;
-      color: #8fe7ff;
-    }
-
-    .loading-cover {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      background:
-        radial-gradient(circle at top, rgba(32, 92, 255, 0.18), transparent 28%),
-        linear-gradient(180deg, #07105b 0%, #03083d 45%, #020735 100%);
-      color: var(--text-main);
-      font-weight: 700;
-      letter-spacing: 0.04em;
-    }
-
-    .loading-card {
-      padding: 18px 22px;
-      border-radius: 16px;
-      border: 1px solid var(--panel-border);
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-    }
-
-    .hint {
-      margin-top: 12px;
-      font-size: 13px;
-      color: #d3dcff;
-      line-height: 1.7;
-    }
-
-    @media (max-width: 520px) {
-      .game-wrap,
-      #game {
-        width: 360px;
-        height: 560px;
-      }
-
-      .member-card {
-        width: 72px;
-      }
-
-      .member-card img {
-        width: 54px;
-        height: 54px;
-      }
-
-      .roster-item {
-        width: 68px;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>新世界 顔マージゲーム</title>
+
+<style>
+
+body{
+margin:0;
+font-family:sans-serif;
+background:#050B4A;
+color:white;
+text-align:center;
+}
+
+.header{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+
+.header img{
+width:100%;
+border-radius:15px;
+}
+
+.logo{
+width:300px;
+margin:10px auto;
+display:block;
+}
+
+.member-picker{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+padding:20px;
+}
+
+.member{
+width:80px;
+cursor:pointer;
+}
+
+.member img{
+width:60px;
+height:60px;
+border-radius:50%;
+}
+
+.selected{
+outline:3px solid #3aa7ff;
+}
+
+button{
+padding:12px 20px;
+font-size:16px;
+border:none;
+border-radius:10px;
+background:#1673FF;
+color:white;
+cursor:pointer;
+}
+
+</style>
 </head>
+
 <body>
-  <div id="loadingCover" class="loading-cover">
-    <div class="loading-card">画像を読み込み中…</div>
-  </div>
-
-  <div class="app">
-    <div class="hero-header">
-      <img src="https://i.imgur.com/FynKTZX.png" alt="ヘッダー画像" class="hero-header-img" />
-    </div>
-
-    <div class="brand-block">
-      <img src="https://i.imgur.com/b8qJMXj.jpeg" alt="PRODUCE 101 JAPAN 新世界 SHINSEKAI" class="brand-logo" />
-    </div>
-
-    <div class="topbar">
-      <div class="score-chip">スコア: <strong id="score">0</strong></div>
-      <div class="next-wrap">
-        次:
-        <img id="nextPreview" alt="次の顔" />
-        <span id="nextName"></span>
-      </div>
-      <div class="status-chip">現在の11人を下に表示</div>
-    </div>
-
-    <div class="controls">
-      <label class="toggle-label">
-        <input type="checkbox" id="includeCandidates" checked />
-        練習生候補も含める
-      </label>
-
-      <button id="randomSelectBtn">ランダムで11人選ぶ</button>
-      <button id="newGameBtn" disabled>選んだ11人で開始</button>
-      <button id="restartBtn">リスタート</button>
-    </div>
-
-    <div class="picker-info">
-      選択中: <strong id="selectedCount">0</strong> / 11
-      <div class="picker-sub">手動で11人選ぶか、ランダムで11人選んで開始できます。</div>
-    </div>
-
-    <div id="memberPicker" class="member-picker"></div>
-
-    <div id="selectedRoster" class="roster"></div>
-
-    <div id="gameWrap" class="game-wrap">
-      <div id="game"></div>
-
-      <div id="dropGuide" class="drop-guide">
-        <div id="dropGhost" class="drop-ghost">
-          <img id="dropGhostImg" alt="待機中の顔" />
-        </div>
-      </div>
-
-      <div id="mergeEffects" class="merge-effects"></div>
-
-      <div id="maxLevelOverlay" class="max-level-overlay hidden">
-        <div class="max-level-badge">
-          <div class="max-level-title">MAX LEVEL!</div>
-          <div id="maxLevelName" class="max-level-name"></div>
-        </div>
-      </div>
-
-      <div id="gameOverOverlay" class="game-over-overlay hidden">
-        <div class="game-over-card">
-          <h2>GAME OVER</h2>
-          <p>スコア: <strong id="finalScore">0</strong></p>
-          <button id="retryBtn">もう一回</button>
-        </div>
-      </div>
-    </div>
-
-    <p class="hint">
-      PCは盤面内で左右に動かしてクリックで落下。<br />
-      スマホは盤面内を左右にスライドして、指を離すと落下します。<br />
-      同じメンバー・同じレベル同士で合体し、11人固定で遊べます。
-    </p>
-  </div>
-
-  <script>
-    const traineesOnly = [
-      {name:"アダム・ナガイ(ADAM)", img:"https://i.imgur.com/6QGzvRx.png", id:"adamnagai"},
-      {name:"中丸 晏寿(AJU)", img:"https://i.imgur.com/KiZCKos.png", id:"nakamaruaju"},
-      {name:"オム・スアンカワーテン(AOM)", img:"https://i.imgur.com/dDIFJSc.png", id:"aomsuungkavathin"},
-      {name:"アーチャー・ウイ(ARCHER)", img:"https://i.imgur.com/5iIerqN.png", id:"archeruy"},
-      {name:"篠ヶ谷 歩夢(S.AYUMU)", img:"https://i.imgur.com/YJAdh8q.png", id:"shinogayaayumu"},
-      {name:"小林 千悟(CHISATO)", img:"https://i.imgur.com/Iu0hNBO.png", id:"kobayashichisato"},
-      {name:"加藤 大樹 (K.DAIKI)", img:"https://i.imgur.com/4fRk2EB.png", id:"katodaiki"},
-      {name:"カク・ドンミン(DONGMIN)", img:"https://i.imgur.com/xZSQqMh.png", id:"kwakdongmin"},
-      {name:"末川 瑛太(EITA)", img:"https://i.imgur.com/alEjKCP.png", id:"suekawaeita"},
-      {name:"保里 瑛都(H.EITO)", img:"https://i.imgur.com/IAhs4ZA.png", id:"horieito"},
-      {name:"金田 栄都(K.EITO)", img:"https://i.imgur.com/tF7i1du.png", id:"kanedaeito"},
-      {name:"櫻井 楓真(FUMA)", img:"https://i.imgur.com/WIWI8Sx.png", id:"sakuraifuma"},
-      {name:"小笠原ジュゼッペ慧(GIUSEPPE)", img:"https://i.imgur.com/2oKn3Ma.jpeg", id:"ogasawaragiuseppekei"},
-      {name:"倉橋 吾槙(GOTEN)", img:"https://i.imgur.com/hlEjYqR.png", id:"kurahashigoten"},
-      {name:"堀尾 聖(HIJIRI)", img:"https://i.imgur.com/5Qb5dRJ.png", id:"horiohijiri"},
-      {name:"瑞慶覧 太都(HIROTO)", img:"https://i.imgur.com/siOPGIr.png", id:"zukeranhiroto"},
-      {name:"ユ・ヒョンスン(HYEONSEUNG)", img:"https://i.imgur.com/lY3lXLj.png", id:"yoohyeonseung"},
-      {name:"岡田 彪吾(HYUGO)", img:"https://i.imgur.com/zalwc1W.png", id:"okadahyugo"},
-      {name:"柳谷 伊冴(ISSA)", img:"https://i.imgur.com/gboCNWu.png", id:"yanagiyaissa"},
-      {name:"ユン・ジェヨン(JAEYONG)", img:"https://i.imgur.com/1yCImxd.png", id:"yoonjaeyong"},
-      {name:"ジュアン・ジェイ(JAY)", img:"https://i.imgur.com/41jKNZX.png", id:"chuangjay"},
-      {name:"丸尾 尋一郎(JINICHIRO)", img:"https://i.imgur.com/83azYjx.png", id:"maruojinichiro"},
-      {name:"河邊 晟(JOE)", img:"https://i.imgur.com/DqUS1o6.png", id:"kawabejoe"},
-      {name:"シン・ジョンウク(JUNGUK)", img:"https://i.imgur.com/6cwEusK.jpeg", id:"shinjunguk"},
-      {name:"金安 純正(JUNSEI)", img:"https://i.imgur.com/juPhMDR.png", id:"kaneyasujunsei"},
-      {name:"宇野 海夢(KAIMU)", img:"https://i.imgur.com/QVliSyD.png", id:"unokaimu"},
-      {name:"多比 奏聖(KANADE)", img:"https://i.imgur.com/rdSJ6QX.png", id:"tabikanade"},
-      {name:"横山 奏夢(KANAME)", img:"https://i.imgur.com/0brlEw8.png", id:"yokoyamakaname"},
-      {name:"関 敬次郎(KEIJIRO)", img:"https://i.imgur.com/PHlkDUt.png", id:"sekikeijiro"},
-      {name:"髙松 敬祐(KEISUKE)", img:"https://i.imgur.com/bs4vfiF.png", id:"takamatsukeisuke"},
-      {name:"小野 慶人(KEITO)", img:"https://i.imgur.com/glfmRJE.png", id:"onokeito"},
-      {name:"西山 賢人(KENTO)", img:"https://i.imgur.com/izEXoBY.png", id:"nishiyamakento"},
-      {name:"河合 晃誠(KOSEI)", img:"https://i.imgur.com/E30eGfr.png", id:"kawaikosei"},
-      {name:"照井 康祐(KOSUKE)", img:"https://i.imgur.com/oDkwdFn.png", id:"teruikosuke"},
-      {name:"浅香 孝太郎(KOTARO)", img:"https://i.imgur.com/7eJxl8o.png", id:"asakakotaro"},
-      {name:"髙谷 京平(KYOHEI)", img:"https://i.imgur.com/CLU1cPO.png", id:"takayakyohei"},
-      {name:"田中 蒔(MAKI)", img:"https://i.imgur.com/No6Nybr.png", id:"tanakamaki"},
-      {name:"山根 武蔵(MUSASHI)", img:"https://i.imgur.com/Ou2XuDa.png", id:"yamanemusashi"},
-      {name:"土田 央修(OSUKE)", img:"https://i.imgur.com/Xs0WjIn.png", id:"tsuchidaosuke"},
-      {name:"堀野 蓮(H.REN)", img:"https://i.imgur.com/FQEx0JM.png", id:"horinoren"},
-      {name:"小清水 蓮(KO.REN)", img:"https://i.imgur.com/S8Ij9OZ.png", id:"koshimizuren"},
-      {name:"チェン・リッキー(RICKEY)", img:"https://i.imgur.com/DnnZVAT.png", id:"chenrickey"},
-      {name:"神元 理丘(RIKU)", img:"https://i.imgur.com/jwJ9CLd.png", id:"kamimotoriku"},
-      {name:"鳩場 陸人(H.RIKUTO)", img:"https://i.imgur.com/JdCFbCb.png", id:"hatobarikuto"},
-      {name:"今江 陸斗(I.RIKUTO)", img:"https://i.imgur.com/jiZZwJu.png", id:"imaerikuto"},
-      {name:"甲斐 陸也(RIKUYA)", img:"https://i.imgur.com/lfiqB2f.png", id:"kairikuya"},
-      {name:"大瀬 凜和(RINTO)", img:"https://i.imgur.com/OT0UHId.png", id:"ohserinto"},
-      {name:"上野 琉偉(U.RUI)", img:"https://i.imgur.com/36XqMd9.png", id:"uenorui"},
-      {name:"飯塚 亮賀(RYOGA)", img:"https://i.imgur.com/ExbaI6W.png", id:"iizukaryoga"},
-      {name:"石田 亮太(RYOTA)", img:"https://i.imgur.com/Ctw95jF.png", id:"ishidaryota"},
-      {name:"岡戸 竜芽(RYUGA)", img:"https://i.imgur.com/gyPHKjY.png", id:"okadoryuga"},
-      {name:"杉山 竜司(RYUJI)", img:"https://i.imgur.com/NeB980M.png", id:"sugiyamaryuji"},
-      {name:"香月 誠太(SEITA)", img:"https://i.imgur.com/def6F6u.png", id:"katsukiseita"},
-      {name:"澤井 星名(SENA)", img:"https://i.imgur.com/Dpzzr9K.png", id:"sawaisena"},
-      {name:"オ・シンヘン(SHINHAENG)", img:"https://i.imgur.com/LH673dA.png", id:"ohshinhaeng"},
-      {name:"岩城 慎二(SHINJI)", img:"https://i.imgur.com/h5rDvjC.png", id:"iwakishinji"},
-      {name:"宮崎 真佑(SHINSUKE)", img:"https://i.imgur.com/xJuj9wW.png", id:"miyazakishinsuke"},
-      {name:"西﨑 柊(N.SHU)", img:"https://i.imgur.com/OZrHFUX.png", id:"nishizakishu"},
-      {name:"山下 柊(Y.SHU)", img:"https://i.imgur.com/642IX8o.png", id:"yamashitashu"},
-      {name:"パク・シヨン(SIYOUNG)", img:"https://i.imgur.com/wSokxJh.png", id:"parksiyoung"},
-      {name:"佐藤 碧空 (S.SORA)", img:"https://i.imgur.com/yF4WJJB.png", id:"satosora"},
-      {name:"東野 蒼汰(SOTA)", img:"https://i.imgur.com/GvLpwfo.png", id:"tonosota"},
-      {name:"藤牧 大雅(F.TAIGA)", img:"https://i.imgur.com/4G2hBRy.png", id:"fujimakitaiga"},
-      {name:"松田 太雅(M.TAIGA)", img:"https://i.imgur.com/tICsJFs.png", id:"matsudataiga"},
-      {name:"金倉 拓未(TAKUMI)", img:"https://i.imgur.com/O3gluG7.png", id:"kanakuratakumi"},
-      {name:"熊部 拓斗(K.TAKUTO)", img:"https://i.imgur.com/NaQURc7.png", id:"kumabetakuto"},
-      {name:"宮里 拓利(M.TAKUTO)", img:"https://i.imgur.com/5B8NMyF.png", id:"miyazatotakuto"},
-      {name:"南平 達矢(TATSUYA)", img:"https://i.imgur.com/jHnmGTs.png", id:"minamihiratatsuya"},
-      {name:"森井 輝(TERU)", img:"https://i.imgur.com/SAo1Rs4.png", id:"moriiteru"},
-      {name:"北林 天虎(TETORA)", img:"https://i.imgur.com/2gCwqHF.png", id:"kitabayashitetora"},
-      {name:"藤芳 辰弥(TOKIYA)", img:"https://i.imgur.com/9prpjvI.png", id:"fujiyoshitokiya"},
-      {name:"増田 倫希(TOMOKI)", img:"https://i.imgur.com/4JSh3HD.png", id:"masudatomoki"},
-      {name:"濱田 永遠(TOWA)", img:"https://i.imgur.com/Yap9beM.png", id:"hamadatowa"},
-      {name:"アギナルド・トリスタン・ジェームス(TRISTAN)", img:"https://i.imgur.com/wyeHbRo.png", id:"aguinaldotristanjames"},
-      {name:"リー・ウェイゼ(WEIZE)", img:"https://i.imgur.com/XNeHaaX.png", id:"liweize"},
-      {name:"ヨハン・エマニュエル(YOHAN)", img:"https://i.imgur.com/RTVMTCA.png", id:"yohanemmanuel"},
-      {name:"矢田 佳暉(YOSHIKI)", img:"https://i.imgur.com/MZbSVDq.png", id:"yadayoshiki"},
-      {name:"後藤 結(YUKI)", img:"https://i.imgur.com/GZTdD57.png", id:"gotoyuki"},
-      {name:"岡田 侑磨(YUMA)", img:"https://i.imgur.com/3hhNQLj.png", id:"okadayuma"},
-      {name:"安部 結蘭(YURA)", img:"https://i.imgur.com/pbC301p.png", id:"abeyura"},
-      {name:"大林 悠成(O.YUSEI)", img:"https://i.imgur.com/tp1fKqI.png", id:"obayashiyusei"},
-      {name:"佐野 由征(S.YUSEI)", img:"https://i.imgur.com/fDql5Tu.png", id:"sanoyusei"},
-      {name:"板倉 悠太(YUTA)", img:"https://i.imgur.com/j6IlxeD.png", id:"itakurayuta"}
-    ];
-
-    const candidates = [
-      {name:"本荘 晃(AKIRA)", img:"https://i.imgur.com/p976l8j.jpeg", id:"honjoakira"},
-      {name:"児島 歩夢(K.AYUMU)", img:"https://i.imgur.com/1jtcgbB.png", id:"kojimaayumu"},
-      {name:"市川 大輝(I.DAIKI)", img:"https://i.imgur.com/72FqxLz.png", id:"ichikawadaiki"},
-      {name:"川村 珀斗(HAKUTO)", img:"https://i.imgur.com/ua7RMig.png", id:"kawamurahakuto"},
-      {name:"村松 遼空(HARUKU)", img:"https://i.imgur.com/3JEtKs6.png", id:"muramatsuharuku"},
-      {name:"髙城 暖人(HARUTO)", img:"https://i.imgur.com/qdXIOpr.png", id:"takagiharuto"},
-      {name:"平島 輝(H.HIKARU)", img:"https://i.imgur.com/P5gzRZh.png", id:"hirashimahikaru"},
-      {name:"櫻井 輝(S.HIKARU)", img:"https://i.imgur.com/h2fBMUv.png", id:"sakuraihikaru"},
-      {name:"佐川 太一(HIROKAZU)", img:"https://i.imgur.com/h2fBMUv.png", id:"sagawahirokazu"},
-      {name:"イ・ヒョンジェ(HYUNJAE)", img:"https://i.imgur.com/wOhvKDu.png", id:"leehyunjae"},
-      {name:"阿部 樹(ITSUKI)", img:"https://i.imgur.com/TaTAc2L.png", id:"abeitsuki"},
-      {name:"イ・ジュンフン(JOONGHOON)", img:"https://i.imgur.com/4utwyOJ.png", id:"leejoonghoon"},
-      {name:"リュウ・カイチ(KAICHI)", img:"https://i.imgur.com/FGbdGcI.png", id:"liukaichi"},
-      {name:"黒﨑 貫汰(KANTA)", img:"https://i.imgur.com/j75eoO7.png", id:"kurosakikanta"},
-      {name:"黄 敬眞(KEISHIN)", img:"https://i.imgur.com/oE7w4D7.png", id:"kokeishin"},
-      {name:"釼持 吉成(KINARI)", img:"https://i.imgur.com/GWAtiwS.png", id:"kenmotsukinari"},
-      {name:"小澤 昂心(KOSHIN)", img:"https://i.imgur.com/pn0zB7F.png", id:"ozawakoshin"},
-      {name:"青沼 昂史朗(KOSHIRO)", img:"https://i.imgur.com/MDhTcs8.png", id:"aonumakoshiro"},
-      {name:"小林 廣(KOU)", img:"https://i.imgur.com/RAoUIhC.png", id:"kobayashikou"},
-      {name:"森 明育(MEI)", img:"https://i.imgur.com/eR0BZVs.png", id:"morimei"},
-      {name:"マイケル ミン・マカフリ(MICHAEL MINH)", img:"https://i.imgur.com/6S8BWAA.png", id:"michaelminhmccaffrey"},
-      {name:"パトリック ファン・レ(PATRICK)", img:"https://i.imgur.com/YRvJQYc.png", id:"patrickphanle"},
-      {name:"笠原 蓮(KA.REN)", img:"https://i.imgur.com/ZLgNm7o.png", id:"kasahararen"},
-      {name:"江口 蓮翔(E.RENTO)", img:"https://i.imgur.com/ewXd8NH.png", id:"eguchirento"},
-      {name:"小林 蓮翔(K.RENTO)", img:"https://i.imgur.com/t2NbxIU.png", id:"kobayashirento"},
-      {name:"落合 利温(RIO)", img:"https://i.imgur.com/HdTZUdu.png", id:"ochiairio"},
-      {name:"水上 琉偉(M.RUI)", img:"https://i.imgur.com/DiUA9bw.png", id:"mizugamirui"},
-      {name:"小谷内 瑠嘉(RUKA)", img:"https://i.imgur.com/V2XnsQ6.png", id:"koyauchiruka"},
-      {name:"齊藤 惺(SEI)", img:"https://i.imgur.com/9HIRvNd.png", id:"saitosei"},
-      {name:"藤本 真成(SHINSEI)", img:"https://i.imgur.com/qTooOuS.png", id:"fujimotoshinsei"},
-      {name:"飯田 柊馬(SHUMA)", img:"https://i.imgur.com/awBBn6j.png", id:"iidashuma"},
-      {name:"松田 颯吾(SOGO)", img:"https://i.imgur.com/Y1MQK3k.png", id:"matsudasogo"},
-      {name:"髙橋 空良(T.SORA)", img:"https://i.imgur.com/czFpgjm.png", id:"takahashisora"},
-      {name:"西田 颯梓(SOSHI)", img:"https://i.imgur.com/51RMIB6.png", id:"nishidasoshi"},
-      {name:"岡本 拓士(O.TAKUTO)", img:"https://i.imgur.com/TGP6sbe.png", id:"okamototakuto"},
-      {name:"大澤 佑冴(YUGO)", img:"https://i.imgur.com/5Gg1E1M.png", id:"osawayugo"},
-      {name:"藤井 雄聖(F.YUSEI)", img:"https://i.imgur.com/prsNOtG.png", id:"fujiiyusei"},
-      {name:"岡本 佑斗(YUTO)", img:"https://i.imgur.com/lzv8Vu5.png", id:"okamotoyuto"}
-    ];
-
-    const {
-      Engine,
-      Render,
-      Runner,
-      World,
-      Bodies,
-      Events,
-      Composite,
-      Body
-    } = Matter;
-
-    const LEVELS = [
-      { radius: 24, score: 1 },
-      { radius: 32, score: 3 },
-      { radius: 42, score: 7 },
-      { radius: 54, score: 15 },
-      { radius: 68, score: 30 },
-      { radius: 84, score: 60 }
-    ];
-
-    const FIXED_POOL_SIZE = 11;
-    const GAME_WIDTH = window.innerWidth <= 520 ? 360 : 420;
-    const GAME_HEIGHT = window.innerWidth <= 520 ? 560 : 620;
-    const WALL = 40;
-    const DROP_Y = 62;
-    const DROP_COOLDOWN = 350;
-    const GAME_OVER_LINE_Y = 110;
-    const GAME_OVER_HOLD_MS = 1200;
-
-    const gameEl = document.getElementById("game");
-    const gameWrapEl = document.getElementById("gameWrap");
-    const scoreEl = document.getElementById("score");
-    const finalScoreEl = document.getElementById("finalScore");
-    const nextPreviewEl = document.getElementById("nextPreview");
-    const nextNameEl = document.getElementById("nextName");
-    const newGameBtn = document.getElementById("newGameBtn");
-    const randomSelectBtn = document.getElementById("randomSelectBtn");
-    const restartBtn = document.getElementById("restartBtn");
-    const retryBtn = document.getElementById("retryBtn");
-    const includeCandidatesEl = document.getElementById("includeCandidates");
-    const memberPickerEl = document.getElementById("memberPicker");
-    const selectedCountEl = document.getElementById("selectedCount");
-    const selectedRosterEl = document.getElementById("selectedRoster");
-    const mergeEffectsEl = document.getElementById("mergeEffects");
-    const gameOverOverlayEl = document.getElementById("gameOverOverlay");
-    const dropGuideEl = document.getElementById("dropGuide");
-    const dropGhostEl = document.getElementById("dropGhost");
-    const dropGhostImgEl = document.getElementById("dropGhostImg");
-    const maxLevelOverlayEl = document.getElementById("maxLevelOverlay");
-    const maxLevelNameEl = document.getElementById("maxLevelName");
-    const loadingCoverEl = document.getElementById("loadingCover");
-
-    const engine = Engine.create();
-    const world = engine.world;
-    world.gravity.y = 1.0;
-
-    const render = Render.create({
-      element: gameEl,
-      engine,
-      options: {
-        width: GAME_WIDTH,
-        height: GAME_HEIGHT,
-        wireframes: false,
-        background: "transparent",
-        pixelRatio: window.devicePixelRatio || 1
-      }
-    });
-
-    gameEl.style.width = `${GAME_WIDTH}px`;
-    gameEl.style.height = `${GAME_HEIGHT}px`;
-    gameWrapEl.style.width = `${GAME_WIDTH}px`;
-    gameWrapEl.style.height = `${GAME_HEIGHT}px`;
-
-    Render.run(render);
-    const runner = Runner.create();
-    Runner.run(runner, engine);
-
-    const imageSizeMap = new Map();
-    const allMembersStatic = [...traineesOnly, ...candidates];
-
-    let score = 0;
-    let canDrop = true;
-    let activeRoster = [];
-    let selectedMembers = [];
-    let nextFruit = null;
-    let isGameOver = false;
-    let overLineStartAt = null;
-    let aimX = GAME_WIDTH / 2;
-    let isTouchDragging = false;
-    let audioCtx = null;
-    let hasStarted = false;
-
-    function getAudioCtx() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      return audioCtx;
-    }
-
-    function unlockAudio() {
-      const ctx = getAudioCtx();
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
-    }
-
-    function beep({ frequency = 440, duration = 0.12, type = "sine", volume = 0.03, ramp = true }) {
-      const ctx = getAudioCtx();
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = type;
-      osc.frequency.setValueAtTime(frequency, now);
-
-      gain.gain.setValueAtTime(volume, now);
-      if (ramp) {
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      } else {
-        gain.gain.setValueAtTime(volume, now + duration);
-      }
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + duration);
-    }
-
-    function playMergeSound(level) {
-      unlockAudio();
-      const base = 420 + level * 70;
-      beep({ frequency: base, duration: 0.08, type: "triangle", volume: 0.045 });
-      setTimeout(() => {
-        beep({ frequency: base * 1.25, duration: 0.12, type: "triangle", volume: 0.04 });
-      }, 55);
-    }
-
-    function playGameOverSound() {
-      unlockAudio();
-      beep({ frequency: 330, duration: 0.18, type: "sawtooth", volume: 0.045, ramp: false });
-      setTimeout(() => beep({ frequency: 250, duration: 0.22, type: "sawtooth", volume: 0.04, ramp: false }), 130);
-      setTimeout(() => beep({ frequency: 180, duration: 0.28, type: "sawtooth", volume: 0.035, ramp: true }), 280);
-    }
-
-    function playMaxLevelSound() {
-      unlockAudio();
-      beep({ frequency: 520, duration: 0.09, type: "triangle", volume: 0.05 });
-      setTimeout(() => beep({ frequency: 660, duration: 0.09, type: "triangle", volume: 0.05 }), 70);
-      setTimeout(() => beep({ frequency: 880, duration: 0.18, type: "triangle", volume: 0.05 }), 150);
-    }
-
-    function shuffle(array) {
-      const copied = [...array];
-      for (let i = copied.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copied[i], copied[j]] = [copied[j], copied[i]];
-      }
-      return copied;
-    }
-
-    function pickRandom(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-
-    function clamp(value, min, max) {
-      return Math.max(min, Math.min(max, value));
-    }
-
-    function getAllPlayableMembers() {
-      return includeCandidatesEl.checked ? [...traineesOnly, ...candidates] : [...traineesOnly];
-    }
-
-    function getPickerMembers() {
-      return getAllPlayableMembers();
-    }
-
-    function isSelectedMember(id) {
-      return selectedMembers.some(member => member.id === id);
-    }
-
-    function updateScore() {
-      scoreEl.textContent = score;
-      finalScoreEl.textContent = score;
-    }
-
-    function renderRoster() {
-      selectedRosterEl.innerHTML = activeRoster.map(member => `
-        <div class="roster-item">
-          <img src="${member.img}" alt="${member.name}">
-          <div>${member.name}</div>
-        </div>
-      `).join("");
-    }
-
-    function updateStartButtonState() {
-      newGameBtn.disabled = selectedMembers.length !== FIXED_POOL_SIZE;
-      selectedCountEl.textContent = selectedMembers.length;
-    }
-
-    function renderMemberPicker() {
-      const members = getPickerMembers();
-      const selectedCount = selectedMembers.length;
-
-      memberPickerEl.innerHTML = members.map(member => {
-        const selected = isSelectedMember(member.id);
-        const locked = !selected && selectedCount >= FIXED_POOL_SIZE;
-        return `
-          <div class="member-card ${selected ? "selected" : ""} ${locked ? "locked" : ""}" data-id="${member.id}">
-            <img src="${member.img}" alt="${member.name}">
-            <div class="name">${member.name}</div>
-          </div>
-        `;
-      }).join("");
-
-      memberPickerEl.querySelectorAll(".member-card").forEach(card => {
-        card.addEventListener("click", () => {
-          const id = card.dataset.id;
-          toggleMemberSelection(id);
-        });
-      });
-
-      updateStartButtonState();
-    }
-
-    function toggleMemberSelection(id) {
-      const members = getPickerMembers();
-      const target = members.find(member => member.id === id);
-      if (!target) return;
-
-      const alreadySelected = isSelectedMember(id);
-
-      if (alreadySelected) {
-        selectedMembers = selectedMembers.filter(member => member.id !== id);
-      } else {
-        if (selectedMembers.length >= FIXED_POOL_SIZE) return;
-        selectedMembers.push(target);
-      }
-
-      renderMemberPicker();
-    }
-
-    function randomSelectMembers() {
-      const members = getPickerMembers();
-      selectedMembers = shuffle(members).slice(0, FIXED_POOL_SIZE);
-      renderMemberPicker();
-    }
-
-    function chooseRoster() {
-      activeRoster = [...selectedMembers];
-    }
-
-    function getGhostRadius() {
-      if (!nextFruit) return LEVELS[0].radius;
-      return LEVELS[nextFruit.level].radius;
-    }
-
-    function getGameLocalX(clientX) {
-      const rect = gameEl.getBoundingClientRect();
-      return clientX - rect.left;
-    }
-
-    function getSafeAimX(rawX) {
-      const radius = getGhostRadius();
-      return clamp(rawX, radius + 8, GAME_WIDTH - radius - 8);
-    }
-
-    function updateAimXFromClientX(clientX) {
-      aimX = getSafeAimX(getGameLocalX(clientX));
-      updateDropGhostPosition();
-    }
-
-    function updateDropGhostPosition() {
-      dropGhostEl.style.left = `${aimX}px`;
-    }
-
-    function updateNextPreview() {
-      if (!nextFruit) return;
-
-      nextPreviewEl.src = nextFruit.member.img;
-      nextPreviewEl.alt = nextFruit.member.name;
-      nextNameEl.textContent = `${nextFruit.member.name} Lv.${nextFruit.level + 1}`;
-
-      dropGhostImgEl.src = nextFruit.member.img;
-      dropGhostImgEl.alt = nextFruit.member.name;
-
-      const radius = LEVELS[nextFruit.level].radius;
-      const size = radius * 2;
-      dropGhostEl.style.width = `${size}px`;
-      dropGhostEl.style.height = `${size}px`;
-
-      updateDropGhostPosition();
-    }
-
-    function makeNextFruit() {
-      if (!activeRoster.length) return;
-      nextFruit = {
-        member: pickRandom(activeRoster),
-        level: 0
-      };
-      updateNextPreview();
-    }
-
-    function addWalls() {
-      const floor = Bodies.rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT + WALL / 2,
-        GAME_WIDTH,
-        WALL,
-        { isStatic: true, render: { fillStyle: "#13245e" } }
-      );
-
-      const leftWall = Bodies.rectangle(
-        -WALL / 2,
-        GAME_HEIGHT / 2,
-        WALL,
-        GAME_HEIGHT,
-        { isStatic: true, render: { fillStyle: "#13245e" } }
-      );
-
-      const rightWall = Bodies.rectangle(
-        GAME_WIDTH + WALL / 2,
-        GAME_HEIGHT / 2,
-        WALL,
-        GAME_HEIGHT,
-        { isStatic: true, render: { fillStyle: "#13245e" } }
-      );
-
-      World.add(world, [floor, leftWall, rightWall]);
-    }
-
-    function addGameOverLine() {
-      const line = document.createElement("div");
-      line.className = "game-over-line";
-      line.style.top = `${GAME_OVER_LINE_Y}px`;
-
-      const label = document.createElement("div");
-      label.className = "game-over-line-label";
-      label.textContent = "OVER";
-      line.appendChild(label);
-
-      gameWrapEl.appendChild(line);
-    }
-
-    function getSpriteScale(member, diameter) {
-      const imgMeta = imageSizeMap.get(member.id);
-      if (!imgMeta) return { xScale: diameter / 512, yScale: diameter / 512 };
-      return {
-        xScale: diameter / imgMeta.width,
-        yScale: diameter / imgMeta.height
-      };
-    }
-
-    function createFace(x, y, member, level) {
-      const stage = LEVELS[level];
-      const diameter = stage.radius * 2;
-      const scale = getSpriteScale(member, diameter);
-
-      const body = Bodies.circle(x, y, stage.radius, {
-        restitution: 0.15,
-        friction: 0.03,
-        frictionAir: 0.01,
-        density: 0.001,
-        render: {
-          sprite: {
-            texture: member.img,
-            xScale: scale.xScale,
-            yScale: scale.yScale
-          }
-        }
-      });
-
-      body.memberId = member.id;
-      body.memberName = member.name;
-      body.memberImg = member.img;
-      body.level = level;
-      body.isMerging = false;
-
-      return body;
-    }
-
-    function showMergeEffect(x, y, nextLevel, memberName) {
-      const burst = document.createElement("div");
-      burst.className = "merge-burst";
-      burst.style.left = `${x}px`;
-      burst.style.top = `${y}px`;
-
-      const burstSize = Math.min(LEVELS[nextLevel].radius * 2.3, 180);
-      burst.style.width = `${burstSize}px`;
-      burst.style.height = `${burstSize}px`;
-
-      const text = document.createElement("div");
-      text.className = "merge-text";
-      text.style.left = `${x}px`;
-      text.style.top = `${y}px`;
-      text.textContent = `${memberName} Lv.${nextLevel + 1}!`;
-
-      mergeEffectsEl.appendChild(burst);
-      mergeEffectsEl.appendChild(text);
-
-      setTimeout(() => burst.remove(), 500);
-      setTimeout(() => text.remove(), 750);
-    }
-
-    function showMaxLevelEffect(x, y, memberName) {
-      const ring = document.createElement("div");
-      ring.className = "max-ring";
-      ring.style.left = `${x}px`;
-      ring.style.top = `${y}px`;
-      ring.style.width = "110px";
-      ring.style.height = "110px";
-
-      const stars = document.createElement("div");
-      stars.className = "max-stars";
-      stars.style.left = `${x}px`;
-      stars.style.top = `${y}px`;
-      stars.textContent = "✨👑✨";
-
-      mergeEffectsEl.appendChild(ring);
-      mergeEffectsEl.appendChild(stars);
-
-      setTimeout(() => ring.remove(), 900);
-      setTimeout(() => stars.remove(), 950);
-
-      maxLevelNameEl.textContent = `${memberName} が最高レベル到達！`;
-      maxLevelOverlayEl.classList.remove("hidden");
-
-      clearTimeout(showMaxLevelEffect._timer);
-      showMaxLevelEffect._timer = setTimeout(() => {
-        maxLevelOverlayEl.classList.add("hidden");
-      }, 1200);
-    }
-
-    function dropFace(x) {
-      if (!canDrop || !nextFruit || isGameOver) return;
-
-      unlockAudio();
-
-      const level = nextFruit.level;
-      const radius = LEVELS[level].radius;
-      const safeX = clamp(x, radius + 8, GAME_WIDTH - radius - 8);
-
-      const body = createFace(safeX, DROP_Y, nextFruit.member, level);
-      World.add(world, body);
-
-      canDrop = false;
-      setTimeout(() => {
-        canDrop = true;
-      }, DROP_COOLDOWN);
-
-      makeNextFruit();
-    }
-
-    function getDynamicBodies() {
-      return Composite.allBodies(world).filter(body => !body.isStatic && body.memberId);
-    }
-
-    function checkGameOver() {
-      if (isGameOver) return;
-
-      const bodies = getDynamicBodies();
-      const touchingLine = bodies.some(body => {
-        const radius = LEVELS[body.level]?.radius ?? body.circleRadius ?? 0;
-        return (body.position.y - radius) <= GAME_OVER_LINE_Y;
-      });
-
-      if (touchingLine) {
-        if (!overLineStartAt) {
-          overLineStartAt = performance.now();
-        } else if (performance.now() - overLineStartAt >= GAME_OVER_HOLD_MS) {
-          triggerGameOver();
-        }
-      } else {
-        overLineStartAt = null;
-      }
-    }
-
-    function triggerGameOver() {
-      isGameOver = true;
-      canDrop = false;
-      finalScoreEl.textContent = score;
-      gameOverOverlayEl.classList.remove("hidden");
-      dropGuideEl.classList.remove("active");
-      playGameOverSound();
-    }
-
-    function removeDynamicBodies() {
-      const allBodies = Composite.allBodies(world);
-      allBodies.forEach((body) => {
-        if (!body.isStatic) {
-          World.remove(world, body);
-        }
-      });
-    }
-
-    function clearEffects() {
-      mergeEffectsEl.innerHTML = "";
-      maxLevelOverlayEl.classList.add("hidden");
-    }
-
-    function resetCommonState() {
-      score = 0;
-      canDrop = true;
-      isGameOver = false;
-      overLineStartAt = null;
-      isTouchDragging = false;
-      aimX = GAME_WIDTH / 2;
-      updateScore();
-      gameOverOverlayEl.classList.add("hidden");
-      clearEffects();
-    }
-
-    function startNewGame() {
-      if (selectedMembers.length !== FIXED_POOL_SIZE) return;
-
-      removeDynamicBodies();
-      resetCommonState();
-      chooseRoster();
-      renderRoster();
-      makeNextFruit();
-      updateDropGhostPosition();
-      hasStarted = true;
-    }
-
-    function restartCurrentRoster() {
-      if (!activeRoster.length) return;
-
-      removeDynamicBodies();
-      resetCommonState();
-      nextFruit = {
-        member: pickRandom(activeRoster),
-        level: 0
-      };
-      updateNextPreview();
-      updateDropGhostPosition();
-    }
-
-    function preloadImages() {
-      const promises = allMembersStatic.map(member => new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => {
-          imageSizeMap.set(member.id, {
-            width: img.naturalWidth || 512,
-            height: img.naturalHeight || 512
-          });
-          resolve();
-        };
-        img.onerror = () => {
-          imageSizeMap.set(member.id, { width: 512, height: 512 });
-          resolve();
-        };
-        img.src = member.img;
-      }));
-
-      return Promise.all(promises);
-    }
-
-    gameEl.addEventListener("mousemove", (e) => {
-      if (isGameOver || !hasStarted) return;
-      dropGuideEl.classList.add("active");
-      updateAimXFromClientX(e.clientX);
-    });
-
-    gameEl.addEventListener("mouseenter", () => {
-      if (isGameOver || !hasStarted) return;
-      dropGuideEl.classList.add("active");
-    });
-
-    gameEl.addEventListener("mouseleave", () => {
-      if (isTouchDragging) return;
-      dropGuideEl.classList.remove("active");
-    });
-
-    gameEl.addEventListener("click", (e) => {
-      if (isTouchDragging || !hasStarted) return;
-      updateAimXFromClientX(e.clientX);
-      dropFace(aimX);
-    });
-
-    gameEl.addEventListener("touchstart", (e) => {
-      if (isGameOver || !hasStarted) return;
-      unlockAudio();
-      isTouchDragging = true;
-      dropGuideEl.classList.add("active");
-      if (e.touches[0]) {
-        updateAimXFromClientX(e.touches[0].clientX);
-      }
-    }, { passive: true });
-
-    gameEl.addEventListener("touchmove", (e) => {
-      if (!isTouchDragging || isGameOver || !hasStarted) return;
-      if (e.touches[0]) {
-        updateAimXFromClientX(e.touches[0].clientX);
-      }
-    }, { passive: true });
-
-    gameEl.addEventListener("touchend", () => {
-      if (!isTouchDragging || isGameOver || !hasStarted) return;
-      isTouchDragging = false;
-      dropFace(aimX);
-      dropGuideEl.classList.remove("active");
-    }, { passive: true });
-
-    Events.on(engine, "collisionStart", (event) => {
-      if (isGameOver) return;
-
-      for (const pair of event.pairs) {
-        const a = pair.bodyA;
-        const b = pair.bodyB;
-
-        if (
-          a.memberId === undefined ||
-          b.memberId === undefined ||
-          a.isMerging ||
-          b.isMerging
-        ) {
-          continue;
-        }
-
-        const sameMember = a.memberId === b.memberId;
-        const sameLevel = a.level === b.level;
-        const canLevelUp = a.level < LEVELS.length - 1;
-
-        if (!sameMember || !sameLevel || !canLevelUp) {
-          continue;
-        }
-
-        a.isMerging = true;
-        b.isMerging = true;
-
-        const newX = (a.position.x + b.position.x) / 2;
-        const newY = (a.position.y + b.position.y) / 2;
-        const nextLevel = a.level + 1;
-
-        const member = {
-          id: a.memberId,
-          name: a.memberName,
-          img: a.memberImg
-        };
-
-        World.remove(world, a);
-        World.remove(world, b);
-
-        const merged = createFace(newX, newY, member, nextLevel);
-        World.add(world, merged);
-
-        Body.setVelocity(merged, {
-          x: ((a.velocity.x || 0) + (b.velocity.x || 0)) * 0.15,
-          y: Math.min(((a.velocity.y || 0) + (b.velocity.y || 0)) * 0.15, 0.5)
-        });
-
-        score += LEVELS[nextLevel].score;
-        updateScore();
-
-        showMergeEffect(newX, newY, nextLevel, member.name);
-        playMergeSound(nextLevel);
-
-        if (nextLevel === LEVELS.length - 1) {
-          showMaxLevelEffect(newX, newY, member.name);
-          playMaxLevelSound();
-        }
-      }
-    });
-
-    includeCandidatesEl.addEventListener("change", () => {
-      const validIds = new Set(getPickerMembers().map(member => member.id));
-      selectedMembers = selectedMembers.filter(member => validIds.has(member.id));
-      renderMemberPicker();
-    });
-
-    randomSelectBtn.addEventListener("click", () => {
-      randomSelectMembers();
-      startNewGame();
-    });
-
-    newGameBtn.addEventListener("click", startNewGame);
-    restartBtn.addEventListener("click", restartCurrentRoster);
-    retryBtn.addEventListener("click", restartCurrentRoster);
-
-    (function gameLoop() {
-      checkGameOver();
-      requestAnimationFrame(gameLoop);
-    })();
-
-    async function init() {
-      addWalls();
-      addGameOverLine();
-      await preloadImages();
-      renderMemberPicker();
-      randomSelectMembers();
-      startNewGame();
-      loadingCoverEl.remove();
-    }
-
-    init();
-  </script>
+
+<div class="header">
+<img src="https://i.imgur.com/FynKTZX.png">
+</div>
+
+<img class="logo" src="https://i.imgur.com/b8qJMXj.jpeg">
+
+<h2>11人選んでください</h2>
+
+<div id="picker" class="member-picker"></div>
+
+<button id="startBtn">ゲームスタート</button>
+
+<script>
+
+const members = [
+
+/* ===== 練習生 ===== */
+
+{name:"アダム・ナガイ(ADAM)", img:"https://i.imgur.com/6QGzvRx.png"},
+{name:"中丸 晏寿(AJU)", img:"https://i.imgur.com/KiZCKos.png"},
+{name:"オム・スアンカワーテン(AOM)", img:"https://i.imgur.com/dDIFJSc.png"},
+{name:"アーチャー・ウイ(ARCHER)", img:"https://i.imgur.com/5iIerqN.png"},
+{name:"篠ヶ谷 歩夢(S.AYUMU)", img:"https://i.imgur.com/YJAdh8q.png"},
+{name:"小林 千悟(CHISATO)", img:"https://i.imgur.com/Iu0hNBO.png"},
+{name:"加藤 大樹(K.DAIKI)", img:"https://i.imgur.com/4fRk2EB.png"},
+{name:"カク・ドンミン(DONGMIN)", img:"https://i.imgur.com/xZSQqMh.png"},
+{name:"末川 瑛太(EITA)", img:"https://i.imgur.com/alEjKCP.png"},
+{name:"保里 瑛都(H.EITO)", img:"https://i.imgur.com/IAhs4ZA.png"},
+{name:"金田 栄都(K.EITO)", img:"https://i.imgur.com/tF7i1du.png"},
+{name:"櫻井 楓真(FUMA)", img:"https://i.imgur.com/WIWI8Sx.png"},
+{name:"小笠原ジュゼッペ慧(GIUSEPPE)", img:"https://i.imgur.com/2oKn3Ma.jpeg"},
+{name:"倉橋 吾槙(GOTEN)", img:"https://i.imgur.com/hlEjYqR.png"},
+{name:"堀尾 聖(HIJIRI)", img:"https://i.imgur.com/5Qb5dRJ.png"},
+{name:"瑞慶覧 太都(HIROTO)", img:"https://i.imgur.com/siOPGIr.png"},
+{name:"ユ・ヒョンスン(HYEONSEUNG)", img:"https://i.imgur.com/lY3lXLj.png"},
+{name:"岡田 彪吾(HYUGO)", img:"https://i.imgur.com/zalwc1W.png"},
+{name:"柳谷 伊冴(ISSA)", img:"https://i.imgur.com/gboCNWu.png"},
+{name:"ユン・ジェヨン(JAEYONG)", img:"https://i.imgur.com/1yCImxd.png"},
+{name:"ジュアン・ジェイ(JAY)", img:"https://i.imgur.com/41jKNZX.png"},
+{name:"丸尾 尋一郎(JINICHIRO)", img:"https://i.imgur.com/83azYjx.png"},
+{name:"河邊 晟(JOE)", img:"https://i.imgur.com/DqUS1o6.png"},
+{name:"シン・ジョンウク(JUNGUK)", img:"https://i.imgur.com/6cwEusK.jpeg"},
+{name:"金安 純正(JUNSEI)", img:"https://i.imgur.com/juPhMDR.png"},
+{name:"宇野 海夢(KAIMU)", img:"https://i.imgur.com/QVliSyD.png"},
+{name:"多比 奏聖(KANADE)", img:"https://i.imgur.com/rdSJ6QX.png"},
+{name:"横山 奏夢(KANAME)", img:"https://i.imgur.com/0brlEw8.png"},
+{name:"関 敬次郎(KEIJIRO)", img:"https://i.imgur.com/PHlkDUt.png"},
+{name:"髙松 敬祐(KEISUKE)", img:"https://i.imgur.com/bs4vfiF.png"},
+{name:"小野 慶人(KEITO)", img:"https://i.imgur.com/glfmRJE.png"},
+{name:"西山 賢人(KENTO)", img:"https://i.imgur.com/izEXoBY.png"},
+{name:"河合 晃誠(KOSEI)", img:"https://i.imgur.com/E30eGfr.png"},
+{name:"照井 康祐(KOSUKE)", img:"https://i.imgur.com/oDkwdFn.png"},
+{name:"浅香 孝太郎(KOTARO)", img:"https://i.imgur.com/7eJxl8o.png"},
+{name:"髙谷 京平(KYOHEI)", img:"https://i.imgur.com/CLU1cPO.png"},
+{name:"田中 蒔(MAKI)", img:"https://i.imgur.com/No6Nybr.png"},
+{name:"山根 武蔵(MUSASHI)", img:"https://i.imgur.com/Ou2XuDa.png"},
+{name:"土田 央修(OSUKE)", img:"https://i.imgur.com/Xs0WjIn.png"},
+{name:"堀野 蓮(H.REN)", img:"https://i.imgur.com/FQEx0JM.png"},
+{name:"小清水 蓮(KO.REN)", img:"https://i.imgur.com/S8Ij9OZ.png"},
+{name:"チェン・リッキー(RICKEY)", img:"https://i.imgur.com/DnnZVAT.png"},
+{name:"神元 理丘(RIKU)", img:"https://i.imgur.com/jwJ9CLd.png"},
+{name:"鳩場 陸人(H.RIKUTO)", img:"https://i.imgur.com/JdCFbCb.png"},
+{name:"今江 陸斗(I.RIKUTO)", img:"https://i.imgur.com/jiZZwJu.png"},
+{name:"甲斐 陸也(RIKUYA)", img:"https://i.imgur.com/lfiqB2f.png"},
+{name:"大瀬 凜和(RINTO)", img:"https://i.imgur.com/OT0UHId.png"},
+{name:"上野 琉偉(U.RUI)", img:"https://i.imgur.com/36XqMd9.png"},
+{name:"飯塚 亮賀(RYOGA)", img:"https://i.imgur.com/ExbaI6W.png"},
+{name:"石田 亮太(RYOTA)", img:"https://i.imgur.com/Ctw95jF.png"},
+{name:"岡戸 竜芽(RYUGA)", img:"https://i.imgur.com/gyPHKjY.png"},
+{name:"杉山 竜司(RYUJI)", img:"https://i.imgur.com/NeB980M.png"},
+{name:"香月 誠太(SEITA)", img:"https://i.imgur.com/def6F6u.png"},
+{name:"澤井 星名(SENA)", img:"https://i.imgur.com/Dpzzr9K.png"},
+{name:"オ・シンヘン(SHINHAENG)", img:"https://i.imgur.com/LH673dA.png"},
+{name:"岩城 慎二(SHINJI)", img:"https://i.imgur.com/h5rDvjC.png"},
+{name:"宮崎 真佑(SHINSUKE)", img:"https://i.imgur.com/xJuj9wW.png"},
+{name:"西﨑 柊(N.SHU)", img:"https://i.imgur.com/OZrHFUX.png"},
+{name:"山下 柊(Y.SHU)", img:"https://i.imgur.com/642IX8o.png"},
+{name:"パク・シヨン(SIYOUNG)", img:"https://i.imgur.com/wSokxJh.png"},
+{name:"佐藤 碧空(S.SORA)", img:"https://i.imgur.com/yF4WJJB.png"},
+{name:"東野 蒼汰(SOTA)", img:"https://i.imgur.com/GvLpwfo.png"},
+{name:"藤牧 大雅(F.TAIGA)", img:"https://i.imgur.com/4G2hBRy.png"},
+{name:"松田 太雅(M.TAIGA)", img:"https://i.imgur.com/tICsJFs.png"},
+{name:"金倉 拓未(TAKUMI)", img:"https://i.imgur.com/O3gluG7.png"},
+{name:"熊部 拓斗(K.TAKUTO)", img:"https://i.imgur.com/NaQURc7.png"},
+{name:"宮里 拓利(M.TAKUTO)", img:"https://i.imgur.com/5B8NMyF.png"},
+{name:"南平 達矢(TATSUYA)", img:"https://i.imgur.com/jHnmGTs.png"},
+{name:"森井 輝(TERU)", img:"https://i.imgur.com/SAo1Rs4.png"},
+{name:"北林 天虎(TETORA)", img:"https://i.imgur.com/2gCwqHF.png"},
+{name:"藤芳 辰弥(TOKIYA)", img:"https://i.imgur.com/9prpjvI.png"},
+{name:"増田 倫希(TOMOKI)", img:"https://i.imgur.com/4JSh3HD.png"},
+{name:"濱田 永遠(TOWA)", img:"https://i.imgur.com/Yap9beM.png"},
+{name:"アギナルド・トリスタン・ジェームス(TRISTAN)", img:"https://i.imgur.com/wyeHbRo.png"},
+{name:"リー・ウェイゼ(WEIZE)", img:"https://i.imgur.com/XNeHaaX.png"},
+{name:"ヨハン・エマニュエル(YOHAN)", img:"https://i.imgur.com/RTVMTCA.png"},
+{name:"矢田 佳暉(YOSHIKI)", img:"https://i.imgur.com/MZbSVDq.png"},
+{name:"後藤 結(YUKI)", img:"https://i.imgur.com/GZTdD57.png"},
+{name:"岡田 侑磨(YUMA)", img:"https://i.imgur.com/3hhNQLj.png"},
+{name:"安部 結蘭(YURA)", img:"https://i.imgur.com/pbC301p.png"},
+{name:"大林 悠成(O.YUSEI)", img:"https://i.imgur.com/tp1fKqI.png"},
+{name:"佐野 由征(S.YUSEI)", img:"https://i.imgur.com/fDql5Tu.png"},
+{name:"板倉 悠太(YUTA)", img:"https://i.imgur.com/j6IlxeD.png"},
+
+/* ===== 練習生候補生 ===== */
+
+{name:"本荘 晃(AKIRA)", img:"https://i.imgur.com/p976l8j.jpeg"},
+{name:"児島 歩夢(K.AYUMU)", img:"https://i.imgur.com/1jtcgbB.png"},
+{name:"市川 大輝(I.DAIKI)", img:"https://i.imgur.com/72FqxLz.png"},
+{name:"川村 珀斗(HAKUTO)", img:"https://i.imgur.com/ua7RMig.png"},
+{name:"村松 遼空(HARUKU)", img:"https://i.imgur.com/3JEtKs6.png"},
+{name:"髙城 暖人(HARUTO)", img:"https://i.imgur.com/qdXIOpr.png"},
+{name:"平島 輝(H.HIKARU)", img:"https://i.imgur.com/P5gzRZh.png"},
+{name:"櫻井 輝(S.HIKARU)", img:"https://i.imgur.com/h2fBMUv.png"},
+{name:"佐川 太一(HIROKAZU)", img:"https://i.imgur.com/h2fBMUv.png"},
+{name:"イ・ヒョンジェ(HYUNJAE)", img:"https://i.imgur.com/wOhvKDu.png"},
+{name:"阿部 樹(ITSUKI)", img:"https://i.imgur.com/TaTAc2L.png"},
+{name:"イ・ジュンフン(JOONGHOON)", img:"https://i.imgur.com/4utwyOJ.png"},
+{name:"リュウ・カイチ(KAICHI)", img:"https://i.imgur.com/FGbdGcI.png"},
+{name:"黒﨑 貫汰(KANTA)", img:"https://i.imgur.com/j75eoO7.png"},
+{name:"黄 敬眞(KEISHIN)", img:"https://i.imgur.com/oE7w4D7.png"},
+{name:"釼持 吉成(KINARI)", img:"https://i.imgur.com/GWAtiwS.png"},
+{name:"小澤 昂心(KOSHIN)", img:"https://i.imgur.com/pn0zB7F.png"},
+{name:"青沼 昂史朗(KOSHIRO)", img:"https://i.imgur.com/MDhTcs8.png"},
+{name:"小林 廣(KOU)", img:"https://i.imgur.com/RAoUIhC.png"},
+{name:"森 明育(MEI)", img:"https://i.imgur.com/eR0BZVs.png"},
+{name:"マイケル ミン・マカフリ(MICHAEL MINH)", img:"https://i.imgur.com/6S8BWAA.png"},
+{name:"パトリック ファン・レ(PATRICK)", img:"https://i.imgur.com/YRvJQYc.png"},
+{name:"笠原 蓮(KA.REN)", img:"https://i.imgur.com/ZLgNm7o.png"},
+{name:"江口 蓮翔(E.RENTO)", img:"https://i.imgur.com/ewXd8NH.png"},
+{name:"小林 蓮翔(K.RENTO)", img:"https://i.imgur.com/t2NbxIU.png"},
+{name:"落合 利温(RIO)", img:"https://i.imgur.com/HdTZUdu.png"},
+{name:"水上 琉偉(M.RUI)", img:"https://i.imgur.com/DiUA9bw.png"},
+{name:"小谷内 瑠嘉(RUKA)", img:"https://i.imgur.com/V2XnsQ6.png"},
+{name:"齊藤 惺(SEI)", img:"https://i.imgur.com/9HIRvNd.png"},
+{name:"藤本 真成(SHINSEI)", img:"https://i.imgur.com/qTooOuS.png"},
+{name:"飯田 柊馬(SHUMA)", img:"https://i.imgur.com/awBBn6j.png"},
+{name:"松田 颯吾(SOGO)", img:"https://i.imgur.com/Y1MQK3k.png"},
+{name:"髙橋 空良(T.SORA)", img:"https://i.imgur.com/czFpgjm.png"},
+{name:"西田 颯梓(SOSHI)", img:"https://i.imgur.com/51RMIB6.png"},
+{name:"岡本 拓士(O.TAKUTO)", img:"https://i.imgur.com/TGP6sbe.png"},
+{name:"大澤 佑冴(YUGO)", img:"https://i.imgur.com/5Gg1E1M.png"},
+{name:"藤井 雄聖(F.YUSEI)", img:"https://i.imgur.com/prsNOtG.png"},
+{name:"岡本 佑斗(YUTO)", img:"https://i.imgur.com/lzv8Vu5.png"}
+
+];
+
+const picker=document.getElementById("picker")
+
+let selected=[]
+
+members.forEach(m=>{
+
+const div=document.createElement("div")
+div.className="member"
+
+div.innerHTML=`<img src="${m.img}"><br>${m.name}`
+
+div.onclick=()=>{
+
+if(selected.includes(m)){
+selected=selected.filter(x=>x!=m)
+div.classList.remove("selected")
+}else{
+
+if(selected.length>=11){
+alert("11人までです")
+return
+}
+
+selected.push(m)
+div.classList.add("selected")
+
+}
+
+}
+
+picker.appendChild(div)
+
+})
+
+document.getElementById("startBtn").onclick=()=>{
+
+if(selected.length!==11){
+alert("11人選んでください")
+return
+}
+
+localStorage.setItem("members",JSON.stringify(selected))
+
+location.href="gamestart.html"
+
+}
+
+</script>
+
 </body>
 </html>
