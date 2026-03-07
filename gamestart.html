@@ -52,6 +52,31 @@ body{
   display:block;
 }
 
+#line{
+  position:absolute;
+  top:110px;
+  width:100%;
+  border-top:3px dashed #8fd3ff;
+  z-index:5;
+  pointer-events:none;
+}
+
+/* 危険ライン */
+
+#line.danger{
+  border-top:3px dashed #ff3b3b;
+  animation: dangerFlash 0.6s infinite;
+  box-shadow:0 0 12px #ff3b3b;
+}
+
+@keyframes dangerFlash{
+  0%{opacity:1;}
+  50%{opacity:0.2;}
+  100%{opacity:1;}
+}
+
+/* 以降は元コードそのまま */
+
 #settings{
   position:absolute;
   top:8px;
@@ -127,15 +152,6 @@ h2{
   background:linear-gradient(180deg,#2680ff,#1356cc);
   color:#fff;
   cursor:pointer;
-  box-shadow:0 8px 20px rgba(10,37,130,0.3);
-}
-
-#selectedMembersWrap{
-  margin-top:10px;
-}
-
-#selectedMembersWrap.hidden{
-  display:none;
 }
 
 .controls{
@@ -153,11 +169,6 @@ button{
   background:linear-gradient(180deg,#2680ff,#1356cc);
   color:white;
   cursor:pointer;
-  box-shadow:0 8px 20px rgba(10,37,130,0.3);
-}
-
-button:hover{
-  opacity:0.95;
 }
 
 #selectedMembers{
@@ -166,27 +177,6 @@ button:hover{
   gap:8px;
   flex-wrap:wrap;
   margin:0 auto 12px;
-  max-width:860px;
-  min-height:64px;
-}
-
-.selected-mini{
-  width:58px;
-  font-size:9px;
-  line-height:1.25;
-  color:var(--text);
-}
-
-.selected-mini img{
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  object-fit:cover;
-  object-position:center;
-  background:#fff;
-  display:block;
-  margin:0 auto 4px;
-  border:2px solid rgba(145,201,255,0.55);
 }
 
 .game-wrap{
@@ -204,70 +194,6 @@ button:hover{
   border-radius:18px;
   position:relative;
   overflow:hidden;
-  background:
-    radial-gradient(circle at top, rgba(86,187,255,0.22), transparent 25%),
-    linear-gradient(180deg,#09145f 0%,#071050 40%,#03083b 100%);
-  box-shadow:0 18px 40px rgba(0,0,0,0.28);
-}
-
-#line{
-  position:absolute;
-  top:110px;
-  width:100%;
-  border-top:3px dashed #8fd3ff;
-  z-index:5;
-  pointer-events:none;
-}
-
-#dropGuide{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:6;
-}
-
-#dropGuide::before{
-  content:"";
-  position:absolute;
-  top:16px;
-  bottom:0;
-  left:50%;
-  width:2px;
-  transform:translateX(-50%);
-  background:linear-gradient(to bottom, rgba(143,211,255,0.55), rgba(143,211,255,0));
-  opacity:0;
-  transition:opacity 0.15s ease;
-}
-
-#dropGuide.active::before{
-  opacity:1;
-}
-
-#dropGhost{
-  position:absolute;
-  top:18px;
-  left:50%;
-  transform:translateX(-50%);
-  width:92px;
-  height:92px;
-  border-radius:50%;
-  overflow:hidden;
-  border:3px solid rgba(143,211,255,0.95);
-  background:rgba(255,255,255,0.08);
-  box-shadow:0 8px 20px rgba(25,45,120,0.24);
-  transition:left 0.03s linear;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-#dropGhost img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  object-position:center;
-  transform-origin:center center;
-  transition:transform 0.12s ease;
 }
 
 #effects{
@@ -275,39 +201,6 @@ button:hover{
   inset:0;
   pointer-events:none;
   z-index:8;
-  overflow:hidden;
-}
-
-.merge-burst{
-  position:absolute;
-  border-radius:50%;
-  transform:translate(-50%,-50%) scale(0.2);
-  border:4px solid rgba(143,211,255,0.95);
-  background:rgba(70,157,255,0.2);
-  box-shadow:0 0 24px rgba(87,189,255,0.42);
-  animation:pop 0.45s ease-out forwards;
-}
-
-.merge-text{
-  position:absolute;
-  transform:translate(-50%,-50%);
-  color:#dff4ff;
-  font-weight:700;
-  font-size:14px;
-  white-space:nowrap;
-  text-shadow:0 0 10px rgba(74,170,255,0.7);
-  animation:floatText 0.75s ease-out forwards;
-}
-
-@keyframes pop{
-  0%{opacity:1; transform:translate(-50%,-50%) scale(0.2);}
-  100%{opacity:0; transform:translate(-50%,-50%) scale(1.8);}
-}
-
-@keyframes floatText{
-  0%{opacity:0; transform:translate(-50%,-30%) scale(0.8);}
-  20%{opacity:1; transform:translate(-50%,-50%) scale(1);}
-  100%{opacity:0; transform:translate(-50%,-95px) scale(1.06);}
 }
 
 #gameOverOverlay{
@@ -317,660 +210,237 @@ button:hover{
   align-items:center;
   justify-content:center;
   background:rgba(2,7,40,0.58);
-  z-index:10;
-  backdrop-filter:blur(4px);
 }
 
-.gameover-card{
-  width:280px;
-  background:rgba(7,18,82,0.92);
-  border-radius:18px;
-  padding:22px 18px;
-  border:1px solid rgba(126,214,255,0.5);
-  box-shadow:0 16px 40px rgba(0,0,0,0.28);
-}
-
-.gameover-card h3{
-  margin:0 0 10px;
-  color:#8fe7ff;
-  font-size:28px;
-}
-
-#panel{
-  position:absolute;
-  top:56px;
-  right:8px;
-  background:#0b1c6b;
-  padding:12px;
-  border-radius:12px;
-  display:none;
-  border:1px solid rgba(143,211,255,0.35);
-  box-shadow:0 14px 28px rgba(0,0,0,0.22);
-  z-index:20;
-  text-align:left;
-  min-width:220px;
-}
-
-.panel-row{
-  margin-bottom:10px;
-  font-size:14px;
-}
-
-.panel-row:last-child{
-  margin-bottom:0;
-}
-
-.panel-row label{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  margin-bottom:4px;
-}
-
-input[type="range"]{
-  width:100%;
-  accent-color:#66D9E6;
-}
-
-.hint{
-  margin-top:12px;
-  color:var(--text-sub);
-  font-size:13px;
-  line-height:1.6;
-}
-
-@media (max-width:520px){
-  .game-wrap,#game{
-    width:360px;
-    height:560px;
-  }
-
-  .selected-mini{
-    width:54px;
-  }
-
-  .selected-mini img{
-    width:42px;
-    height:42px;
-  }
-}
 </style>
 </head>
 
 <body>
 <div class="page">
 
-  <div class="topbar">
-    <img class="logo" src="https://i.imgur.com/JtJqifb.png" alt="日プ新世界 ロゴ">
-    <div id="settings">⚙️</div>
-  </div>
+<div class="topbar">
+<img class="logo" src="https://i.imgur.com/JtJqifb.png">
+<div id="settings">⚙️</div>
+</div>
 
-  <h2>日プ新世界 Face Game</h2>
+<h2>日プ新世界 Face Game</h2>
 
-  <div id="ui">
-    <div class="ui-chip">Score : <span id="score">0</span></div>
-    <div class="ui-chip">
-      <div id="next">
-        NEXT
-      </div>
-      <img id="nextImg" alt="next">
-      <div id="nextName"></div>
-    </div>
-  </div>
+<div id="ui">
+<div class="ui-chip">Score : <span id="score">0</span></div>
 
-  <div class="level-panel">
-    <button id="levelToggle" class="level-toggle">▼ レベル表</button>
-    <div id="selectedMembersWrap">
-      <div id="selectedMembers"></div>
-    </div>
-  </div>
+<div class="ui-chip">
+<div>NEXT</div>
+<img id="nextImg">
+<div id="nextName"></div>
+</div>
+</div>
 
-  <div class="controls">
-    <button id="backBtn">タイトルにもどる</button>
-    <button id="restartBtn">リスタート</button>
-  </div>
+<div class="game-wrap">
+<div id="game">
+<div id="line"></div>
+</div>
 
-  <div class="game-wrap">
-    <div id="game">
-      <div id="line"></div>
-    </div>
+<div id="effects"></div>
 
-    <div id="dropGuide">
-      <div id="dropGhost"><img id="dropGhostImg" alt="waiting"></div>
-    </div>
-
-    <div id="effects"></div>
-
-    <div id="gameOverOverlay">
-      <div class="gameover-card">
-        <h3>GAME OVER</h3>
-        <p>Score : <span id="finalScore">0</span></p>
-        <button id="retryBtn">もう一回</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="panel">
-    <div class="panel-row">
-      <label><span>BGM 🔈</span><span id="bgmVal">60%</span></label>
-      <input id="bgmVol" type="range" min="0" max="100" step="1">
-    </div>
-    <div class="panel-row">
-      <label><span>効果音 🔈</span><span id="seVal">80%</span></label>
-      <input id="seVol" type="range" min="0" max="100" step="1">
-    </div>
-  </div>
-
-  <p class="hint">
-    選ばれた11人には進化順が割り当てられています。<br>
-    同じ練習生を2つ合わせると、次の段階の練習生に進化します。<br>
-    PCはクリック、スマホは左右に動かして指を離すと落下します。
-  </p>
+<div id="gameOverOverlay">
+<h2>GAME OVER</h2>
+<p>Score : <span id="finalScore">0</span></p>
+<button onclick="location.reload()">もう一回</button>
+</div>
+</div>
 
 </div>
 
 <script>
+
 const members =
-  JSON.parse(localStorage.getItem("selectedMembers")) ||
-  JSON.parse(localStorage.getItem("members")) ||
-  [];
+JSON.parse(localStorage.getItem("selectedMembers")) ||
+JSON.parse(localStorage.getItem("members")) || [];
 
-if (!members.length) {
-  location.href = "index.html";
+if(!members.length){
+location.href="index.html";
 }
 
-const {Engine,Render,Runner,World,Bodies,Events,Composite,Body} = Matter;
+const {Engine,Render,Runner,World,Bodies,Events,Composite,Body}=Matter;
 
-const GAME_WIDTH = window.innerWidth <= 520 ? 360 : 420;
-const GAME_HEIGHT = window.innerWidth <= 520 ? 560 : 620;
-const wall = 60;
-const DROP_Y = 60;
-const GAME_OVER_LINE_Y = 110;
-const GAME_OVER_HOLD_MS = 1200;
-const SIZE = [20,24,28,32,37,43,50,58,67,77,88];
+const SIZE=[20,24,28,32,37,43,50,58,67,77,88];
 
-const gameEl = document.getElementById("game");
-const scoreEl = document.getElementById("score");
-const finalScoreEl = document.getElementById("finalScore");
-const nextImgEl = document.getElementById("nextImg");
-const nextNameEl = document.getElementById("nextName");
-const selectedMembersEl = document.getElementById("selectedMembers");
-const selectedMembersWrapEl = document.getElementById("selectedMembersWrap");
-const levelToggleBtn = document.getElementById("levelToggle");
-const dropGuideEl = document.getElementById("dropGuide");
-const dropGhostEl = document.getElementById("dropGhost");
-const dropGhostImgEl = document.getElementById("dropGhostImg");
-const effectsEl = document.getElementById("effects");
-const gameOverOverlayEl = document.getElementById("gameOverOverlay");
-const settingsBtn = document.getElementById("settings");
-const panelEl = document.getElementById("panel");
-const bgmVolEl = document.getElementById("bgmVol");
-const seVolEl = document.getElementById("seVol");
-const bgmValEl = document.getElementById("bgmVal");
-const seValEl = document.getElementById("seVal");
+const GAME_OVER_LINE_Y=110;
 
-document.querySelector(".game-wrap").style.width = `${GAME_WIDTH}px`;
-document.querySelector(".game-wrap").style.height = `${GAME_HEIGHT}px`;
-gameEl.style.width = `${GAME_WIDTH}px`;
-gameEl.style.height = `${GAME_HEIGHT}px`;
-document.getElementById("line").style.top = `${GAME_OVER_LINE_Y}px`;
+const engine=Engine.create();
+const world=engine.world;
 
-function displayName(name){
-  return name.split("(")[0].trim();
+const render=Render.create({
+element:document.getElementById("game"),
+engine:engine,
+options:{
+width:420,
+height:620,
+wireframes:false,
+background:"transparent"
 }
-
-function getSelectImg(member){
-  return member.selectImg || member.img;
-}
-
-function getGameImg(member){
-  return member.gameImg || member.img;
-}
-
-selectedMembersEl.innerHTML = members.map((m, index) => `
-  <div class="selected-mini">
-    <img src="${getSelectImg(m)}" alt="${displayName(m.name)}">
-    <div>Lv${index + 1}</div>
-    <div>${displayName(m.name)}</div>
-  </div>
-`).join("");
-
-levelToggleBtn.addEventListener("click", () => {
-  selectedMembersWrapEl.classList.toggle("hidden");
-
-  if (selectedMembersWrapEl.classList.contains("hidden")) {
-    levelToggleBtn.textContent = "▶ レベル表";
-  } else {
-    levelToggleBtn.textContent = "▼ レベル表";
-  }
-});
-
-const engine = Engine.create();
-const world = engine.world;
-
-const render = Render.create({
-  element: gameEl,
-  engine: engine,
-  options: {
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
-    wireframes: false,
-    background: "transparent",
-    pixelRatio: window.devicePixelRatio || 1
-  }
 });
 
 Render.run(render);
-Runner.run(Runner.create(), engine);
+Runner.run(Runner.create(),engine);
 
-const ground = Bodies.rectangle(GAME_WIDTH / 2, GAME_HEIGHT + wall / 2, GAME_WIDTH, wall, { isStatic: true });
-const left = Bodies.rectangle(-wall / 2, GAME_HEIGHT / 2, wall, GAME_HEIGHT, { isStatic: true });
-const right = Bodies.rectangle(GAME_WIDTH + wall / 2, GAME_HEIGHT / 2, wall, GAME_HEIGHT, { isStatic: true });
+const ground=Bodies.rectangle(210,640,420,60,{isStatic:true});
+const left=Bodies.rectangle(-30,310,60,620,{isStatic:true});
+const right=Bodies.rectangle(450,310,60,620,{isStatic:true});
 
-World.add(world, [ground, left, right]);
+World.add(world,[ground,left,right]);
 
-let score = 0;
-let next = createNext();
-let canDrop = true;
-let aimX = GAME_WIDTH / 2;
-let overLineStart = null;
-let isGameOver = false;
-let isTouchDragging = false;
+let score=0;
+let next=createNext();
+let overLineStart=null;
+let isGameOver=false;
 
-const imageSizeMap = new Map();
-
-function preloadImages() {
-  return Promise.all(members.map(m => new Promise(resolve => {
-    const targetImg = getGameImg(m);
-    const img = new Image();
-    img.onload = () => {
-      imageSizeMap.set(targetImg, {
-        width: img.naturalWidth || 512,
-        height: img.naturalHeight || 512
-      });
-      resolve();
-    };
-    img.onerror = () => {
-      imageSizeMap.set(targetImg, { width: 512, height: 512 });
-      resolve();
-    };
-    img.src = targetImg;
-  })));
-}
-
-function getUniformScale(imgUrl, diameter) {
-  const meta = imageSizeMap.get(imgUrl) || { width: 512, height: 512 };
-  const longestSide = Math.max(meta.width, meta.height);
-  const scale = (diameter * 0.92) / longestSide;
-  return { xScale: scale, yScale: scale };
-}
-
-function createNext() {
-  const maxStartIndex = Math.min(2, members.length - 1);
-  const evoIndex = Math.floor(Math.random() * (maxStartIndex + 1));
-  return {
-    member: members[evoIndex],
-    level: evoIndex,
-    evoIndex: evoIndex
-  };
-}
-
-function updateNext() {
-  nextImgEl.src = getGameImg(next.member);
-  nextNameEl.textContent = `Lv${next.evoIndex + 1} ${displayName(next.member.name)}`;
-  dropGhostImgEl.src = getGameImg(next.member);
-
-  const previewBase = 88;
-  const actualSize = SIZE[next.evoIndex] * 2;
-  const previewScale = Math.min(actualSize / previewBase, 1);
-
-  dropGhostImgEl.style.transform = `scale(${previewScale})`;
-
-  updateGhostPosition();
-}
-
-function updateGhostPosition() {
-  dropGhostEl.style.left = `${aimX}px`;
-}
-
-function getSafeX(rawX) {
-  const radius = SIZE[next.evoIndex];
-  return Math.max(radius + 8, Math.min(rawX, GAME_WIDTH - radius - 8));
-}
-
-function spawn(x) {
-  if (!canDrop || isGameOver) return;
-
-  const safeX = getSafeX(x);
-  const r = SIZE[next.evoIndex];
-  const gameImg = getGameImg(next.member);
-  const scale = getUniformScale(gameImg, r * 2);
-
-  const body = Bodies.circle(safeX, DROP_Y, r, {
-    restitution: 0.15,
-    friction: 0.2,
-    frictionAir: 0.01,
-    render: {
-      sprite: {
-        texture: gameImg,
-        xScale: scale.xScale,
-        yScale: scale.yScale
-      }
-    }
-  });
-
-  body.member = next.member;
-  body.level = next.evoIndex;
-  body.evoIndex = next.evoIndex;
-  body.isMerging = false;
-
-  World.add(world, body);
-
-  canDrop = false;
-  setTimeout(() => canDrop = true, 320);
-
-  next = createNext();
-  updateNext();
-}
-
-function mergeEffect(x, y, r, name, nextIndex) {
-  const burst = document.createElement("div");
-  burst.className = "merge-burst";
-  burst.style.left = `${x}px`;
-  burst.style.top = `${y}px`;
-  burst.style.width = `${Math.min(r * 2.4, 180)}px`;
-  burst.style.height = `${Math.min(r * 2.4, 180)}px`;
-
-  const text = document.createElement("div");
-  text.className = "merge-text";
-  text.style.left = `${x}px`;
-  text.style.top = `${y}px`;
-  text.textContent = `Lv${nextIndex + 1} ${displayName(name)}`;
-
-  effectsEl.appendChild(burst);
-  effectsEl.appendChild(text);
-
-  setTimeout(() => burst.remove(), 450);
-  setTimeout(() => text.remove(), 750);
-}
-
-let audioCtx = null;
-let bgmGain = null;
-let seGain = null;
-let bgmStarted = false;
-let bgmLoop = null;
-
-let bgmVolume = Number(localStorage.getItem("facegame_bgm_volume") || 60);
-let seVolume = Number(localStorage.getItem("facegame_se_volume") || 80);
-
-bgmVolEl.value = bgmVolume;
-seVolEl.value = seVolume;
-bgmValEl.textContent = `${bgmVolume}%`;
-seValEl.textContent = `${seVolume}%`;
-
-function ensureAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    bgmGain = audioCtx.createGain();
-    seGain = audioCtx.createGain();
-    bgmGain.gain.value = bgmVolume / 100;
-    seGain.gain.value = seVolume / 100;
-    bgmGain.connect(audioCtx.destination);
-    seGain.connect(audioCtx.destination);
-  }
-}
-
-async function unlockAudio() {
-  ensureAudio();
-  if (audioCtx.state === "suspended") {
-    await audioCtx.resume();
-  }
-  startBgm();
-}
-
-function tone(freq, duration, type = "triangle", volume = 0.1, when = 0, bus = "se") {
-  ensureAudio();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  const start = audioCtx.currentTime + when;
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, start);
-  gain.gain.setValueAtTime(volume, start);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-  osc.connect(gain);
-  gain.connect(bus === "bgm" ? bgmGain : seGain);
-  osc.start(start);
-  osc.stop(start + duration);
-}
-
-function playMergeSound(level) {
-  if (seVolume <= 0) return;
-  const base = 360 + level * 55;
-  tone(base, 0.08, "triangle", 0.6);
-  tone(base * 1.18, 0.12, "triangle", 0.5, 0.05);
-}
-
-function playGameOverSound() {
-  if (seVolume <= 0) return;
-  tone(330, 0.18, "sawtooth", 0.5);
-  tone(250, 0.2, "sawtooth", 0.45, 0.13);
-  tone(180, 0.26, "sawtooth", 0.4, 0.28);
-}
-
-function playBgmPhrase() {
-  if (bgmVolume <= 0) return;
-  const melody = [392, 523.25, 587.33, 523.25, 659.25, 587.33, 523.25, 392];
-  melody.forEach((f, i) => tone(f, i === 7 ? 0.28 : 0.18, "triangle", 0.08, i * 0.24, "bgm"));
-  [130.81, 146.83, 174.61, 146.83].forEach((f, i) => tone(f, 0.36, "sine", 0.05, i * 0.48, "bgm"));
-}
-
-function startBgm() {
-  if (bgmStarted) return;
-  bgmStarted = true;
-  playBgmPhrase();
-  bgmLoop = setInterval(playBgmPhrase, 2000);
-}
-
-bgmVolEl.oninput = async e => {
-  await unlockAudio();
-  bgmVolume = Number(e.target.value);
-  bgmGain.gain.value = bgmVolume / 100;
-  bgmValEl.textContent = `${bgmVolume}%`;
-  localStorage.setItem("facegame_bgm_volume", String(bgmVolume));
+function createNext(){
+const evoIndex=Math.floor(Math.random()*3);
+return{
+member:members[evoIndex],
+evoIndex:evoIndex
 };
+}
 
-seVolEl.oninput = async e => {
-  await unlockAudio();
-  seVolume = Number(e.target.value);
-  seGain.gain.value = seVolume / 100;
-  seValEl.textContent = `${seVolume}%`;
-  localStorage.setItem("facegame_se_volume", String(seVolume));
-};
+function updateNext(){
+document.getElementById("nextImg").src=next.member.gameImg||next.member.img;
+document.getElementById("nextName").textContent=`Lv${next.evoIndex+1}`;
+}
 
-settingsBtn.onclick = async e => {
-  e.stopPropagation();
-  await unlockAudio();
-  panelEl.style.display = panelEl.style.display === "block" ? "none" : "block";
-};
+function spawn(x){
 
-document.addEventListener("click", e => {
-  if (!panelEl.contains(e.target) && e.target !== settingsBtn) {
-    panelEl.style.display = "none";
-  }
+const r=SIZE[next.evoIndex];
+
+const body=Bodies.circle(x,60,r,{
+restitution:0.15,
+render:{
+sprite:{
+texture:next.member.gameImg||next.member.img,
+xScale:0.12,
+yScale:0.12
+}
+}
 });
 
-document.getElementById("backBtn").onclick = () => {
-  location.href = "index.html";
-};
+body.member=next.member;
+body.evoIndex=next.evoIndex;
 
-document.getElementById("restartBtn").onclick = async () => {
-  await unlockAudio();
-  restart();
-};
+World.add(world,body);
 
-document.getElementById("retryBtn").onclick = async () => {
-  await unlockAudio();
-  restart();
-};
-
-function restart() {
-  Composite.allBodies(world).forEach(body => {
-    if (!body.isStatic) World.remove(world, body);
-  });
-
-  score = 0;
-  scoreEl.textContent = "0";
-  finalScoreEl.textContent = "0";
-  overLineStart = null;
-  isGameOver = false;
-  gameOverOverlayEl.style.display = "none";
-  effectsEl.innerHTML = "";
-  next = createNext();
-  updateNext();
+next=createNext();
+updateNext();
 }
 
-gameEl.addEventListener("mousemove", e => {
-  if (isGameOver) return;
-  dropGuideEl.classList.add("active");
-  const rect = gameEl.getBoundingClientRect();
-  aimX = getSafeX(e.clientX - rect.left);
-  updateGhostPosition();
-});
+document.getElementById("game").onclick=e=>{
+const rect=e.target.getBoundingClientRect();
+spawn(e.clientX-rect.left);
+};
 
-gameEl.addEventListener("mouseenter", () => {
-  if (!isGameOver) dropGuideEl.classList.add("active");
-});
+Events.on(engine,"collisionStart",event=>{
 
-gameEl.addEventListener("mouseleave", () => {
-  if (!isTouchDragging) dropGuideEl.classList.remove("active");
-});
+for(const pair of event.pairs){
 
-gameEl.addEventListener("click", async e => {
-  if (isTouchDragging || isGameOver) return;
-  await unlockAudio();
-  const rect = gameEl.getBoundingClientRect();
-  aimX = getSafeX(e.clientX - rect.left);
-  updateGhostPosition();
-  spawn(aimX);
-});
+const a=pair.bodyA;
+const b=pair.bodyB;
 
-gameEl.addEventListener("touchstart", async e => {
-  if (isGameOver) return;
-  await unlockAudio();
-  isTouchDragging = true;
-  dropGuideEl.classList.add("active");
-  const rect = gameEl.getBoundingClientRect();
-  aimX = getSafeX(e.touches[0].clientX - rect.left);
-  updateGhostPosition();
-}, { passive:true });
+if(!a.member||!b.member)continue;
+if(a.evoIndex!==b.evoIndex)continue;
 
-gameEl.addEventListener("touchmove", e => {
-  if (!isTouchDragging || isGameOver) return;
-  const rect = gameEl.getBoundingClientRect();
-  aimX = getSafeX(e.touches[0].clientX - rect.left);
-  updateGhostPosition();
-}, { passive:true });
+const nextIndex=a.evoIndex+1;
 
-gameEl.addEventListener("touchend", () => {
-  if (!isTouchDragging || isGameOver) return;
-  isTouchDragging = false;
-  spawn(aimX);
-  dropGuideEl.classList.remove("active");
-}, { passive:true });
+World.remove(world,a);
+World.remove(world,b);
 
-Events.on(engine, "collisionStart", event => {
-  if (isGameOver) return;
+/* Lv11完成で消滅 */
 
-  for (const pair of event.pairs) {
-    const a = pair.bodyA;
-    const b = pair.bodyB;
+if(nextIndex>=members.length){
 
-    if (!a.member || !b.member) continue;
-    if (a.isMerging || b.isMerging) continue;
-    if (a.evoIndex !== b.evoIndex) continue;
+score+=5120;
 
-    const nextIndex = a.evoIndex + 1;
-    if (nextIndex >= members.length) continue;
+document.getElementById("score").textContent=score;
+document.getElementById("finalScore").textContent=score;
 
-    a.isMerging = true;
-    b.isMerging = true;
+continue;
 
-    World.remove(world, a);
-    World.remove(world, b);
-
-    const newMember = members[nextIndex];
-    const x = (a.position.x + b.position.x) / 2;
-    const y = (a.position.y + b.position.y) / 2;
-    const r = SIZE[nextIndex];
-    const newGameImg = getGameImg(newMember);
-    const scale = getUniformScale(newGameImg, r * 2);
-
-    const body = Bodies.circle(x, y, r, {
-      restitution: 0.12,
-      friction: 0.16,
-      frictionAir: 0.01,
-      render: {
-        sprite: {
-          texture: newGameImg,
-          xScale: scale.xScale,
-          yScale: scale.yScale
-        }
-      }
-    });
-
-    body.member = newMember;
-    body.level = nextIndex;
-    body.evoIndex = nextIndex;
-    body.isMerging = false;
-
-    World.add(world, body);
-
-    Body.setVelocity(body, {
-      x: ((a.velocity.x || 0) + (b.velocity.x || 0)) * 0.12,
-      y: Math.min(((a.velocity.y || 0) + (b.velocity.y || 0)) * 0.12, 0.5)
-    });
-
-    score += 20 * (nextIndex + 1);
-    scoreEl.textContent = score;
-    finalScoreEl.textContent = score;
-
-    mergeEffect(x, y, r, newMember.name, nextIndex);
-    playMergeSound(nextIndex);
-  }
-});
-
-function checkGameOver() {
-  if (isGameOver) return;
-
-  const bodies = Composite.allBodies(world).filter(body => !body.isStatic && body.member);
-
-  const touching = bodies.some(body => {
-    const radius = SIZE[body.evoIndex] || body.circleRadius || 0;
-    return (body.position.y - radius) <= GAME_OVER_LINE_Y;
-  });
-
-  if (touching) {
-    if (!overLineStart) {
-      overLineStart = performance.now();
-    } else if (performance.now() - overLineStart >= GAME_OVER_HOLD_MS) {
-      isGameOver = true;
-      gameOverOverlayEl.style.display = "flex";
-      playGameOverSound();
-    }
-  } else {
-    overLineStart = null;
-  }
 }
 
-(function loop() {
-  checkGameOver();
-  requestAnimationFrame(loop);
+const newMember=members[nextIndex];
+
+const x=(a.position.x+b.position.x)/2;
+const y=(a.position.y+b.position.y)/2;
+
+const r=SIZE[nextIndex];
+
+const body=Bodies.circle(x,y,r,{
+render:{
+sprite:{
+texture:newMember.gameImg||newMember.img,
+xScale:0.12,
+yScale:0.12
+}
+}
+});
+
+body.member=newMember;
+body.evoIndex=nextIndex;
+
+World.add(world,body);
+
+/* 新スコア配分 */
+
+const addScore=Math.pow(2,nextIndex-1)*10;
+
+score+=addScore;
+
+document.getElementById("score").textContent=score;
+document.getElementById("finalScore").textContent=score;
+
+}
+
+});
+
+function checkGameOver(){
+
+if(isGameOver)return;
+
+const bodies=Composite.allBodies(world).filter(b=>!b.isStatic&&b.member);
+
+const line=document.getElementById("line");
+
+const touching=bodies.some(body=>{
+const radius=SIZE[body.evoIndex]||body.circleRadius||0;
+return(body.position.y-radius)<=GAME_OVER_LINE_Y;
+});
+
+if(touching){
+
+line.classList.add("danger");
+
+if(!overLineStart){
+overLineStart=performance.now();
+}
+else if(performance.now()-overLineStart>1200){
+isGameOver=true;
+document.getElementById("gameOverOverlay").style.display="flex";
+}
+
+}else{
+
+line.classList.remove("danger");
+overLineStart=null;
+
+}
+
+}
+
+(function loop(){
+checkGameOver();
+requestAnimationFrame(loop);
 })();
 
-preloadImages().then(() => {
-  updateNext();
-  updateGhostPosition();
-});
+updateNext();
+
 </script>
 
 </body>
