@@ -457,6 +457,25 @@ input[type="range"]{
   line-height:1.6;
 }
 
+body,
+img,
+button,
+div,
+span,
+p,
+h1,
+h2,
+h3{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+
+img{
+  -webkit-user-drag:none;
+  user-drag:none;
+}
+
 @media (max-width:520px){
   .game-wrap,#game{
     width:360px;
@@ -1072,11 +1091,9 @@ Events.on(engine, "collisionStart", async event => {
     World.remove(world, b);
 
     if (nextIndex >= members.length) {
-      lv11CreatedThisRun += 1;
       addScoreByNextIndex(nextIndex);
       mergeEffect(x, y, 88, "MAX", nextIndex, true);
       playMaxSound();
-      checkSpecialUnlock();
       continue;
     }
 
@@ -1113,6 +1130,11 @@ Events.on(engine, "collisionStart", async event => {
     addScoreByNextIndex(nextIndex);
     mergeEffect(x, y, r, newMember.name, nextIndex, false);
     playMergeSound(nextIndex);
+
+    if (nextIndex === members.length - 1) {
+      lv11CreatedThisRun += 1;
+      checkSpecialUnlock();
+    }
   }
 });
 
@@ -1146,6 +1168,14 @@ function checkGameOver() {
   checkGameOver();
   requestAnimationFrame(loop);
 })();
+
+document.addEventListener("contextmenu", e => {
+  e.preventDefault();
+});
+
+document.addEventListener("selectstart", e => {
+  e.preventDefault();
+});
 
 preloadImages().then(() => {
   updateNext();
