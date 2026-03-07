@@ -38,23 +38,25 @@ body{
 }
 
 .logo-header{
-  width:min(560px,92vw);
+  width:100%;
+  max-width:900px;
   margin:0 auto 18px;
   display:block;
-  border-radius:18px;
-  box-shadow:0 16px 40px rgba(0,0,0,0.28);
+}
+
+.top-sticky{
+  position:sticky;
+  top:0;
+  z-index:30;
+  padding:10px 0 12px;
+  background:linear-gradient(rgba(5,11,74,0.96), rgba(5,11,74,0.82));
+  backdrop-filter:blur(8px);
 }
 
 h1{
-  margin:0 0 8px;
+  margin:0 0 10px;
   font-size:28px;
   letter-spacing:0.03em;
-}
-
-.subtext{
-  margin:0 0 18px;
-  color:#d8e3ff;
-  font-size:14px;
 }
 
 .member-picker{
@@ -146,6 +148,10 @@ button:hover{
   h1{
     font-size:24px;
   }
+
+  .top-sticky{
+    padding:8px 0 10px;
+  }
 }
 </style>
 </head>
@@ -153,17 +159,17 @@ button:hover{
 <body>
 <div class="page">
 
-  <img class="logo-header" src="https://i.imgur.com/4bOcRa5.png" alt="日プ新世界 ロゴ">
+  <img class="logo-header" src="https://i.imgur.com/JtJqifb.png" alt="日プ新世界 ロゴ">
 
-  <h1>日プ新世界 Face Game</h1>
-  <p class="subtext">11人選んでゲームスタート</p>
-  <div class="counter">選択中: <span id="count">0</span> / 11</div>
+  <div class="top-sticky">
+    <h1>日プ新世界 Face Game</h1>
+    <div class="controls">
+      <button id="startBtn">11人選んでゲームスタート</button>
+    </div>
+    <div class="counter">選択中: <span id="count">0</span> / 11</div>
+  </div>
 
   <div id="picker" class="member-picker"></div>
-
-  <div class="controls">
-    <button id="startBtn">ゲームスタート</button>
-  </div>
 
 </div>
 
