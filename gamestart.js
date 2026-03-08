@@ -59,6 +59,7 @@ const SKIN_POOL = [
   "シャイニーゴールド"
 ];
 
+const bgm = document.getElementById("bgm");
 const gameEl = document.getElementById("game");
 const scoreEl = document.getElementById("score");
 const finalScoreEl = document.getElementById("finalScore");
@@ -547,6 +548,11 @@ seVolEl.value = seVolume;
 bgmValEl.textContent = `${bgmVolume}%`;
 seValEl.textContent = `${seVolume}%`;
 
+if (bgm) {
+  bgm.volume = bgmVolume / 100;
+  bgm.loop = true;
+}
+
 function ensureAudio() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -613,6 +619,16 @@ function playBgmPhrase() {
 function startBgm() {
   if (bgmStarted) return;
   bgmStarted = true;
+
+  if (bgm) {
+    bgm.volume = bgmVolume / 100;
+    bgm.currentTime = bgm.currentTime || 0;
+    bgm.play().catch(() => {
+      bgmStarted = false;
+    });
+    return;
+  }
+
   playBgmPhrase();
   bgmLoop = setInterval(playBgmPhrase, 2000);
 }
@@ -620,7 +636,8 @@ function startBgm() {
 bgmVolEl.oninput = async e => {
   await unlockAudio();
   bgmVolume = Number(e.target.value);
-  bgmGain.gain.value = bgmVolume / 100;
+  if (bgmGain) bgmGain.gain.value = bgmVolume / 100;
+  if (bgm) bgm.volume = bgmVolume / 100;
   bgmValEl.textContent = `${bgmVolume}%`;
   localStorage.setItem("facegame_bgm_volume", String(bgmVolume));
 };
