@@ -18,16 +18,17 @@ const GAME_OVER_HOLD_MS = 1200;
 const SIZE = [20,24,28,32,37,43,50,58,67,77,88];
 
 const SCORE_TABLE = {
-  1: 10,
-  2: 20,
-  3: 40,
-  4: 80,
-  5: 160,
-  6: 320,
-  7: 640,
-  8: 1280,
-  9: 2560,
-  10: 5120
+  1: 2,
+  2: 3,
+  3: 5,
+  4: 8,
+  5: 12,
+  6: 18,
+  7: 26,
+  8: 38,
+  9: 55,
+  10: 80,
+  11: 120
 };
 
 const SPECIAL_CHARACTERS = [
@@ -45,9 +46,23 @@ const SPECIAL_CHARACTERS = [
   }
 ];
 
+const SKIN_POOL = [
+  "ピンクフレーム",
+  "ゴールドフレーム",
+  "ミントフレーム",
+  "パープルフレーム",
+  "スターグロウ",
+  "オーロラライン",
+  "ハートピンク",
+  "スカイブルー",
+  "ネオンパープル",
+  "シャイニーゴールド"
+];
+
 const gameEl = document.getElementById("game");
 const scoreEl = document.getElementById("score");
 const finalScoreEl = document.getElementById("finalScore");
+const finalMaxLevelEl = document.getElementById("finalMaxLevel");
 const nextImgEl = document.getElementById("nextImg");
 const nextNameEl = document.getElementById("nextName");
 const selectedMembersEl = document.getElementById("selectedMembers");
@@ -58,9 +73,18 @@ const dropGhostEl = document.getElementById("dropGhost");
 const dropGhostImgEl = document.getElementById("dropGhostImg");
 const effectsEl = document.getElementById("effects");
 const gameOverOverlayEl = document.getElementById("gameOverOverlay");
+const gameoverCardEl = document.getElementById("gameoverCard");
+const gameoverActionsEl = document.getElementById("gameoverActions");
 const unlockOverlayEl = document.getElementById("unlockOverlay");
 const unlockImgEl = document.getElementById("unlockImg");
 const unlockNameEl = document.getElementById("unlockName");
+const skinRewardOverlayEl = document.getElementById("skinRewardOverlay");
+const skinRewardListEl = document.getElementById("skinRewardList");
+const skinRewardResultEl = document.getElementById("skinRewardResult");
+const skinRewardBtn = document.getElementById("skinRewardBtn");
+const skinRewardCloseBtn = document.getElementById("skinRewardCloseBtn");
+const ownedSkinCountEl = document.getElementById("ownedSkinCount");
+const missionListEl = document.getElementById("missionList");
 const settingsBtn = document.getElementById("settings");
 const panelEl = document.getElementById("panel");
 const bgmVolEl = document.getElementById("bgmVol");
@@ -137,8 +161,228 @@ let overLineStart = null;
 let isGameOver = false;
 let isTouchDragging = false;
 let lv11CreatedThisRun = 0;
+let maxLevelReachedThisRun = 0;
+let validPlayCountedThisRun = false;
+let rewardAnimating = false;
 
 const imageSizeMap = new Map();
+
+function getTodayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function hashString(str){
+  let h = 0;
+  for(let i = 0; i < str.length; i++){
+    h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function seededShuffle(array, seed){
+  const arr = [...array];
+  let s = seed || 1;
+  function rand(){
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  }
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+const MISSION_POOL = [
+  { id:"score120", text:"Score 120達成", type:"score", target:120 },
+  { id:"score200", text:"Score 200達成", type:"score", target:200 },
+  { id:"score320", text:"Score 320達成", type:"score", target:320 },
+  { id:"lv6", text:"Lv.6を作成", type:"level", target:6 },
+  { id:"lv7", text:"Lv.7を作成", type:"level", target:7 },
+  { id:"lv8", text:"Lv.8を作成", type:"level", target:8 },
+  { id:"play3", text:"Lv.5到達を3回達成", type:"validPlay", target:3 },
+  { id:"play5", text:"Lv.5到達を5回達成", type:"validPlay", target:5 }
+];
+
+function buildDailyMissionState() {
+  const today = getTodayKey();
+  const saved = JSON.parse(localStorage.getItem("facegame_daily_mission_state") || "null");
+
+  if (saved && saved.date === today) {
+    return saved;
+  }
+
+  const shuffled = seededShuffle(MISSION_POOL, hashString(today));
+  const selected = shuffled.slice(0, 3).map(m => ({
+    id: m.id,
+    text: m.text,
+    type: m.type,
+    target: m.target,
+    done: false
+  }));
+
+  const state = {
+    date: today,
+    missions: selected,
+    rewardClaimed: false,
+    dailyValidPlayCount: 0
+  };
+
+  localStorage.setItem("facegame_daily_mission_state", JSON.stringify(state));
+  return state;
+}
+
+let dailyMissionState = buildDailyMissionState();
+
+function saveDailyMissionState() {
+  localStorage.setItem("facegame_daily_mission_state", JSON.stringify(dailyMissionState));
+}
+
+function getOwnedSkins() {
+  return JSON.parse(localStorage.getItem("facegame_owned_skins") || "[]");
+}
+
+function saveOwnedSkins(list) {
+  localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
+}
+
+function updateOwnedSkinCount() {
+  ownedSkinCountEl.textContent = getOwnedSkins().length;
+}
+
+function renderMissions() {
+  missionListEl.innerHTML = dailyMissionState.missions.map(m => `
+    <div class="mission-item${m.done ? " done" : ""}">
+      <span>${m.text}</span>
+      <span class="mission-status">${m.done ? "達成！" : ""}</span>
+    </div>
+  `).join("");
+
+  const allDone = dailyMissionState.missions.every(m => m.done);
+  if (allDone && !dailyMissionState.rewardClaimed) {
+    skinRewardBtn.classList.add("show");
+  } else {
+    skinRewardBtn.classList.remove("show");
+  }
+
+  updateOwnedSkinCount();
+}
+
+function updateMissionProgress() {
+  let changed = false;
+
+  dailyMissionState.missions.forEach(m => {
+    if (m.done) return;
+
+    if (m.type === "score" && score >= m.target) {
+      m.done = true;
+      changed = true;
+    }
+
+    if (m.type === "level" && maxLevelReachedThisRun >= m.target) {
+      m.done = true;
+      changed = true;
+    }
+
+    if (m.type === "validPlay" && dailyMissionState.dailyValidPlayCount >= m.target) {
+      m.done = true;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    saveDailyMissionState();
+    renderMissions();
+  } else {
+    renderMissions();
+  }
+}
+
+function registerValidPlayIfNeeded(level) {
+  if (level >= 5 && !validPlayCountedThisRun) {
+    validPlayCountedThisRun = true;
+    dailyMissionState.dailyValidPlayCount += 1;
+    saveDailyMissionState();
+    updateMissionProgress();
+  }
+}
+
+function updateMaxLevel(level) {
+  if (level > maxLevelReachedThisRun) {
+    maxLevelReachedThisRun = level;
+    updateMissionProgress();
+  }
+}
+
+function getRewardSkins(count = 3) {
+  const owned = getOwnedSkins();
+  const notOwned = SKIN_POOL.filter(name => !owned.includes(name));
+  const firstPool = notOwned.length >= count ? notOwned : [...SKIN_POOL];
+  const shuffled = seededShuffle(firstPool, hashString(getTodayKey() + owned.length + String(Date.now())));
+  return shuffled.slice(0, count);
+}
+
+function showSkinRewardOverlay(rewards) {
+  rewardAnimating = true;
+  skinRewardOverlayEl.style.display = "flex";
+  skinRewardCloseBtn.disabled = true;
+  skinRewardListEl.innerHTML = `
+    <div class="skin-reward-item">？？？</div>
+    <div class="skin-reward-item">？？？</div>
+    <div class="skin-reward-item">？？？</div>
+  `;
+  skinRewardResultEl.textContent = "";
+
+  const itemEls = [...skinRewardListEl.querySelectorAll(".skin-reward-item")];
+
+  rewards.forEach((name, index) => {
+    setTimeout(() => {
+      itemEls[index].textContent = `・${name}`;
+      itemEls[index].classList.add("revealed");
+    }, 650 + index * 500);
+  });
+
+  setTimeout(() => {
+    skinRewardResultEl.innerHTML = `・${rewards[0]}<br>・${rewards[1]}<br>・${rewards[2]}<br><br>のスキンが手に入りました。`;
+    skinRewardCloseBtn.disabled = false;
+    rewardAnimating = false;
+  }, 2300);
+}
+
+function claimSkinReward() {
+  if (dailyMissionState.rewardClaimed) return;
+  const rewards = getRewardSkins(3);
+  const owned = getOwnedSkins();
+  const merged = [...new Set([...owned, ...rewards])];
+  saveOwnedSkins(merged);
+
+  dailyMissionState.rewardClaimed = true;
+  saveDailyMissionState();
+  renderMissions();
+  showSkinRewardOverlay(rewards);
+}
+
+skinRewardBtn.addEventListener("click", async () => {
+  await unlockAudio();
+  claimSkinReward();
+});
+
+skinRewardCloseBtn.addEventListener("click", () => {
+  if (rewardAnimating) return;
+  skinRewardOverlayEl.style.display = "none";
+});
+
+skinRewardOverlayEl.addEventListener("click", e => {
+  if (e.target === skinRewardOverlayEl && !rewardAnimating) {
+    skinRewardOverlayEl.style.display = "none";
+  }
+});
+
+renderMissions();
 
 function preloadImages() {
   return Promise.all(members.map(m => new Promise(resolve => {
@@ -200,10 +444,12 @@ function getSafeX(rawX) {
 }
 
 function addScoreByNextIndex(nextIndex){
-  const gained = SCORE_TABLE[nextIndex] || 0;
+  const level = nextIndex + 1;
+  const gained = SCORE_TABLE[level] || 0;
   score += gained;
   scoreEl.textContent = score;
   finalScoreEl.textContent = score;
+  updateMissionProgress();
   return gained;
 }
 
@@ -255,6 +501,9 @@ function spawn(x) {
   body.isMerging = false;
 
   World.add(world, body);
+
+  updateMaxLevel(next.evoIndex + 1);
+  registerValidPlayIfNeeded(next.evoIndex + 1);
 
   canDrop = false;
   setTimeout(() => canDrop = true, 320);
@@ -335,9 +584,9 @@ function tone(freq, duration, type = "triangle", volume = 0.1, when = 0, bus = "
 
 function playMergeSound(level) {
   if (seVolume <= 0) return;
-  const base = 360 + level * 55;
+  const base = 360 + level * 45;
   tone(base, 0.08, "triangle", 0.6);
-  tone(base * 1.18, 0.12, "triangle", 0.5, 0.05);
+  tone(base * 1.16, 0.12, "triangle", 0.5, 0.05);
 }
 
 function playMaxSound() {
@@ -410,6 +659,20 @@ document.getElementById("retryBtn").onclick = async () => {
   restart();
 };
 
+document.getElementById("backTitleBtn").onclick = () => {
+  location.href = "index.html";
+};
+
+document.getElementById("shareBtn").onclick = () => {
+  const text = `Score: ${score}
+Max Lv: ${maxLevelReachedThisRun}
+
+日プ新世界 Face Gameをプレイ！
+https://riprd1.github.io/shinsekai-facegame/`;
+  const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+  window.open(url, "_blank");
+};
+
 document.getElementById("unlockCloseBtn").onclick = () => {
   closeUnlockPopup();
 };
@@ -420,6 +683,19 @@ unlockOverlayEl.addEventListener("click", e => {
   }
 });
 
+function showGameOverUI() {
+  finalScoreEl.textContent = score;
+  finalMaxLevelEl.textContent = maxLevelReachedThisRun;
+  gameOverOverlayEl.style.display = "flex";
+  gameoverCardEl.classList.remove("show");
+  gameoverActionsEl.classList.remove("show");
+  void gameoverCardEl.offsetWidth;
+  gameoverCardEl.classList.add("show");
+  setTimeout(() => {
+    gameoverActionsEl.classList.add("show");
+  }, 360);
+}
+
 function restart() {
   Composite.allBodies(world).forEach(body => {
     if (!body.isStatic) World.remove(world, body);
@@ -427,8 +703,11 @@ function restart() {
 
   score = 0;
   lv11CreatedThisRun = 0;
+  maxLevelReachedThisRun = 0;
+  validPlayCountedThisRun = false;
   scoreEl.textContent = "0";
   finalScoreEl.textContent = "0";
+  finalMaxLevelEl.textContent = "0";
   overLineStart = null;
   isGameOver = false;
   lineEl.classList.remove("danger");
@@ -437,6 +716,7 @@ function restart() {
   effectsEl.innerHTML = "";
   next = createNext();
   updateNext();
+  updateMissionProgress();
 }
 
 gameEl.addEventListener("mousemove", e => {
@@ -510,9 +790,12 @@ Events.on(engine, "collisionStart", async event => {
     World.remove(world, b);
 
     if (nextIndex >= members.length) {
-      addScoreByNextIndex(nextIndex);
+      lv11CreatedThisRun += 1;
+      updateMaxLevel(members.length);
+      addScoreByNextIndex(nextIndex - 1);
       mergeEffect(x, y, 88, "MAX", nextIndex, true);
       playMaxSound();
+      checkSpecialUnlock();
       continue;
     }
 
@@ -548,7 +831,9 @@ Events.on(engine, "collisionStart", async event => {
 
     addScoreByNextIndex(nextIndex);
     mergeEffect(x, y, r, newMember.name, nextIndex, false);
-    playMergeSound(nextIndex);
+    playMergeSound(nextIndex + 1);
+    updateMaxLevel(nextIndex + 1);
+    registerValidPlayIfNeeded(nextIndex + 1);
 
     if (nextIndex === members.length - 1) {
       lv11CreatedThisRun += 1;
@@ -574,7 +859,7 @@ function checkGameOver() {
       overLineStart = performance.now();
     } else if (performance.now() - overLineStart >= GAME_OVER_HOLD_MS) {
       isGameOver = true;
-      gameOverOverlayEl.style.display = "flex";
+      showGameOverUI();
       playGameOverSound();
     }
   } else {
@@ -599,4 +884,5 @@ document.addEventListener("selectstart", e => {
 preloadImages().then(() => {
   updateNext();
   updateGhostPosition();
+  updateMissionProgress();
 });
