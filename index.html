@@ -160,6 +160,120 @@ button:hover{
   color:#d8e3ff;
 }
 
+.mission-open-btn{
+  min-width:auto;
+  padding:12px 16px;
+  font-size:26px;
+  line-height:1;
+  position:relative;
+}
+
+.mission-open-btn.has-reward::after{
+  content:"";
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#ff4fa3;
+  box-shadow:0 0 10px rgba(255,79,163,0.85);
+}
+
+.mission-overlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(2,7,40,0.72);
+  z-index:200;
+  backdrop-filter:blur(4px);
+  padding:18px;
+}
+
+.mission-card{
+  width:min(92vw, 430px);
+  background:linear-gradient(180deg, rgba(16,31,108,0.96), rgba(7,18,82,0.96));
+  border-radius:22px;
+  padding:22px 18px 18px;
+  border:1px solid rgba(143,211,255,0.42);
+  box-shadow:0 16px 42px rgba(0,0,0,0.32);
+  text-align:left;
+}
+
+.mission-card h2{
+  margin:0 0 12px;
+  text-align:center;
+  font-size:24px;
+}
+
+.mission-sub{
+  margin:0 0 14px;
+  color:#d8e3ff;
+  font-size:14px;
+  text-align:center;
+  line-height:1.7;
+}
+
+.mission-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.mission-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(143,211,255,0.18);
+  color:#ffffff;
+  font-size:14px;
+  line-height:1.5;
+}
+
+.mission-item.done{
+  background:rgba(255,94,165,0.23);
+  border:1px solid rgba(255,124,186,0.7);
+  box-shadow:0 0 14px rgba(255,94,165,0.18) inset;
+}
+
+.mission-status{
+  flex-shrink:0;
+  font-weight:bold;
+  color:#ffd6ea;
+}
+
+.mission-meta{
+  margin:0 0 14px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(143,211,255,0.16);
+  color:#d8e3ff;
+  font-size:14px;
+  line-height:1.7;
+}
+
+.mission-reward-btn{
+  width:100%;
+  margin-bottom:10px;
+  display:none;
+}
+
+.mission-reward-btn.show{
+  display:block;
+}
+
+.mission-close-btn{
+  width:100%;
+}
+
 .site-about-title{
   margin:18px 0 14px;
   font-size:22px;
@@ -232,6 +346,15 @@ button:hover{
   .site-about{
     font-size:14px;
   }
+
+  .mission-open-btn{
+    font-size:24px;
+    padding:12px 14px;
+  }
+
+  .mission-card{
+    padding:20px 14px 14px;
+  }
 }
 </style>
 </head>
@@ -245,11 +368,26 @@ button:hover{
     <h1>日プ新世界 Face Game</h1>
     <div class="controls">
       <button id="startBtn">11人選んでゲームスタート</button>
+      <button id="missionOpenBtn" class="mission-open-btn" aria-label="ミッション">📖</button>
     </div>
     <div class="counter">選択中: <span id="count">0</span> / 11</div>
   </div>
 
   <div id="picker" class="member-picker"></div>
+
+  <div id="missionOverlay" class="mission-overlay">
+    <div class="mission-card">
+      <h2>📖 デイリーミッション</h2>
+      <p class="mission-sub">今日のミッションを確認できます。<br>3つすべて達成でフレームを1つGET！</p>
+      <div id="missionList" class="mission-list"></div>
+      <div class="mission-meta">
+        所持フレーム数：<span id="ownedSkinCount">0</span><br>
+        今日の報酬：デイリーミッション3つ達成でフレーム1つ
+      </div>
+      <button id="missionRewardBtn" class="mission-reward-btn">フレームを受け取る</button>
+      <button id="missionCloseBtn" class="mission-close-btn">閉じる</button>
+    </div>
+  </div>
 
   <h3 class="site-about-title">このサイトについて</h3>
 
@@ -427,6 +565,12 @@ const members = [
 
 const picker=document.getElementById("picker");
 const countEl=document.getElementById("count");
+const missionOpenBtn=document.getElementById("missionOpenBtn");
+const missionOverlay=document.getElementById("missionOverlay");
+const missionCloseBtn=document.getElementById("missionCloseBtn");
+const missionListEl=document.getElementById("missionList");
+const ownedSkinCountEl=document.getElementById("ownedSkinCount");
+const missionRewardBtn=document.getElementById("missionRewardBtn");
 
 let selected=[];
 
@@ -449,6 +593,19 @@ const secretCharacters = [
   }
 ];
 
+const SKIN_POOL = [
+  "ピンクフレーム",
+  "ゴールドフレーム",
+  "ミントフレーム",
+  "パープルフレーム",
+  "スターグロウ",
+  "オーロラライン",
+  "ハートピンク",
+  "スカイブルー",
+  "ネオンパープル",
+  "シャイニーゴールド"
+];
+
 function shuffle(array){
   const arr=[...array];
   for(let i=arr.length-1;i>0;i--){
@@ -461,6 +618,110 @@ function shuffle(array){
 function updateCount(){
   countEl.textContent=selected.length;
 }
+
+function getOwnedSkins(){
+  return JSON.parse(localStorage.getItem("facegame_owned_skins") || "[]");
+}
+
+function saveOwnedSkins(list){
+  localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
+}
+
+function seededShuffle(array, seed){
+  const arr=[...array];
+  let s=seed || 1;
+  function rand(){
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  }
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(rand()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function hashString(str){
+  let h=0;
+  for(let i=0;i<str.length;i++){
+    h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function getRewardSkins(count=1){
+  const owned=getOwnedSkins();
+  const notOwned=SKIN_POOL.filter(name => !owned.includes(name));
+  const firstPool = notOwned.length >= count ? notOwned : [...SKIN_POOL];
+  const shuffled = seededShuffle(firstPool, hashString(String(Date.now()) + String(owned.length)));
+  return shuffled.slice(0, count);
+}
+
+function renderMissionPopup(){
+  const missionState = JSON.parse(localStorage.getItem("facegame_daily_mission_state") || "null");
+  const ownedSkins = getOwnedSkins();
+
+  ownedSkinCountEl.textContent = ownedSkins.length;
+
+  if(!missionState || !missionState.missions || !missionState.missions.length){
+    missionListEl.innerHTML = `<div class="mission-item"><span>まだ今日のミッションがありません</span><span class="mission-status"></span></div>`;
+    missionRewardBtn.classList.remove("show");
+    missionOpenBtn.classList.remove("has-reward");
+    return;
+  }
+
+  missionListEl.innerHTML = missionState.missions.map(m => `
+    <div class="mission-item${m.done ? " done" : ""}">
+      <span>${m.text}</span>
+      <span class="mission-status">${m.done ? "達成！" : ""}</span>
+    </div>
+  `).join("");
+
+  const allDone = missionState.missions.every(m => m.done);
+  const canClaim = allDone && !missionState.rewardClaimed;
+
+  if(canClaim){
+    missionRewardBtn.classList.add("show");
+    missionOpenBtn.classList.add("has-reward");
+  }else{
+    missionRewardBtn.classList.remove("show");
+    missionOpenBtn.classList.remove("has-reward");
+  }
+}
+
+missionOpenBtn.onclick = () => {
+  renderMissionPopup();
+  missionOverlay.style.display = "flex";
+};
+
+missionCloseBtn.onclick = () => {
+  missionOverlay.style.display = "none";
+};
+
+missionOverlay.addEventListener("click", e => {
+  if(e.target === missionOverlay){
+    missionOverlay.style.display = "none";
+  }
+});
+
+missionRewardBtn.onclick = () => {
+  const missionState = JSON.parse(localStorage.getItem("facegame_daily_mission_state") || "null");
+  if(!missionState || !missionState.missions) return;
+
+  const allDone = missionState.missions.every(m => m.done);
+  if(!allDone || missionState.rewardClaimed) return;
+
+  const reward = getRewardSkins(1)[0];
+  const owned = getOwnedSkins();
+  const merged = [...new Set([...owned, reward])];
+  saveOwnedSkins(merged);
+
+  missionState.rewardClaimed = true;
+  localStorage.setItem("facegame_daily_mission_state", JSON.stringify(missionState));
+
+  renderMissionPopup();
+  alert(`フレームGET！\n${reward}`);
+};
 
 members.forEach(m=>{
 
@@ -528,6 +789,7 @@ location.href="gamestart.html";
 
 };
 
+renderMissionPopup();
 updateCount();
 </script>
 
