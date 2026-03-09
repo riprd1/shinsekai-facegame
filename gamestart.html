@@ -38,10 +38,12 @@ body{
   max-width:980px;
   margin:0 auto;
   padding:18px 14px 28px;
+  position:relative;
 }
 
 .topbar{
   position:relative;
+  height:58px;
   margin-bottom:10px;
 }
 
@@ -68,6 +70,7 @@ body{
   border:1px solid rgba(143,211,255,0.45);
   box-shadow:0 8px 20px rgba(0,0,0,0.2);
   user-select:none;
+  z-index:25;
 }
 
 h2{
@@ -591,6 +594,11 @@ button:hover{
   margin-bottom:4px;
 }
 
+.panel-action-btn{
+  width:100%;
+  margin-top:2px;
+}
+
 input[type="range"]{
   width:100%;
   accent-color:#66D9E6;
@@ -644,11 +652,15 @@ img{
 <div class="page">
 
   <div class="topbar">
-    <img class="logo" src="https://i.imgur.com/JtJqifb.png" alt="日プ新世界 ロゴ">
     <div id="settings">⚙️</div>
   </div>
 
-  <h2>日プ新世界 Face Game</h2>
+  <div class="level-panel">
+    <button id="levelToggle" class="level-toggle">▼ レベル表</button>
+    <div id="selectedMembersWrap">
+      <div id="selectedMembers"></div>
+    </div>
+  </div>
 
   <div id="ui">
     <div class="ui-chip">Score : <span id="score">0</span></div>
@@ -659,18 +671,6 @@ img{
       <img id="nextImg" alt="next">
       <div id="nextName"></div>
     </div>
-  </div>
-
-  <div class="level-panel">
-    <button id="levelToggle" class="level-toggle">▼ レベル表</button>
-    <div id="selectedMembersWrap">
-      <div id="selectedMembers"></div>
-    </div>
-  </div>
-
-  <div class="controls">
-    <button id="backBtn">タイトルにもどる</button>
-    <button id="restartBtn">リスタート</button>
   </div>
 
   <div class="game-wrap">
@@ -727,6 +727,12 @@ img{
     <div class="panel-row">
       <label><span>効果音 🔈</span><span id="seVal">80%</span></label>
       <input id="seVol" type="range" min="0" max="100" step="1">
+    </div>
+    <div class="panel-row">
+      <button id="restartBtn" class="panel-action-btn">リスタート</button>
+    </div>
+    <div class="panel-row">
+      <button id="backBtn" class="panel-action-btn">タイトルにもどる</button>
     </div>
   </div>
 
