@@ -718,32 +718,48 @@ function drawFrameForBody(ctx, body) {
 
   ctx.save();
 
+  const ringWidth = Math.max(2.2, r * 0.09);
+  const ringRadius = r - ringWidth * 0.18;
+
   ctx.beginPath();
-  ctx.arc(x, y, r + 1.4, 0, Math.PI * 2);
+  ctx.arc(x, y, ringRadius, 0, Math.PI * 2);
   ctx.strokeStyle = meta.color;
-  ctx.lineWidth = Math.max(1.4, r * 0.05);
+  ctx.lineWidth = ringWidth;
   ctx.shadowColor = meta.glow;
-  ctx.shadowBlur = meta.rank === "SSR" ? 10 : meta.rank === "SR" ? 8 : 6;
+  ctx.shadowBlur = meta.rank === "SSR" ? 16 : meta.rank === "SR" ? 12 : 8;
   ctx.stroke();
+
+  const grad = ctx.createRadialGradient(
+    x, y, r * 0.5,
+    x, y, r * 0.98
+  );
+  grad.addColorStop(0, "rgba(0,0,0,0)");
+  grad.addColorStop(0.72, meta.glow);
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.98, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
 
   const pattern = getFrameDecorationPattern(body.frameName);
   const count = pattern.length;
-  const ringRadius = r * 0.66;
+  const decoRingRadius = r * 0.8;
 
   for (let i = 0; i < count; i++) {
     const angle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
-    const dx = x + Math.cos(angle) * ringRadius;
-    const dy = y + Math.sin(angle) * ringRadius;
+    const dx = x + Math.cos(angle) * decoRingRadius;
+    const dy = y + Math.sin(angle) * decoRingRadius;
     const type = pattern[i];
 
-    let decoSize = Math.max(2.1, r * 0.06);
+    let decoSize = Math.max(3.2, r * 0.12);
 
-    if (type === "heart") decoSize = Math.max(2.4, r * 0.07);
-    if (type === "star") decoSize = Math.max(2.3, r * 0.065);
-    if (type === "sparkle") decoSize = Math.max(2.0, r * 0.055);
+    if (type === "heart") decoSize = Math.max(3.8, r * 0.14);
+    if (type === "star") decoSize = Math.max(3.6, r * 0.135);
+    if (type === "sparkle") decoSize = Math.max(3.0, r * 0.115);
 
-    if (meta.rank === "SSR") decoSize *= 1.08;
-    if (meta.rank === "SR") decoSize *= 1.04;
+    if (meta.rank === "SSR") decoSize *= 1.12;
+    if (meta.rank === "SR") decoSize *= 1.06;
 
     drawDecorationByType(ctx, type, dx, dy, decoSize, meta.color);
   }
