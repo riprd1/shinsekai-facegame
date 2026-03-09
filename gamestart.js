@@ -187,7 +187,7 @@ function applyFrameToImgElement(imgEl, frameName){
 
   imgEl.style.borderWidth = "2px";
   imgEl.style.borderStyle = "solid";
-  imgEl.style.borderColor = "rgba(145,201,255,0.55)";
+  imgEl.style.borderColor = "rgba(145,201,255,0.35)";
   imgEl.style.boxShadow = "none";
   imgEl.style.filter = "none";
 
@@ -195,38 +195,37 @@ function applyFrameToImgElement(imgEl, frameName){
   if (!meta) return;
 
   imgEl.style.borderColor = meta.color;
-  imgEl.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.18), 0 0 12px ${meta.glow}, 0 0 22px ${meta.glow}`;
+  imgEl.style.boxShadow = `0 0 8px ${meta.glow}`;
+  imgEl.style.filter = "none";
 
   if (meta.rank === "SR") {
-    imgEl.style.filter = "saturate(1.08) brightness(1.03)";
+    imgEl.style.boxShadow = `0 0 10px ${meta.glow}`;
   }
 
   if (meta.rank === "SSR") {
-    imgEl.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.25), 0 0 16px ${meta.glow}, 0 0 30px ${meta.glow}`;
-    imgEl.style.filter = "saturate(1.12) brightness(1.05)";
+    imgEl.style.boxShadow = `0 0 12px ${meta.glow}`;
   }
 }
 
 function applyFrameToGhost(frameName){
   const meta = getFrameMeta(frameName);
 
-  dropGhostEl.style.border = "3px solid rgba(143,211,255,0.95)";
-  dropGhostEl.style.boxShadow = "0 8px 20px rgba(25,45,120,0.24)";
-  dropGhostEl.style.background = "rgba(255,255,255,0.08)";
+  dropGhostEl.style.border = "2px solid rgba(143,211,255,0.45)";
+  dropGhostEl.style.boxShadow = "0 8px 20px rgba(25,45,120,0.18)";
+  dropGhostEl.style.background = "rgba(255,255,255,0.04)";
   dropGhostEl.style.filter = "none";
 
   if (!meta) return;
 
-  dropGhostEl.style.border = `3px solid ${meta.color}`;
-  dropGhostEl.style.boxShadow = `0 8px 20px rgba(25,45,120,0.24), 0 0 14px ${meta.glow}, 0 0 26px ${meta.glow}`;
+  dropGhostEl.style.border = `2px solid ${meta.color}`;
+  dropGhostEl.style.boxShadow = `0 8px 20px rgba(25,45,120,0.16), 0 0 10px ${meta.glow}`;
 
   if (meta.rank === "SR") {
-    dropGhostEl.style.background = "rgba(255,255,255,0.12)";
+    dropGhostEl.style.boxShadow = `0 8px 20px rgba(25,45,120,0.16), 0 0 12px ${meta.glow}`;
   }
 
   if (meta.rank === "SSR") {
-    dropGhostEl.style.boxShadow = `0 8px 20px rgba(25,45,120,0.24), 0 0 18px ${meta.glow}, 0 0 34px ${meta.glow}`;
-    dropGhostEl.style.background = "rgba(255,248,220,0.14)";
+    dropGhostEl.style.boxShadow = `0 8px 20px rgba(25,45,120,0.16), 0 0 14px ${meta.glow}`;
   }
 }
 
@@ -608,6 +607,159 @@ function mergeEffect(x, y, r, name, nextIndex, isMax = false) {
   setTimeout(() => text.remove(), 850);
 }
 
+function drawStar(ctx, x, y, radius, color) {
+  ctx.save();
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const angle = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+    const outerX = x + Math.cos(angle) * radius;
+    const outerY = y + Math.sin(angle) * radius;
+    const innerAngle = angle + Math.PI / 5;
+    const innerX = x + Math.cos(innerAngle) * radius * 0.45;
+    const innerY = y + Math.sin(innerAngle) * radius * 0.45;
+    if (i === 0) {
+      ctx.moveTo(outerX, outerY);
+    } else {
+      ctx.lineTo(outerX, outerY);
+    }
+    ctx.lineTo(innerX, innerY);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 6;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawHeart(ctx, x, y, size, color) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x, y + size * 0.3);
+  ctx.bezierCurveTo(x, y, x - size * 0.5, y, x - size * 0.5, y + size * 0.3);
+  ctx.bezierCurveTo(x - size * 0.5, y + size * 0.6, x, y + size * 0.85, x, y + size);
+  ctx.bezierCurveTo(x, y + size * 0.85, x + size * 0.5, y + size * 0.6, x + size * 0.5, y + size * 0.3);
+  ctx.bezierCurveTo(x + size * 0.5, y, x, y, x, y + size * 0.3);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 6;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawSparkle(ctx, x, y, size, color) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.6;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.moveTo(x - size, y);
+  ctx.lineTo(x + size, y);
+  ctx.moveTo(x, y - size);
+  ctx.lineTo(x, y + size);
+  ctx.moveTo(x - size * 0.7, y - size * 0.7);
+  ctx.lineTo(x + size * 0.7, y + size * 0.7);
+  ctx.moveTo(x + size * 0.7, y - size * 0.7);
+  ctx.lineTo(x - size * 0.7, y + size * 0.7);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function getFrameDecorationPattern(frameName) {
+  switch (frameName) {
+    case "スターグロウ":
+      return ["star","sparkle","star","sparkle","star","sparkle","star","sparkle"];
+    case "ゴールドフレーム":
+      return ["star","star","star","star","star","star"];
+    case "ネオンパープル":
+      return ["star","sparkle","star","sparkle","star","sparkle","star","sparkle"];
+    case "シャイニーゴールド":
+      return ["star","heart","sparkle","star","heart","sparkle","star","heart"];
+    case "ハートピンク":
+      return ["heart","heart","heart","heart","heart","heart","heart","heart"];
+    case "ピンクフレーム":
+      return ["heart","sparkle","heart","sparkle","heart","sparkle"];
+    case "オーロラライン":
+      return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
+    case "ミントフレーム":
+      return ["heart","sparkle","heart","sparkle","heart","sparkle"];
+    case "スカイブルー":
+      return ["sparkle","heart","sparkle","heart","sparkle","heart"];
+    case "パープルフレーム":
+      return ["star","heart","star","heart","star","heart"];
+    default:
+      return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
+  }
+}
+
+function drawDecorationByType(ctx, type, x, y, size, color) {
+  if (type === "star") {
+    drawStar(ctx, x, y, size, color);
+    return;
+  }
+  if (type === "heart") {
+    drawHeart(ctx, x, y - size * 0.45, size * 1.05, color);
+    return;
+  }
+  drawSparkle(ctx, x, y, size, color);
+}
+
+function drawFrameForBody(ctx, body) {
+  if (!body.frameName) return;
+
+  const meta = getFrameMeta(body.frameName);
+  if (!meta) return;
+
+  const x = body.position.x;
+  const y = body.position.y;
+  const r = body.circleRadius || SIZE[body.evoIndex] || 20;
+
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.arc(x, y, r + 1.4, 0, Math.PI * 2);
+  ctx.strokeStyle = meta.color;
+  ctx.lineWidth = Math.max(1.4, r * 0.05);
+  ctx.shadowColor = meta.glow;
+  ctx.shadowBlur = meta.rank === "SSR" ? 10 : meta.rank === "SR" ? 8 : 6;
+  ctx.stroke();
+
+  const pattern = getFrameDecorationPattern(body.frameName);
+  const count = pattern.length;
+  const ringRadius = r * 0.66;
+
+  for (let i = 0; i < count; i++) {
+    const angle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
+    const dx = x + Math.cos(angle) * ringRadius;
+    const dy = y + Math.sin(angle) * ringRadius;
+    const type = pattern[i];
+
+    let decoSize = Math.max(2.1, r * 0.06);
+
+    if (type === "heart") decoSize = Math.max(2.4, r * 0.07);
+    if (type === "star") decoSize = Math.max(2.3, r * 0.065);
+    if (type === "sparkle") decoSize = Math.max(2.0, r * 0.055);
+
+    if (meta.rank === "SSR") decoSize *= 1.08;
+    if (meta.rank === "SR") decoSize *= 1.04;
+
+    drawDecorationByType(ctx, type, dx, dy, decoSize, meta.color);
+  }
+
+  ctx.restore();
+}
+
+Events.on(render, "afterRender", () => {
+  const ctx = render.context;
+  const bodies = Composite.allBodies(world).filter(body => !body.isStatic && body.member);
+
+  bodies.forEach(body => {
+    drawFrameForBody(ctx, body);
+  });
+});
+
 let audioCtx = null;
 let bgmGain = null;
 let seGain = null;
@@ -965,159 +1117,6 @@ Events.on(engine, "collisionStart", async event => {
       checkSpecialUnlock();
     }
   }
-});
-
-function drawStar(ctx, x, y, radius, color) {
-  ctx.save();
-  ctx.beginPath();
-  for (let i = 0; i < 5; i++) {
-    const angle = -Math.PI / 2 + (i * Math.PI * 2) / 5;
-    const outerX = x + Math.cos(angle) * radius;
-    const outerY = y + Math.sin(angle) * radius;
-    const innerAngle = angle + Math.PI / 5;
-    const innerX = x + Math.cos(innerAngle) * radius * 0.45;
-    const innerY = y + Math.sin(innerAngle) * radius * 0.45;
-    if (i === 0) {
-      ctx.moveTo(outerX, outerY);
-    } else {
-      ctx.lineTo(outerX, outerY);
-    }
-    ctx.lineTo(innerX, innerY);
-  }
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 8;
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawHeart(ctx, x, y, size, color) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(x, y + size * 0.3);
-  ctx.bezierCurveTo(x, y, x - size * 0.5, y, x - size * 0.5, y + size * 0.3);
-  ctx.bezierCurveTo(x - size * 0.5, y + size * 0.6, x, y + size * 0.85, x, y + size);
-  ctx.bezierCurveTo(x, y + size * 0.85, x + size * 0.5, y + size * 0.6, x + size * 0.5, y + size * 0.3);
-  ctx.bezierCurveTo(x + size * 0.5, y, x, y, x, y + size * 0.3);
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 8;
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawSparkle(ctx, x, y, size, color) {
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 8;
-  ctx.beginPath();
-  ctx.moveTo(x - size, y);
-  ctx.lineTo(x + size, y);
-  ctx.moveTo(x, y - size);
-  ctx.lineTo(x, y + size);
-  ctx.moveTo(x - size * 0.7, y - size * 0.7);
-  ctx.lineTo(x + size * 0.7, y + size * 0.7);
-  ctx.moveTo(x + size * 0.7, y - size * 0.7);
-  ctx.lineTo(x - size * 0.7, y + size * 0.7);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function getFrameDecorationPattern(frameName) {
-  switch (frameName) {
-    case "スターグロウ":
-      return ["star","sparkle","star","sparkle","star","sparkle","star","sparkle"];
-    case "ゴールドフレーム":
-      return ["star","star","star","star","star","star","star","star"];
-    case "ネオンパープル":
-      return ["star","sparkle","star","sparkle","star","sparkle","star","sparkle"];
-    case "シャイニーゴールド":
-      return ["star","heart","sparkle","star","heart","sparkle","star","heart","sparkle","star"];
-    case "ハートピンク":
-      return ["heart","heart","heart","heart","heart","heart","heart","heart"];
-    case "ピンクフレーム":
-      return ["heart","sparkle","heart","sparkle","heart","sparkle","heart","sparkle"];
-    case "オーロラライン":
-      return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
-    case "ミントフレーム":
-      return ["heart","sparkle","heart","sparkle","heart","sparkle"];
-    case "スカイブルー":
-      return ["sparkle","heart","sparkle","heart","sparkle","heart"];
-    case "パープルフレーム":
-      return ["star","heart","star","heart","star","heart"];
-    default:
-      return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
-  }
-}
-
-function drawDecorationByType(ctx, type, x, y, size, color) {
-  if (type === "star") {
-    drawStar(ctx, x, y, size, color);
-    return;
-  }
-  if (type === "heart") {
-    drawHeart(ctx, x, y - size * 0.5, size * 1.15, color);
-    return;
-  }
-  drawSparkle(ctx, x, y, size, color);
-}
-
-function drawFrameForBody(ctx, body) {
-  if (!body.frameName) return;
-
-  const meta = getFrameMeta(body.frameName);
-  if (!meta) return;
-
-  const x = body.position.x;
-  const y = body.position.y;
-  const r = body.circleRadius || SIZE[body.evoIndex] || 20;
-
-  ctx.save();
-
-  ctx.beginPath();
-  ctx.arc(x, y, r + 3.5, 0, Math.PI * 2);
-  ctx.strokeStyle = meta.color;
-  ctx.lineWidth = Math.max(2.5, r * 0.11);
-  ctx.shadowColor = meta.glow;
-  ctx.shadowBlur = meta.rank === "SSR" ? 18 : meta.rank === "SR" ? 14 : 10;
-  ctx.stroke();
-
-  const pattern = getFrameDecorationPattern(body.frameName);
-  const count = pattern.length;
-  const ringRadius = r + Math.max(6, r * 0.3);
-
-  for (let i = 0; i < count; i++) {
-    const angle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
-    const dx = x + Math.cos(angle) * ringRadius;
-    const dy = y + Math.sin(angle) * ringRadius;
-    const type = pattern[i];
-
-    let decoSize = Math.max(3.6, r * 0.12);
-
-    if (type === "heart") decoSize = Math.max(4.2, r * 0.14);
-    if (type === "star") decoSize = Math.max(4, r * 0.13);
-    if (type === "sparkle") decoSize = Math.max(3.4, r * 0.11);
-
-    if (meta.rank === "SSR") decoSize *= 1.12;
-    if (meta.rank === "SR") decoSize *= 1.05;
-
-    drawDecorationByType(ctx, type, dx, dy, decoSize, meta.color);
-  }
-
-  ctx.restore();
-}
-
-Events.on(render, "afterRender", () => {
-  const ctx = render.context;
-  const bodies = Composite.allBodies(world).filter(body => !body.isStatic && body.member);
-
-  bodies.forEach(body => {
-    drawFrameForBody(ctx, body);
-  });
 });
 
 function checkGameOver() {
