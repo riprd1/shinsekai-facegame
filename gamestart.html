@@ -189,89 +189,6 @@ button:hover{
   border:2px solid rgba(145,201,255,0.55);
 }
 
-.mission-box{
-  max-width:520px;
-  margin:0 auto 14px;
-  padding:14px 14px 16px;
-  border-radius:16px;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(103,154,255,0.35);
-  backdrop-filter:blur(8px);
-  box-shadow:0 10px 26px rgba(0,0,0,0.16);
-}
-
-.mission-title{
-  margin:0 0 10px;
-  font-size:18px;
-  color:#fff;
-}
-
-.mission-sub{
-  margin:0 0 10px;
-  font-size:12px;
-  color:var(--text-sub);
-}
-
-.mission-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  text-align:left;
-}
-
-.mission-item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding:10px 12px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.05);
-  color:#d8e3ff;
-  border:1px solid rgba(255,255,255,0.04);
-  transition:all 0.2s ease;
-  font-size:14px;
-}
-
-.mission-item.done{
-  color:#ff8fd3;
-  background:rgba(255,105,180,0.14);
-  border:1px solid rgba(255,143,211,0.38);
-  box-shadow:0 0 14px rgba(255,143,211,0.08);
-}
-
-.mission-status{
-  font-size:12px;
-  font-weight:700;
-  white-space:nowrap;
-}
-
-.mission-item.done .mission-status{
-  color:#ff8fd3;
-}
-
-.reward-row{
-  margin-top:12px;
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.reward-row button{
-  display:none;
-}
-
-.reward-row button.show{
-  display:inline-block;
-}
-
-.skin-count{
-  margin-top:10px;
-  font-size:12px;
-  color:var(--text-sub);
-}
-
 .game-wrap{
   width:420px;
   height:620px;
@@ -719,10 +636,6 @@ img{
     width:42px;
     height:42px;
   }
-
-  .mission-box{
-    max-width:360px;
-  }
 }
 </style>
 </head>
@@ -753,16 +666,6 @@ img{
     <div id="selectedMembersWrap">
       <div id="selectedMembers"></div>
     </div>
-  </div>
-
-  <div class="mission-box">
-    <h3 class="mission-title">今日のミッション</h3>
-    <p class="mission-sub">Lv.5を作成したプレイだけ1プレイとしてカウントされます。</p>
-    <div id="missionList" class="mission-list"></div>
-    <div class="reward-row">
-      <button id="skinRewardBtn">ランダムスキンGET!</button>
-    </div>
-    <div class="skin-count">所持スキン数 : <span id="ownedSkinCount">0</span></div>
   </div>
 
   <div class="controls">
