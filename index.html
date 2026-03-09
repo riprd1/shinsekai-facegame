@@ -1,3 +1,14 @@
+これでOK。
+今の index.html にそのまま貼り替えれば、📖の中で
+	•	デイリーミッション確認
+	•	フレーム受け取り
+	•	所持フレーム一覧
+	•	ランク表示
+	•	星・ハート・キラキラ表示
+	•	練習生を選んで装着
+
+まで入る完全版です。
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -289,19 +300,19 @@ button:hover{
 
 .frame-list{
   display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  justify-content:center;
+  flex-direction:column;
+  gap:10px;
   margin-bottom:12px;
 }
 
 .frame-chip{
-  padding:10px 12px;
-  border-radius:999px;
+  width:100%;
+  text-align:left;
+  padding:12px 14px;
+  border-radius:16px;
   background:rgba(255,255,255,0.08);
   border:1px solid rgba(143,211,255,0.22);
   color:#fff;
-  font-size:13px;
   cursor:pointer;
   transition:all 0.15s ease;
 }
@@ -310,7 +321,39 @@ button:hover{
   background:rgba(255,105,180,0.18);
   border:1px solid rgba(255,143,211,0.72);
   box-shadow:0 0 12px rgba(255,143,211,0.22);
-  color:#ffd6ea;
+}
+
+.frame-chip-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:4px;
+}
+
+.frame-chip-name{
+  font-size:14px;
+  font-weight:bold;
+  color:#fff;
+}
+
+.frame-chip-rank{
+  font-size:12px;
+  font-weight:bold;
+  color:#ffe08f;
+  white-space:nowrap;
+}
+
+.frame-chip-icons{
+  font-size:16px;
+  line-height:1;
+  margin-bottom:4px;
+}
+
+.frame-chip-desc{
+  font-size:12px;
+  color:#d8e3ff;
+  line-height:1.5;
 }
 
 .frame-empty{
@@ -721,18 +764,60 @@ const secretCharacters = [
   }
 ];
 
-const SKIN_POOL = [
-  "ピンクフレーム",
-  "ゴールドフレーム",
-  "ミントフレーム",
-  "パープルフレーム",
-  "スターグロウ",
-  "オーロラライン",
-  "ハートピンク",
-  "スカイブルー",
-  "ネオンパープル",
-  "シャイニーゴールド"
-];
+const FRAME_MASTER = {
+  "ピンクフレーム": {
+    rank: "N",
+    icons: "♡",
+    desc: "やさしいピンクの定番フレーム"
+  },
+  "ゴールドフレーム": {
+    rank: "R",
+    icons: "★",
+    desc: "高級感のあるゴールドフレーム"
+  },
+  "ミントフレーム": {
+    rank: "N",
+    icons: "♡",
+    desc: "爽やかなミントカラーのフレーム"
+  },
+  "パープルフレーム": {
+    rank: "R",
+    icons: "★",
+    desc: "クールな雰囲気のパープルフレーム"
+  },
+  "スターグロウ": {
+    rank: "SR",
+    icons: "★✨",
+    desc: "星がきらめく人気フレーム"
+  },
+  "オーロラライン": {
+    rank: "SR",
+    icons: "✨",
+    desc: "オーロラの光をまとったフレーム"
+  },
+  "ハートピンク": {
+    rank: "R",
+    icons: "♡♡",
+    desc: "ハート感たっぷりのキュート系"
+  },
+  "スカイブルー": {
+    rank: "N",
+    icons: "♡",
+    desc: "すっきり見やすいブルーフレーム"
+  },
+  "ネオンパープル": {
+    rank: "SR",
+    icons: "★✨",
+    desc: "ネオン感の強い映えるフレーム"
+  },
+  "シャイニーゴールド": {
+    rank: "SSR",
+    icons: "★✨♡",
+    desc: "特別感のある豪華フレーム"
+  }
+};
+
+const SKIN_POOL = Object.keys(FRAME_MASTER);
 
 function displayName(name){
   return name.split("(")[0].trim();
@@ -797,6 +882,14 @@ function getRewardSkins(count=1){
   return shuffled.slice(0, count);
 }
 
+function getFrameMeta(frameName){
+  return FRAME_MASTER[frameName] || {
+    rank: "N",
+    icons: "♡",
+    desc: "フレーム"
+  };
+}
+
 function renderEquipMemberOptions(){
   equipMemberSelect.innerHTML = `<option value="">練習生を選んでください</option>` + members.map(member => {
     return `<option value="${member.name}">${displayName(member.name)}</option>`;
@@ -816,9 +909,10 @@ function renderEquippedList(){
     return;
   }
 
-  equipCurrentEl.innerHTML = entries.map(([memberName, frameName]) => `
-    <div class="equip-current-item">${displayName(memberName)} ： ${frameName}</div>
-  `).join("");
+  equipCurrentEl.innerHTML = entries.map(([memberName, frameName]) => {
+    const meta = getFrameMeta(frameName);
+    return `<div class="equip-current-item">${displayName(memberName)} ： ${meta.icons} ${frameName} [${meta.rank}]</div>`;
+  }).join("");
 }
 
 function renderFrameInventory(){
@@ -831,11 +925,19 @@ function renderFrameInventory(){
     return;
   }
 
-  frameListEl.innerHTML = ownedSkins.map(frame => `
-    <button type="button" class="frame-chip${selectedFrameName === frame ? " active" : ""}" data-frame="${frame}">
-      ${frame}
-    </button>
-  `).join("");
+  frameListEl.innerHTML = ownedSkins.map(frame => {
+    const meta = getFrameMeta(frame);
+    return `
+      <button type="button" class="frame-chip${selectedFrameName === frame ? " active" : ""}" data-frame="${frame}">
+        <div class="frame-chip-top">
+          <div class="frame-chip-name">${frame}</div>
+          <div class="frame-chip-rank">[${meta.rank}]</div>
+        </div>
+        <div class="frame-chip-icons">${meta.icons}</div>
+        <div class="frame-chip-desc">${meta.desc}</div>
+      </button>
+    `;
+  }).join("");
 
   frameListEl.querySelectorAll(".frame-chip").forEach(btn => {
     btn.onclick = () => {
@@ -914,7 +1016,9 @@ missionRewardBtn.onclick = () => {
   localStorage.setItem("facegame_daily_mission_state", JSON.stringify(missionState));
 
   renderMissionPopup();
-  alert(`フレームGET！\n${reward}`);
+
+  const meta = getFrameMeta(reward);
+  alert(`フレームGET！\n${meta.icons} ${reward} [${meta.rank}]`);
 };
 
 equipMemberSelect.onchange = () => {
@@ -934,7 +1038,9 @@ equipFrameBtn.onclick = () => {
   saveEquippedFrames(equipped);
 
   renderEquippedList();
-  alert(`${displayName(selectedEquipMemberName)} に\n${selectedFrameName} を装着しました！`);
+
+  const meta = getFrameMeta(selectedFrameName);
+  alert(`${displayName(selectedEquipMemberName)} に\n${meta.icons} ${selectedFrameName} [${meta.rank}] を装着しました！`);
 };
 
 members.forEach(m=>{
