@@ -194,6 +194,8 @@ button:hover{
 
 .mission-card{
   width:min(92vw, 430px);
+  max-height:90vh;
+  overflow:auto;
   background:linear-gradient(180deg, rgba(16,31,108,0.96), rgba(7,18,82,0.96));
   border-radius:22px;
   padding:22px 18px 18px;
@@ -268,6 +270,107 @@ button:hover{
 
 .mission-reward-btn.show{
   display:block;
+}
+
+.frame-section{
+  margin:0 0 14px;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(143,211,255,0.16);
+}
+
+.frame-section-title{
+  margin:0 0 10px;
+  font-size:16px;
+  color:#fff;
+  text-align:center;
+}
+
+.frame-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  margin-bottom:12px;
+}
+
+.frame-chip{
+  padding:10px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(143,211,255,0.22);
+  color:#fff;
+  font-size:13px;
+  cursor:pointer;
+  transition:all 0.15s ease;
+}
+
+.frame-chip.active{
+  background:rgba(255,105,180,0.18);
+  border:1px solid rgba(255,143,211,0.72);
+  box-shadow:0 0 12px rgba(255,143,211,0.22);
+  color:#ffd6ea;
+}
+
+.frame-empty{
+  text-align:center;
+  font-size:13px;
+  color:#d8e3ff;
+  padding:10px 0;
+}
+
+.equip-box{
+  margin-top:10px;
+}
+
+.equip-label{
+  display:block;
+  margin:0 0 8px;
+  font-size:13px;
+  color:#d8e3ff;
+}
+
+.equip-select{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid rgba(143,211,255,0.22);
+  background:rgba(255,255,255,0.08);
+  color:#fff;
+  font-size:14px;
+  outline:none;
+}
+
+.equip-select option{
+  color:#000;
+}
+
+.equip-btn{
+  width:100%;
+  margin-top:10px;
+  display:none;
+}
+
+.equip-btn.show{
+  display:block;
+}
+
+.equip-current{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.equip-current-item{
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(143,211,255,0.15);
+  color:#d8e3ff;
+  font-size:13px;
+  line-height:1.6;
 }
 
 .mission-close-btn{
@@ -379,12 +482,31 @@ button:hover{
     <div class="mission-card">
       <h2>📖 デイリーミッション</h2>
       <p class="mission-sub">今日のミッションを確認できます。<br>3つすべて達成でフレームを1つGET！</p>
+
       <div id="missionList" class="mission-list"></div>
+
       <div class="mission-meta">
         所持フレーム数：<span id="ownedSkinCount">0</span><br>
         今日の報酬：デイリーミッション3つ達成でフレーム1つ
       </div>
+
       <button id="missionRewardBtn" class="mission-reward-btn">フレームを受け取る</button>
+
+      <div class="frame-section">
+        <h3 class="frame-section-title">所持フレーム一覧</h3>
+        <div id="frameList" class="frame-list"></div>
+
+        <div class="equip-box">
+          <label class="equip-label" for="equipMemberSelect">装着する練習生を選択</label>
+          <select id="equipMemberSelect" class="equip-select">
+            <option value="">練習生を選んでください</option>
+          </select>
+          <button id="equipFrameBtn" class="equip-btn">装着する</button>
+        </div>
+
+        <div id="equipCurrent" class="equip-current"></div>
+      </div>
+
       <button id="missionCloseBtn" class="mission-close-btn">閉じる</button>
     </div>
   </div>
@@ -571,8 +693,14 @@ const missionCloseBtn=document.getElementById("missionCloseBtn");
 const missionListEl=document.getElementById("missionList");
 const ownedSkinCountEl=document.getElementById("ownedSkinCount");
 const missionRewardBtn=document.getElementById("missionRewardBtn");
+const frameListEl=document.getElementById("frameList");
+const equipMemberSelect=document.getElementById("equipMemberSelect");
+const equipFrameBtn=document.getElementById("equipFrameBtn");
+const equipCurrentEl=document.getElementById("equipCurrent");
 
 let selected=[];
+let selectedFrameName = "";
+let selectedEquipMemberName = "";
 
 const secretCharacters = [
   {
@@ -606,6 +734,10 @@ const SKIN_POOL = [
   "シャイニーゴールド"
 ];
 
+function displayName(name){
+  return name.split("(")[0].trim();
+}
+
 function shuffle(array){
   const arr=[...array];
   for(let i=arr.length-1;i>0;i--){
@@ -625,6 +757,14 @@ function getOwnedSkins(){
 
 function saveOwnedSkins(list){
   localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
+}
+
+function getEquippedFrames(){
+  return JSON.parse(localStorage.getItem("facegame_equipped_frames") || "{}");
+}
+
+function saveEquippedFrames(data){
+  localStorage.setItem("facegame_equipped_frames", JSON.stringify(data));
 }
 
 function seededShuffle(array, seed){
@@ -657,6 +797,57 @@ function getRewardSkins(count=1){
   return shuffled.slice(0, count);
 }
 
+function renderEquipMemberOptions(){
+  equipMemberSelect.innerHTML = `<option value="">練習生を選んでください</option>` + members.map(member => {
+    return `<option value="${member.name}">${displayName(member.name)}</option>`;
+  }).join("");
+
+  selectedEquipMemberName = "";
+  equipMemberSelect.value = "";
+  equipFrameBtn.classList.remove("show");
+}
+
+function renderEquippedList(){
+  const equipped = getEquippedFrames();
+  const entries = Object.entries(equipped);
+
+  if(!entries.length){
+    equipCurrentEl.innerHTML = `<div class="equip-current-item">まだフレームを装着していません</div>`;
+    return;
+  }
+
+  equipCurrentEl.innerHTML = entries.map(([memberName, frameName]) => `
+    <div class="equip-current-item">${displayName(memberName)} ： ${frameName}</div>
+  `).join("");
+}
+
+function renderFrameInventory(){
+  const ownedSkins = getOwnedSkins();
+
+  if(!ownedSkins.length){
+    frameListEl.innerHTML = `<div class="frame-empty">まだフレームを持っていません</div>`;
+    selectedFrameName = "";
+    equipFrameBtn.classList.remove("show");
+    return;
+  }
+
+  frameListEl.innerHTML = ownedSkins.map(frame => `
+    <button type="button" class="frame-chip${selectedFrameName === frame ? " active" : ""}" data-frame="${frame}">
+      ${frame}
+    </button>
+  `).join("");
+
+  frameListEl.querySelectorAll(".frame-chip").forEach(btn => {
+    btn.onclick = () => {
+      selectedFrameName = btn.dataset.frame;
+      renderFrameInventory();
+      if(selectedEquipMemberName){
+        equipFrameBtn.classList.add("show");
+      }
+    };
+  });
+}
+
 function renderMissionPopup(){
   const missionState = JSON.parse(localStorage.getItem("facegame_daily_mission_state") || "null");
   const ownedSkins = getOwnedSkins();
@@ -667,26 +858,29 @@ function renderMissionPopup(){
     missionListEl.innerHTML = `<div class="mission-item"><span>まだ今日のミッションがありません</span><span class="mission-status"></span></div>`;
     missionRewardBtn.classList.remove("show");
     missionOpenBtn.classList.remove("has-reward");
-    return;
-  }
-
-  missionListEl.innerHTML = missionState.missions.map(m => `
-    <div class="mission-item${m.done ? " done" : ""}">
-      <span>${m.text}</span>
-      <span class="mission-status">${m.done ? "達成！" : ""}</span>
-    </div>
-  `).join("");
-
-  const allDone = missionState.missions.every(m => m.done);
-  const canClaim = allDone && !missionState.rewardClaimed;
-
-  if(canClaim){
-    missionRewardBtn.classList.add("show");
-    missionOpenBtn.classList.add("has-reward");
   }else{
-    missionRewardBtn.classList.remove("show");
-    missionOpenBtn.classList.remove("has-reward");
+    missionListEl.innerHTML = missionState.missions.map(m => `
+      <div class="mission-item${m.done ? " done" : ""}">
+        <span>${m.text}</span>
+        <span class="mission-status">${m.done ? "達成！" : ""}</span>
+      </div>
+    `).join("");
+
+    const allDone = missionState.missions.every(m => m.done);
+    const canClaim = allDone && !missionState.rewardClaimed;
+
+    if(canClaim){
+      missionRewardBtn.classList.add("show");
+      missionOpenBtn.classList.add("has-reward");
+    }else{
+      missionRewardBtn.classList.remove("show");
+      missionOpenBtn.classList.remove("has-reward");
+    }
   }
+
+  renderFrameInventory();
+  renderEquipMemberOptions();
+  renderEquippedList();
 }
 
 missionOpenBtn.onclick = () => {
@@ -721,6 +915,26 @@ missionRewardBtn.onclick = () => {
 
   renderMissionPopup();
   alert(`フレームGET！\n${reward}`);
+};
+
+equipMemberSelect.onchange = () => {
+  selectedEquipMemberName = equipMemberSelect.value;
+  if(selectedFrameName && selectedEquipMemberName){
+    equipFrameBtn.classList.add("show");
+  }else{
+    equipFrameBtn.classList.remove("show");
+  }
+};
+
+equipFrameBtn.onclick = () => {
+  if(!selectedFrameName || !selectedEquipMemberName) return;
+
+  const equipped = getEquippedFrames();
+  equipped[selectedEquipMemberName] = selectedFrameName;
+  saveEquippedFrames(equipped);
+
+  renderEquippedList();
+  alert(`${displayName(selectedEquipMemberName)} に\n${selectedFrameName} を装着しました！`);
 };
 
 members.forEach(m=>{
