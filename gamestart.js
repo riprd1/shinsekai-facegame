@@ -46,19 +46,6 @@ const SPECIAL_CHARACTERS = [
   }
 ];
 
-const SKIN_POOL = [
-  "ピンクフレーム",
-  "ゴールドフレーム",
-  "ミントフレーム",
-  "パープルフレーム",
-  "スターグロウ",
-  "オーロラライン",
-  "ハートピンク",
-  "スカイブルー",
-  "ネオンパープル",
-  "シャイニーゴールド"
-];
-
 const bgm = document.getElementById("bgm");
 const gameEl = document.getElementById("game");
 const scoreEl = document.getElementById("score");
@@ -82,10 +69,7 @@ const unlockNameEl = document.getElementById("unlockName");
 const skinRewardOverlayEl = document.getElementById("skinRewardOverlay");
 const skinRewardListEl = document.getElementById("skinRewardList");
 const skinRewardResultEl = document.getElementById("skinRewardResult");
-const skinRewardBtn = document.getElementById("skinRewardBtn");
 const skinRewardCloseBtn = document.getElementById("skinRewardCloseBtn");
-const ownedSkinCountEl = document.getElementById("ownedSkinCount");
-const missionListEl = document.getElementById("missionList");
 const settingsBtn = document.getElementById("settings");
 const panelEl = document.getElementById("panel");
 const bgmVolEl = document.getElementById("bgmVol");
@@ -243,36 +227,6 @@ function saveDailyMissionState() {
   localStorage.setItem("facegame_daily_mission_state", JSON.stringify(dailyMissionState));
 }
 
-function getOwnedSkins() {
-  return JSON.parse(localStorage.getItem("facegame_owned_skins") || "[]");
-}
-
-function saveOwnedSkins(list) {
-  localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
-}
-
-function updateOwnedSkinCount() {
-  ownedSkinCountEl.textContent = getOwnedSkins().length;
-}
-
-function renderMissions() {
-  missionListEl.innerHTML = dailyMissionState.missions.map(m => `
-    <div class="mission-item${m.done ? " done" : ""}">
-      <span>${m.text}</span>
-      <span class="mission-status">${m.done ? "達成！" : ""}</span>
-    </div>
-  `).join("");
-
-  const allDone = dailyMissionState.missions.every(m => m.done);
-  if (allDone && !dailyMissionState.rewardClaimed) {
-    skinRewardBtn.classList.add("show");
-  } else {
-    skinRewardBtn.classList.remove("show");
-  }
-
-  updateOwnedSkinCount();
-}
-
 function updateMissionProgress() {
   let changed = false;
 
@@ -297,9 +251,6 @@ function updateMissionProgress() {
 
   if (changed) {
     saveDailyMissionState();
-    renderMissions();
-  } else {
-    renderMissions();
   }
 }
 
@@ -317,14 +268,6 @@ function updateMaxLevel(level) {
     maxLevelReachedThisRun = level;
     updateMissionProgress();
   }
-}
-
-function getRewardSkins(count = 3) {
-  const owned = getOwnedSkins();
-  const notOwned = SKIN_POOL.filter(name => !owned.includes(name));
-  const firstPool = notOwned.length >= count ? notOwned : [...SKIN_POOL];
-  const shuffled = seededShuffle(firstPool, hashString(getTodayKey() + owned.length + String(Date.now())));
-  return shuffled.slice(0, count);
 }
 
 function showSkinRewardOverlay(rewards) {
@@ -354,24 +297,6 @@ function showSkinRewardOverlay(rewards) {
   }, 2300);
 }
 
-function claimSkinReward() {
-  if (dailyMissionState.rewardClaimed) return;
-  const rewards = getRewardSkins(3);
-  const owned = getOwnedSkins();
-  const merged = [...new Set([...owned, ...rewards])];
-  saveOwnedSkins(merged);
-
-  dailyMissionState.rewardClaimed = true;
-  saveDailyMissionState();
-  renderMissions();
-  showSkinRewardOverlay(rewards);
-}
-
-skinRewardBtn.addEventListener("click", async () => {
-  await unlockAudio();
-  claimSkinReward();
-});
-
 skinRewardCloseBtn.addEventListener("click", () => {
   if (rewardAnimating) return;
   skinRewardOverlayEl.style.display = "none";
@@ -382,8 +307,6 @@ skinRewardOverlayEl.addEventListener("click", e => {
     skinRewardOverlayEl.style.display = "none";
   }
 });
-
-renderMissions();
 
 function preloadImages() {
   return Promise.all(members.map(m => new Promise(resolve => {
@@ -617,29 +540,61 @@ function playBgmPhrase() {
 }
 
 function startBgm() {
-  if (bgmStarted) return;
-  bgmStarted = true;
-
   if (bgm) {
     bgm.volume = bgmVolume / 100;
-    bgm.currentTime = bgm.currentTime || 0;
-    bgm.play().catch(() => {
+
+    if (bgmVolume <= 0) {
+      bgm.pause();
+      bgm.currentTime = 0;
       bgmStarted = false;
-    });
+      return;
+    }
+
+    if (!bgmStarted) {
+      bgm.play().then(() => {
+        bgmStarted = true;
+      }).catch(() => {
+        bgmStarted = false;
+      });
+    }
     return;
   }
 
+  if (bgmStarted) return;
+  if (bgmVolume <= 0) return;
+
+  bgmStarted = true;
   playBgmPhrase();
   bgmLoop = setInterval(playBgmPhrase, 2000);
 }
 
 bgmVolEl.oninput = async e => {
-  await unlockAudio();
   bgmVolume = Number(e.target.value);
-  if (bgmGain) bgmGain.gain.value = bgmVolume / 100;
-  if (bgm) bgm.volume = bgmVolume / 100;
   bgmValEl.textContent = `${bgmVolume}%`;
   localStorage.setItem("facegame_bgm_volume", String(bgmVolume));
+
+  if (bgm) {
+    bgm.volume = bgmVolume / 100;
+
+    if (bgmVolume <= 0) {
+      bgm.pause();
+      bgm.currentTime = 0;
+      bgmStarted = false;
+    } else {
+      await unlockAudio();
+      if (bgm.paused) {
+        bgm.play().then(() => {
+          bgmStarted = true;
+        }).catch(() => {
+          bgmStarted = false;
+        });
+      }
+    }
+    return;
+  }
+
+  await unlockAudio();
+  if (bgmGain) bgmGain.gain.value = bgmVolume / 100;
 };
 
 seVolEl.oninput = async e => {
