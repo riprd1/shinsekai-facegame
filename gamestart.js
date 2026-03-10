@@ -346,6 +346,7 @@ let playCountedThisRun = false;
 let rewardAnimating = false;
 let currentCombo = 0;
 let maxComboThisRun = 0;
+let chestOpening = false;
 
 const imageSizeMap = new Map();
 
@@ -510,14 +511,7 @@ function pickDailyRewardSkins(count = 3) {
 }
 
 function checkMissionReward() {
-  if (dailyMissionState.rewardClaimed) return;
-  if (getCompletedMissionCount() < 3) return;
-
-  dailyMissionState.rewardClaimed = true;
-  saveDailyMissionState();
-
-  const rewards = pickDailyRewardSkins(3);
-  showSkinRewardOverlay(rewards);
+  renderMissionProgress();
 }
 
 function renderMissionProgress() {
@@ -543,8 +537,13 @@ function renderMissionProgress() {
   }
 
   if (dailyMissionChestEl) {
-    dailyMissionChestEl.classList.toggle("ready", completed >= 3 && !dailyMissionState.rewardClaimed);
-    dailyMissionChestEl.classList.toggle("opened", !!dailyMissionState.rewardClaimed);
+    dailyMissionChestEl.classList.remove("ready", "opened");
+
+    if (dailyMissionState.rewardClaimed) {
+      dailyMissionChestEl.classList.add("opened");
+    } else if (completed >= 3) {
+      dailyMissionChestEl.classList.add("ready");
+    }
   }
 }
 
@@ -640,27 +639,40 @@ function showSkinRewardOverlay(rewards) {
   rewardAnimating = true;
   skinRewardOverlayEl.style.display = "flex";
   skinRewardCloseBtn.disabled = true;
+  skinRewardListEl.classList.add("roulette");
+  skinRewardResultEl.textContent = "";
+
   skinRewardListEl.innerHTML = `
     <div class="skin-reward-item">？？？</div>
     <div class="skin-reward-item">？？？</div>
     <div class="skin-reward-item">？？？</div>
   `;
-  skinRewardResultEl.textContent = "";
 
   const itemEls = [...skinRewardListEl.querySelectorAll(".skin-reward-item")];
+  const allSkins = Object.keys(FRAME_MASTER);
 
   rewards.forEach((name, index) => {
+    let tick = 0;
+
+    const rouletteTimer = setInterval(() => {
+      const showName = allSkins[(tick + index * 4) % allSkins.length];
+      itemEls[index].textContent = `・${showName}`;
+      tick += 1;
+    }, 70);
+
     setTimeout(() => {
+      clearInterval(rouletteTimer);
       itemEls[index].textContent = `・${name}`;
       itemEls[index].classList.add("revealed");
-    }, 650 + index * 500);
+    }, 1200 + index * 500);
   });
 
   setTimeout(() => {
+    skinRewardListEl.classList.remove("roulette");
     skinRewardResultEl.innerHTML = `・${rewards[0]}<br>・${rewards[1]}<br>・${rewards[2]}<br><br>のスキンが手に入りました。`;
     skinRewardCloseBtn.disabled = false;
     rewardAnimating = false;
-  }, 2300);
+  }, 2600);
 }
 
 skinRewardCloseBtn.addEventListener("click", () => {
@@ -1031,6 +1043,42 @@ unlockOverlayEl.addEventListener("click", e => {
   }
 });
 
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function openMissionChest() {
+  if (!dailyMissionChestEl) return;
+  if (chestOpening) return;
+  if (dailyMissionState.rewardClaimed) return;
+  if (getCompletedMissionCount() < 3) return;
+
+  chestOpening = true;
+
+  await unlockAudio();
+
+  dailyMissionChestEl.classList.remove("ready");
+  dailyMissionChestEl.classList.add("opening");
+
+  tone(523.25, 0.08, "triangle", 0.55);
+  tone(659.25, 0.1, "triangle", 0.5, 0.08);
+  tone(783.99, 0.14, "triangle", 0.42, 0.18);
+
+  await wait(850);
+
+  dailyMissionState.rewardClaimed = true;
+  saveDailyMissionState();
+
+  dailyMissionChestEl.classList.remove("opening");
+  dailyMissionChestEl.classList.add("opened");
+
+  const rewards = pickDailyRewardSkins(3);
+  renderMissionProgress();
+  showSkinRewardOverlay(rewards);
+
+  chestOpening = false;
+}
+
 if (missionBtn) {
   missionBtn.addEventListener("click", e => {
     e.stopPropagation();
@@ -1054,6 +1102,12 @@ if (missionOverlayEl) {
     if (e.target === missionOverlayEl) {
       missionOverlayEl.style.display = "none";
     }
+  });
+}
+
+if (dailyMissionChestEl) {
+  dailyMissionChestEl.addEventListener("click", () => {
+    openMissionChest();
   });
 }
 
