@@ -201,6 +201,8 @@ const dailyMissionProgressBarEl = document.getElementById("dailyMissionProgressB
 const dailyMissionProgressTextEl = document.getElementById("dailyMissionProgressText");
 const dailyMissionChestEl = document.getElementById("dailyMissionChest");
 
+let missionNotifyBadgeEl = null;
+
 document.querySelector(".game-wrap").style.width = `${GAME_WIDTH}px`;
 document.querySelector(".game-wrap").style.height = `${GAME_HEIGHT}px`;
 gameEl.style.width = `${GAME_WIDTH}px`;
@@ -277,6 +279,44 @@ function applyFrameToGhost(frameName){
   if (meta.rank === "SSR") {
     dropGhostEl.style.boxShadow = `0 8px 20px rgba(25,45,120,0.16), 0 0 14px ${meta.glow}`;
   }
+}
+
+function ensureMissionNotifyBadge() {
+  if (!missionBtn) return null;
+  if (missionNotifyBadgeEl) return missionNotifyBadgeEl;
+
+  missionBtn.style.position = "relative";
+
+  const badge = document.createElement("span");
+  badge.style.position = "absolute";
+  badge.style.top = "-4px";
+  badge.style.right = "-2px";
+  badge.style.width = "12px";
+  badge.style.height = "12px";
+  badge.style.borderRadius = "50%";
+  badge.style.background = "#ff4fa3";
+  badge.style.boxShadow = "0 0 10px rgba(255,79,163,0.75)";
+  badge.style.border = "2px solid #fff";
+  badge.style.display = "none";
+  badge.style.pointerEvents = "none";
+
+  missionBtn.appendChild(badge);
+  missionNotifyBadgeEl = badge;
+  return badge;
+}
+
+function getUnreadMissionDoneCount() {
+  const seenCount = Number(dailyMissionState.badgeSeenDoneCount || 0);
+  const completed = getCompletedMissionCount();
+  return Math.max(0, completed - seenCount);
+}
+
+function updateMissionNotifyBadge() {
+  const badge = ensureMissionNotifyBadge();
+  if (!badge) return;
+
+  const unreadCount = getUnreadMissionDoneCount();
+  badge.style.display = unreadCount > 0 ? "block" : "none";
 }
 
 function renderSelectedMembers() {
@@ -417,6 +457,7 @@ function buildDailyMissionState() {
     if (!saved.dailyLevelCounts || typeof saved.dailyLevelCounts !== "object") saved.dailyLevelCounts = {};
     if (typeof saved.rewardClaimed !== "boolean") saved.rewardClaimed = false;
     if (!Array.isArray(saved.missions)) saved.missions = [];
+    if (typeof saved.badgeSeenDoneCount !== "number") saved.badgeSeenDoneCount = 0;
     return saved;
   }
 
@@ -435,7 +476,8 @@ function buildDailyMissionState() {
     missions: selected,
     rewardClaimed: false,
     dailyPlayCount: 0,
-    dailyLevelCounts: {}
+    dailyLevelCounts: {},
+    badgeSeenDoneCount: 0
   };
 
   localStorage.setItem("facegame_daily_mission_state", JSON.stringify(state));
@@ -545,6 +587,8 @@ function renderMissionProgress() {
       dailyMissionChestEl.classList.add("ready");
     }
   }
+
+  updateMissionNotifyBadge();
 }
 
 function updateMissionProgress() {
@@ -1080,6 +1124,12 @@ async function openMissionChest() {
 
   const rewards = pickDailyRewardSkins(2);
   renderMissionProgress();
+
+  if (missionOverlayEl) {
+    missionOverlayEl.style.display = "none";
+  }
+
+  await wait(180);
   showSkinRewardOverlay(rewards);
 
   chestOpening = false;
@@ -1089,6 +1139,11 @@ if (missionBtn) {
   missionBtn.addEventListener("click", e => {
     e.stopPropagation();
     renderMissionProgress();
+
+    dailyMissionState.badgeSeenDoneCount = getCompletedMissionCount();
+    saveDailyMissionState();
+    updateMissionNotifyBadge();
+
     if (missionOverlayEl) {
       missionOverlayEl.style.display = "flex";
     }
@@ -1333,4 +1388,5 @@ preloadImages().then(() => {
   updateGhostPosition();
   updateMissionProgress();
   renderMissionProgress();
+  updateMissionNotifyBadge();
 });
