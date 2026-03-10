@@ -288,9 +288,9 @@ button:hover{
 
       <div class="field">
         <div class="btns">
-          <button id="applyCustomBtn" type="button">画像URLを反映</button>
-          <button id="resetBtn" type="button">初期化</button>
-          <button id="toggleSpinBtn" type="button">回転ON/OFF</button>
+          <button id="applyCustomBtn">画像URLを反映</button>
+          <button id="resetBtn">初期化</button>
+          <button id="toggleSpinBtn">回転ON/OFF</button>
         </div>
       </div>
 
@@ -494,7 +494,7 @@ viewerEl.style.width = WIDTH + "px";
 viewerEl.style.height = HEIGHT + "px";
 
 const engine = Engine.create();
-engine.world.gravity.y = 0;
+engine.gravity.y = 0;
 const world = engine.world;
 
 const render = Render.create({
@@ -512,36 +512,15 @@ const render = Render.create({
 Render.run(render);
 Runner.run(Runner.create(), engine);
 
-const wall = 60;
-World.add(world, [
-  Bodies.rectangle(WIDTH / 2, HEIGHT + wall / 2, WIDTH, wall, { isStatic: true, render: { visible:false } }),
-  Bodies.rectangle(-wall / 2, HEIGHT / 2, wall, HEIGHT, { isStatic: true, render: { visible:false } }),
-  Bodies.rectangle(WIDTH + wall / 2, HEIGHT / 2, wall, HEIGHT, { isStatic: true, render: { visible:false } })
-]);
-
 function getFrameMeta(frameName){
   return FRAME_MASTER[frameName] || null;
 }
 
-function applyFrameToMini(imgEl, frameName){
-  if (!imgEl) return;
-
-  imgEl.style.borderWidth = "2px";
-  imgEl.style.borderStyle = "solid";
-  imgEl.style.borderColor = "rgba(145,201,255,0.55)";
-  imgEl.style.boxShadow = "none";
-  imgEl.style.filter = "none";
-
-  const meta = getFrameMeta(frameName);
-  if (!meta) return;
-
-  imgEl.style.borderColor = meta.color;
-  imgEl.style.boxShadow = `0 0 10px ${meta.glow}`;
-}
+FaceGameFrames.attachFrameRenderer(render, world, Composite, getFrameMeta);
 
 let previewBody = null;
 let spinEnabled = false;
-let customOptionEl = null;
+let currentImageUrl = TEST_IMAGES[0].url;
 
 function removePreviewBody(){
   if (previewBody) {
@@ -550,52 +529,17 @@ function removePreviewBody(){
   }
 }
 
-function sanitizeImageUrl(url) {
-  if (!url) return "";
-
-  let v = url.trim();
-
-  if (!v) return "";
-
-  if (/^https?:\/\/imgur\.com\/[a-zA-Z0-9]+$/i.test(v)) {
-    const id = v.split("/").pop();
-    return `https://i.imgur.com/${id}.png`;
-  }
-
-  if (/^https?:\/\/www\.imgur\.com\/[a-zA-Z0-9]+$/i.test(v)) {
-    const id = v.split("/").pop();
-    return `https://i.imgur.com/${id}.png`;
-  }
-
-  return v;
-}
-
-function makeImagePromise(url) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(url);
-    img.onerror = () => reject(new Error("画像を読み込めませんでした"));
-    img.src = url;
-  });
-}
-
-async function createPreviewBody() {
+function createPreviewBody() {
   removePreviewBody();
 
   const radius = Number(sizeRange.value);
   const frameName = frameSelect.value;
-  const imageUrl = imageSelect.value;
-
-  if (!imageUrl) {
-    frameDesc.textContent = "画像が選択されていません";
-    miniPreview.removeAttribute("src");
-    miniName.textContent = frameName || "preview";
-    return;
-  }
+  const imageUrl = currentImageUrl;
 
   previewBody = Bodies.circle(WIDTH / 2, HEIGHT / 2, radius, {
     isStatic: false,
     inertia: Infinity,
+    inverseInertia: 0,
     restitution: 0,
     friction: 0,
     frictionAir: 0.08,
@@ -611,9 +555,7 @@ async function createPreviewBody() {
   previewBody.member = { name: "preview" };
   previewBody.frameName = frameName;
   previewBody.evoIndex = 0;
-  previewBody.isPreview = true;
 
-  Body.setPosition(previewBody, { x: WIDTH / 2, y: HEIGHT / 2 });
   Body.setVelocity(previewBody, { x: 0, y: 0 });
   Body.setAngularVelocity(previewBody, 0);
 
@@ -626,7 +568,8 @@ async function createPreviewBody() {
 
   miniPreview.src = imageUrl;
   miniName.textContent = frameName;
-  applyFrameToMini(miniPreview, frameName);
+  miniPreview.style.borderColor = meta ? meta.color : "rgba(145,201,255,0.55)";
+  miniPreview.style.boxShadow = meta ? `0 0 10px ${meta.glow}` : "none";
 }
 
 function updateBackgroundMode() {
@@ -641,11 +584,25 @@ function updateBackgroundMode() {
   }
 }
 
-frameSelect.addEventListener("change", () => {
+function applySelectedImage(url) {
+  currentImageUrl = url;
+  imageSelect.value = url;
   createPreviewBody();
-});
+}
+
+function loadCustomImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = () => reject(new Error("画像を読み込めませんでした"));
+    img.src = url;
+  });
+}
+
+frameSelect.addEventListener("change", createPreviewBody);
 
 imageSelect.addEventListener("change", () => {
+  currentImageUrl = imageSelect.value;
   createPreviewBody();
 });
 
@@ -657,60 +614,42 @@ sizeRange.addEventListener("input", () => {
 bgSelect.addEventListener("change", updateBackgroundMode);
 
 applyCustomBtn.addEventListener("click", async () => {
-  const raw = customImage.value.trim();
-  const value = sanitizeImageUrl(raw);
-
-  if (!value) {
-    alert("画像URLを入れてください。");
-    return;
-  }
+  const value = customImage.value.trim();
+  if (!value) return;
 
   try {
-    applyCustomBtn.disabled = true;
-    applyCustomBtn.textContent = "読み込み中...";
+    await loadCustomImage(value);
 
-    await makeImagePromise(value);
-
-    if (customOptionEl) {
-      customOptionEl.remove();
-      customOptionEl = null;
+    let existing = [...imageSelect.options].find(opt => opt.value === value);
+    if (!existing) {
+      existing = document.createElement("option");
+      existing.value = value;
+      existing.textContent = "カスタム画像";
+      imageSelect.appendChild(existing);
     }
 
-    customOptionEl = document.createElement("option");
-    customOptionEl.value = value;
-    customOptionEl.textContent = "カスタム画像";
-    imageSelect.appendChild(customOptionEl);
-    imageSelect.value = value;
-
-    createPreviewBody();
+    existing.selected = true;
+    applySelectedImage(value);
   } catch (err) {
-    alert("画像を読み込めませんでした。直接画像URLか確認してください。");
-  } finally {
-    applyCustomBtn.disabled = false;
-    applyCustomBtn.textContent = "画像URLを反映";
+    alert("画像URLを確認してね。直接画像URLになっていない可能性があるよ。");
   }
 });
 
 resetBtn.addEventListener("click", () => {
   frameSelect.value = "スターグロウ";
   imageSelect.value = TEST_IMAGES[0].url;
+  currentImageUrl = TEST_IMAGES[0].url;
   sizeRange.value = "58";
   sizeVal.textContent = "58";
   bgSelect.value = "default";
   customImage.value = "";
-
-  if (customOptionEl) {
-    customOptionEl.remove();
-    customOptionEl = null;
-  }
-
+  spinEnabled = false;
   updateBackgroundMode();
   createPreviewBody();
 });
 
 toggleSpinBtn.addEventListener("click", () => {
   spinEnabled = !spinEnabled;
-  toggleSpinBtn.textContent = spinEnabled ? "回転OFF" : "回転ON/OFF";
 });
 
 (function animate(){
@@ -730,18 +669,12 @@ toggleSpinBtn.addEventListener("click", () => {
 
 frameSelect.value = "スターグロウ";
 imageSelect.value = TEST_IMAGES[0].url;
+currentImageUrl = TEST_IMAGES[0].url;
 sizeRange.value = "58";
 sizeVal.textContent = "58";
 bgSelect.value = "default";
 
 updateBackgroundMode();
-
-if (window.FaceGameFrames && typeof window.FaceGameFrames.attachFrameRenderer === "function") {
-  FaceGameFrames.attachFrameRenderer(render, world, Composite, getFrameMeta);
-} else {
-  frameDesc.textContent = "frames.js の読み込みに失敗しています";
-}
-
 createPreviewBody();
 </script>
 </body>
