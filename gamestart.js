@@ -193,6 +193,14 @@ const bgmValEl = document.getElementById("bgmVal");
 const seValEl = document.getElementById("seVal");
 const lineEl = document.getElementById("line");
 
+const missionBtn = document.getElementById("missionBtn");
+const missionOverlayEl = document.getElementById("missionOverlay");
+const missionCloseBtn = document.getElementById("missionCloseBtn");
+const dailyMissionListEl = document.getElementById("dailyMissionList");
+const dailyMissionProgressBarEl = document.getElementById("dailyMissionProgressBar");
+const dailyMissionProgressTextEl = document.getElementById("dailyMissionProgressText");
+const dailyMissionChestEl = document.getElementById("dailyMissionChest");
+
 document.querySelector(".game-wrap").style.width = `${GAME_WIDTH}px`;
 document.querySelector(".game-wrap").style.height = `${GAME_HEIGHT}px`;
 gameEl.style.width = `${GAME_WIDTH}px`;
@@ -513,13 +521,8 @@ function checkMissionReward() {
 }
 
 function renderMissionProgress() {
-  const missionListEl = document.getElementById("dailyMissionList");
-  const missionProgressBarEl = document.getElementById("dailyMissionProgressBar");
-  const missionProgressTextEl = document.getElementById("dailyMissionProgressText");
-  const missionChestEl = document.getElementById("dailyMissionChest");
-
-  if (missionListEl) {
-    missionListEl.innerHTML = dailyMissionState.missions.map(mission => {
+  if (dailyMissionListEl) {
+    dailyMissionListEl.innerHTML = dailyMissionState.missions.map(mission => {
       const current = getMissionCurrentValue(mission);
       const doneClass = mission.done ? " done" : "";
       const mark = mission.done ? "✓" : "・";
@@ -531,17 +534,17 @@ function renderMissionProgress() {
   const total = dailyMissionState.missions.length || 3;
   const percent = Math.max(0, Math.min(100, (completed / total) * 100));
 
-  if (missionProgressBarEl) {
-    missionProgressBarEl.style.width = `${percent}%`;
+  if (dailyMissionProgressBarEl) {
+    dailyMissionProgressBarEl.style.width = `${percent}%`;
   }
 
-  if (missionProgressTextEl) {
-    missionProgressTextEl.textContent = `${completed}/${total}`;
+  if (dailyMissionProgressTextEl) {
+    dailyMissionProgressTextEl.textContent = `${completed}/${total}`;
   }
 
-  if (missionChestEl) {
-    missionChestEl.classList.toggle("ready", completed >= 3 && !dailyMissionState.rewardClaimed);
-    missionChestEl.classList.toggle("opened", !!dailyMissionState.rewardClaimed);
+  if (dailyMissionChestEl) {
+    dailyMissionChestEl.classList.toggle("ready", completed >= 3 && !dailyMissionState.rewardClaimed);
+    dailyMissionChestEl.classList.toggle("opened", !!dailyMissionState.rewardClaimed);
   }
 }
 
@@ -1027,6 +1030,32 @@ unlockOverlayEl.addEventListener("click", e => {
     closeUnlockPopup();
   }
 });
+
+if (missionBtn) {
+  missionBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    renderMissionProgress();
+    if (missionOverlayEl) {
+      missionOverlayEl.style.display = "flex";
+    }
+  });
+}
+
+if (missionCloseBtn) {
+  missionCloseBtn.addEventListener("click", () => {
+    if (missionOverlayEl) {
+      missionOverlayEl.style.display = "none";
+    }
+  });
+}
+
+if (missionOverlayEl) {
+  missionOverlayEl.addEventListener("click", e => {
+    if (e.target === missionOverlayEl) {
+      missionOverlayEl.style.display = "none";
+    }
+  });
+}
 
 function showGameOverUI() {
   finalScoreEl.textContent = score;
