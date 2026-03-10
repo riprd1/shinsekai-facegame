@@ -630,6 +630,177 @@ img{
   user-drag:none;
 }
 
+/* ===== ミッション宝箱 ===== */
+.mission-chest{
+  position:relative;
+  width:58px;
+  height:48px;
+  margin:12px auto 0;
+  cursor:pointer;
+  user-select:none;
+  transform-origin:center bottom;
+}
+
+.chest-body{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:30px;
+  border-radius:6px;
+  background:linear-gradient(180deg,#b37416 0%, #7c4700 100%);
+  border:2px solid rgba(255,218,112,0.28);
+  box-shadow:0 6px 16px rgba(0,0,0,0.22);
+}
+
+.chest-lid{
+  position:absolute;
+  left:0;
+  right:0;
+  top:2px;
+  height:18px;
+  border-radius:8px 8px 5px 5px;
+  background:linear-gradient(180deg,#f0b53c 0%, #b97709 100%);
+  border:2px solid rgba(255,226,142,0.34);
+  transform-origin:center bottom;
+  transition:transform 0.35s ease;
+}
+
+.chest-lock{
+  position:absolute;
+  left:50%;
+  top:17px;
+  width:12px;
+  height:14px;
+  transform:translateX(-50%);
+  border-radius:3px;
+  background:linear-gradient(180deg,#ffe58d 0%, #e0b943 100%);
+  box-shadow:0 0 8px rgba(255,230,134,0.18);
+  z-index:2;
+}
+
+.chest-glow{
+  position:absolute;
+  inset:-12px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,225,125,0.38), rgba(255,225,125,0) 68%);
+  opacity:0;
+  pointer-events:none;
+}
+
+.chest-spark{
+  position:absolute;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#fff7d0;
+  box-shadow:0 0 10px rgba(255,240,180,0.95);
+  opacity:0;
+  pointer-events:none;
+}
+
+.spark1{
+  top:-4px;
+  left:6px;
+}
+
+.spark2{
+  top:2px;
+  right:7px;
+}
+
+.mission-chest.ready .chest-glow{
+  opacity:1;
+  animation:chestGlowPulse 1.5s ease-in-out infinite;
+}
+
+.mission-chest.ready .chest-spark{
+  opacity:1;
+}
+
+.mission-chest.ready .spark1{
+  animation:sparkFloat1 1.2s ease-in-out infinite;
+}
+
+.mission-chest.ready .spark2{
+  animation:sparkFloat2 1.35s ease-in-out infinite;
+}
+
+.mission-chest.opening{
+  animation:chestShake 0.18s ease-in-out 4;
+}
+
+.mission-chest.opening .chest-lid{
+  transform:rotate(-26deg) translateY(-2px);
+}
+
+.mission-chest.opened .chest-lid{
+  transform:rotate(-58deg) translateY(-5px);
+}
+
+.mission-chest.opened .chest-glow{
+  opacity:0.9;
+}
+
+@keyframes chestGlowPulse{
+  0%{ transform:scale(0.92); opacity:0.35; }
+  50%{ transform:scale(1.12); opacity:0.85; }
+  100%{ transform:scale(0.92); opacity:0.35; }
+}
+
+@keyframes sparkFloat1{
+  0%{ transform:translateY(0) scale(0.8); opacity:0.2; }
+  50%{ transform:translateY(-8px) scale(1.15); opacity:1; }
+  100%{ transform:translateY(-14px) scale(0.75); opacity:0; }
+}
+
+@keyframes sparkFloat2{
+  0%{ transform:translateY(0) scale(0.7); opacity:0.15; }
+  50%{ transform:translateY(-10px) scale(1.1); opacity:1; }
+  100%{ transform:translateY(-16px) scale(0.7); opacity:0; }
+}
+
+@keyframes chestShake{
+  0%{ transform:translateX(0); }
+  25%{ transform:translateX(-2px) rotate(-1deg); }
+  50%{ transform:translateX(2px) rotate(1deg); }
+  75%{ transform:translateX(-1px) rotate(-0.6deg); }
+  100%{ transform:translateX(0); }
+}
+
+/* ===== スキンガチャ演出 ===== */
+.skin-reward-list.roulette{
+  gap:10px;
+}
+
+.skin-reward-list.roulette .skin-reward-item{
+  position:relative;
+  overflow:hidden;
+}
+
+.skin-reward-list.roulette .skin-reward-item::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    120deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.22) 45%,
+    rgba(255,255,255,0) 100%
+  );
+  transform:translateX(-120%);
+  animation:rewardShine 0.9s linear infinite;
+}
+
+.skin-reward-item.revealed::after{
+  display:none;
+}
+
+@keyframes rewardShine{
+  0%{ transform:translateX(-120%); }
+  100%{ transform:translateX(120%); }
+}
+
 @media (max-width:520px){
   .game-wrap,#game{
     width:360px;
@@ -766,10 +937,14 @@ img{
 
       <div id="dailyMissionList"></div>
 
-      <div id="dailyMissionChest" style="
-      margin-top:12px;
-      font-size:28px;
-      ">🎁</div>
+      <div id="dailyMissionChest" class="mission-chest">
+        <div class="chest-glow"></div>
+        <div class="chest-spark spark1"></div>
+        <div class="chest-spark spark2"></div>
+        <div class="chest-lid"></div>
+        <div class="chest-body"></div>
+        <div class="chest-lock"></div>
+      </div>
 
       <button id="missionCloseBtn" style="margin-top:14px;width:100%;">
         閉じる
