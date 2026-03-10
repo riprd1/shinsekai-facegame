@@ -1,1053 +1,739 @@
-(function () {
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frame Test</title>
+
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+
+<style>
+:root{
+  --bg:#050B4A;
+  --panel:rgba(255,255,255,0.08);
+  --panel-border:rgba(103,154,255,0.35);
+  --text:#ffffff;
+  --text-sub:#d8e3ff;
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  margin:0;
+  font-family:sans-serif;
+  color:var(--text);
+  background:
+    linear-gradient(rgba(5,11,74,0.88), rgba(5,11,74,0.94)),
+    url("https://i.imgur.com/b8qJMXj.jpeg") center/cover no-repeat fixed;
+}
+
+.page{
+  max-width:1100px;
+  margin:0 auto;
+  padding:20px 14px 32px;
+}
+
+h1{
+  margin:0 0 14px;
+  font-size:28px;
+  text-align:center;
+}
+
+.top-note{
+  text-align:center;
+  color:var(--text-sub);
+  font-size:14px;
+  line-height:1.7;
+  margin:0 0 18px;
+}
+
+.layout{
+  display:flex;
+  gap:18px;
+  align-items:flex-start;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.panel{
+  width:320px;
+  background:var(--panel);
+  border:1px solid var(--panel-border);
+  border-radius:18px;
+  padding:16px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 12px 28px rgba(0,0,0,0.2);
+}
+
+.panel h2{
+  margin:0 0 12px;
+  font-size:18px;
+}
+
+.field{
+  margin-bottom:14px;
+  text-align:left;
+}
+
+.field:last-child{
+  margin-bottom:0;
+}
+
+.label{
+  display:block;
+  font-size:13px;
+  color:var(--text-sub);
+  margin-bottom:6px;
+}
+
+select,
+input[type="range"],
+input[type="text"]{
+  width:100%;
+}
+
+select,
+input[type="text"]{
+  border:none;
+  border-radius:10px;
+  padding:10px 12px;
+  background:rgba(255,255,255,0.1);
+  color:#fff;
+  outline:none;
+}
+
+select option{
+  color:#000;
+}
+
+.range-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.range-row input[type="range"]{
+  flex:1;
+}
+
+.range-val{
+  width:56px;
+  text-align:right;
+  font-size:13px;
+  color:#fff;
+}
+
+.btns{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(180deg,#2680ff,#1356cc);
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(10,37,130,0.3);
+}
+
+button:hover{
+  opacity:0.95;
+}
+
+.viewer-wrap{
+  width:420px;
+  height:620px;
+  position:relative;
+}
+
+#viewer{
+  width:420px;
+  height:620px;
+  position:relative;
+  overflow:hidden;
+  border-radius:20px;
+  border:3px solid #3aa7ff;
+  background:
+    radial-gradient(circle at top, rgba(86,187,255,0.22), transparent 25%),
+    linear-gradient(180deg,#09145f 0%,#071050 40%,#03083b 100%);
+  box-shadow:0 18px 40px rgba(0,0,0,0.28);
+}
+
+#viewer canvas{
+  display:block;
+}
+
+.preview-label{
+  margin-top:10px;
+  text-align:center;
+  font-size:14px;
+  color:var(--text-sub);
+}
+
+.preview-card{
+  margin-top:14px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.preview-mini{
+  width:76px;
+  text-align:center;
+  font-size:12px;
+  color:#fff;
+}
+
+.preview-mini img{
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  object-fit:cover;
+  object-position:center;
+  border:2px solid rgba(145,201,255,0.55);
+  background:#fff;
+  display:block;
+  margin:0 auto 6px;
+}
+
+.notice{
+  margin-top:12px;
+  font-size:12px;
+  color:var(--text-sub);
+  line-height:1.7;
+}
+
+.status{
+  margin-top:12px;
+  min-height:20px;
+  font-size:12px;
+  color:#fff;
+  line-height:1.6;
+}
+
+.bg-dark #viewer{
+  background:
+    radial-gradient(circle at top, rgba(144,81,255,0.15), transparent 25%),
+    linear-gradient(180deg,#14081f 0%,#0c0718 40%,#04030c 100%);
+  border-color:#8b63ff;
+}
+
+.bg-light #viewer{
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,0.45), transparent 20%),
+    linear-gradient(180deg,#b9d8ff 0%,#9ec5ff 42%,#7db0ff 100%);
+  border-color:#6ba7ff;
+}
+
+.bg-pink #viewer{
+  background:
+    radial-gradient(circle at top, rgba(255,214,240,0.34), transparent 22%),
+    linear-gradient(180deg,#68205f 0%,#4c1246 40%,#2a0826 100%);
+  border-color:#ff95d2;
+}
+
+@media (max-width:520px){
+  .viewer-wrap,
+  #viewer{
+    width:360px;
+    height:560px;
   }
 
-  function drawStarShape(ctx, radius) {
-    ctx.beginPath();
-    for (let i = 0; i < 4; i++) {
-      const angle = -Math.PI / 2 + (i * Math.PI * 2) / 4;
-      const outerX = Math.cos(angle) * radius;
-      const outerY = Math.sin(angle) * radius;
-      const innerAngle = angle + Math.PI / 4;
-      const innerX = Math.cos(innerAngle) * radius * 0.22;
-      const innerY = Math.sin(innerAngle) * radius * 0.22;
-
-      if (i === 0) {
-        ctx.moveTo(outerX, outerY);
-      } else {
-        ctx.lineTo(outerX, outerY);
-      }
-
-      ctx.lineTo(innerX, innerY);
-    }
-    ctx.closePath();
+  .panel{
+    width:100%;
+    max-width:420px;
   }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>フレーム確認用テストページ</h1>
+  <p class="top-note">
+    frames.js の見た目確認専用ページです。<br>
+    フレーム、サイズ、背景、画像を切り替えてその場で動作確認できます。
+  </p>
 
-  function drawSoftDiamondStar(ctx, x, y, radius, color, alpha = 1, rotation = 0, blur = 10) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur;
-    drawStarShape(ctx, radius);
-    ctx.fill();
-    ctx.restore();
+  <div class="layout">
+    <div class="panel">
+      <h2>テスト設定</h2>
+
+      <div class="field">
+        <label class="label" for="frameSelect">フレーム</label>
+        <select id="frameSelect"></select>
+      </div>
+
+      <div class="field">
+        <label class="label" for="imageSelect">画像</label>
+        <select id="imageSelect"></select>
+      </div>
+
+      <div class="field">
+        <label class="label" for="sizeRange">サイズ</label>
+        <div class="range-row">
+          <input id="sizeRange" type="range" min="20" max="88" step="1" value="58">
+          <div id="sizeVal" class="range-val">58</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="bgSelect">背景</label>
+        <select id="bgSelect">
+          <option value="default">通常ブルー</option>
+          <option value="dark">ダーク</option>
+          <option value="light">ライト</option>
+          <option value="pink">ピンク</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="label" for="customImage">画像URLを直接入力</label>
+        <input id="customImage" type="text" placeholder="https://...">
+      </div>
+
+      <div class="field">
+        <div class="btns">
+          <button id="applyCustomBtn">画像URLを反映</button>
+          <button id="resetBtn">初期化</button>
+          <button id="toggleSpinBtn">回転ON/OFF</button>
+        </div>
+      </div>
+
+      <div class="notice">
+        ・frames.js の特殊演出がそのまま反映されます。<br>
+        ・実ゲームに近い見え方で確認できます。<br>
+        ・フレーム追加後はこのページで先に確認すると楽です。
+      </div>
+
+      <div class="status" id="status"></div>
+    </div>
+
+    <div>
+      <div class="viewer-wrap" id="viewerWrap">
+        <div id="viewer"></div>
+      </div>
+      <div class="preview-label" id="frameDesc">フレーム説明</div>
+
+      <div class="preview-card">
+        <div class="preview-mini">
+          <img id="miniPreview" src="" alt="mini preview">
+          <div id="miniName">preview</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="frames.js"></script>
+<script>
+const { Engine, Render, Runner, World, Bodies, Body, Composite } = Matter;
+
+const FRAME_MASTER = {
+  "ピンクフレーム": {
+    rank: "N",
+    icons: "♡",
+    color: "#ff8fc7",
+    glow: "rgba(255,143,199,0.45)",
+    desc: "やさしいピンクの定番フレーム"
+  },
+  "ゴールドフレーム": {
+    rank: "R",
+    icons: "★",
+    color: "#ffd54f",
+    glow: "rgba(255,213,79,0.48)",
+    desc: "高級感のあるゴールドフレーム"
+  },
+  "ミントフレーム": {
+    rank: "N",
+    icons: "♡",
+    color: "#72f2d0",
+    glow: "rgba(114,242,208,0.42)",
+    desc: "爽やかなミントカラーのフレーム"
+  },
+  "パープルフレーム": {
+    rank: "R",
+    icons: "★",
+    color: "#b78cff",
+    glow: "rgba(183,140,255,0.45)",
+    desc: "クールな雰囲気のパープルフレーム"
+  },
+  "スターグロウ": {
+    rank: "SR",
+    icons: "★✨",
+    color: "#ffe680",
+    glow: "rgba(255,230,128,0.55)",
+    desc: "星がきらめく人気フレーム"
+  },
+  "オーロラライン": {
+    rank: "SR",
+    icons: "✨",
+    color: "#8fe7ff",
+    glow: "rgba(143,231,255,0.55)",
+    desc: "オーロラの光をまとったフレーム"
+  },
+  "ハートピンク": {
+    rank: "R",
+    icons: "♡♡",
+    color: "#ff6fb0",
+    glow: "rgba(255,111,176,0.48)",
+    desc: "ハート感たっぷりのキュート系"
+  },
+  "スカイブルー": {
+    rank: "N",
+    icons: "♡",
+    color: "#73c7ff",
+    glow: "rgba(115,199,255,0.42)",
+    desc: "すっきり見やすいブルーフレーム"
+  },
+  "ネオンパープル": {
+    rank: "SR",
+    icons: "★✨",
+    color: "#d16dff",
+    glow: "rgba(209,109,255,0.6)",
+    desc: "ネオン感の強い映えるフレーム"
+  },
+  "シャイニーゴールド": {
+    rank: "SSR",
+    icons: "★✨♡",
+    color: "#fff1a6",
+    glow: "rgba(255,241,166,0.68)",
+    desc: "特別感のある豪華フレーム"
+  },
+  "クリスタルフレーム": {
+    rank: "SR",
+    icons: "💎",
+    color: "#bff3ff",
+    glow: "rgba(191,243,255,0.58)",
+    desc: "氷みたいに透き通るクリスタルフレーム"
+  },
+  "リボンレース": {
+    rank: "R",
+    icons: "🎀",
+    color: "#ffc3df",
+    glow: "rgba(255,195,223,0.52)",
+    desc: "リボンとレースが上品に光るフレーム"
+  },
+  "バタフライフレーム": {
+    rank: "SR",
+    icons: "🦋",
+    color: "#a9c8ff",
+    glow: "rgba(169,200,255,0.54)",
+    desc: "蝶がふわっと羽ばたく幻想フレーム"
+  },
+  "ダークムーン": {
+    rank: "SR",
+    icons: "🌙",
+    color: "#b78cff",
+    glow: "rgba(103,48,143,0.42)",
+    desc: "三日月と紫黒のもやが妖しく揺れる"
+  },
+  "ギャラクシー": {
+    rank: "SSR",
+    icons: "🌌",
+    color: "#8ea7ff",
+    glow: "rgba(142,167,255,0.58)",
+    desc: "青紫の宇宙がゆっくり回るフレーム"
+  },
+  "キャンディ": {
+    rank: "R",
+    icons: "🍬",
+    color: "#ff9fd6",
+    glow: "rgba(255,159,214,0.5)",
+    desc: "パステルに弾けるポップなキャンディフレーム"
   }
+};
 
-  function drawTinyTwinkle(ctx, x, y, size, color, alpha = 1, rotation = 0, blur = 8) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = Math.max(1, size * 0.16);
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur;
-
-    ctx.beginPath();
-    ctx.moveTo(-size, 0);
-    ctx.lineTo(size, 0);
-    ctx.moveTo(0, -size);
-    ctx.lineTo(0, size);
-    ctx.stroke();
-
-    ctx.lineWidth = Math.max(0.8, size * 0.1);
-    ctx.beginPath();
-    ctx.moveTo(-size * 0.45, -size * 0.45);
-    ctx.lineTo(size * 0.45, size * 0.45);
-    ctx.moveTo(size * 0.45, -size * 0.45);
-    ctx.lineTo(-size * 0.45, size * 0.45);
-    ctx.stroke();
-    ctx.restore();
+const TEST_IMAGES = [
+  {
+    name: "テスト画像A",
+    url: "https://i.imgur.com/zODWDAC.png"
+  },
+  {
+    name: "テスト画像B",
+    url: "https://i.imgur.com/x52sjzD.png"
+  },
+  {
+    name: "テスト画像C",
+    url: "https://i.imgur.com/zODWDAC.png"
+  },
+  {
+    name: "テスト画像D",
+    url: "https://i.imgur.com/x52sjzD.png"
   }
+];
 
-  function drawHeart(ctx, x, y, size, color, alpha = 1, blur = 8) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.globalAlpha = alpha;
-    ctx.beginPath();
-    ctx.moveTo(0, size * 0.3);
-    ctx.bezierCurveTo(0, 0, -size * 0.5, 0, -size * 0.5, size * 0.3);
-    ctx.bezierCurveTo(-size * 0.5, size * 0.6, 0, size * 0.85, 0, size);
-    ctx.bezierCurveTo(0, size * 0.85, size * 0.5, size * 0.6, size * 0.5, size * 0.3);
-    ctx.bezierCurveTo(size * 0.5, 0, 0, 0, 0, size * 0.3);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur;
-    ctx.fill();
-    ctx.restore();
+const viewerWrap = document.getElementById("viewerWrap");
+const viewerEl = document.getElementById("viewer");
+const frameSelect = document.getElementById("frameSelect");
+const imageSelect = document.getElementById("imageSelect");
+const sizeRange = document.getElementById("sizeRange");
+const sizeVal = document.getElementById("sizeVal");
+const bgSelect = document.getElementById("bgSelect");
+const customImage = document.getElementById("customImage");
+const applyCustomBtn = document.getElementById("applyCustomBtn");
+const resetBtn = document.getElementById("resetBtn");
+const toggleSpinBtn = document.getElementById("toggleSpinBtn");
+const frameDesc = document.getElementById("frameDesc");
+const miniPreview = document.getElementById("miniPreview");
+const miniName = document.getElementById("miniName");
+const statusEl = document.getElementById("status");
+
+Object.keys(FRAME_MASTER).forEach(name => {
+  const option = document.createElement("option");
+  option.value = name;
+  option.textContent = name;
+  frameSelect.appendChild(option);
+});
+
+TEST_IMAGES.forEach(item => {
+  const option = document.createElement("option");
+  option.value = item.url;
+  option.textContent = item.name;
+  imageSelect.appendChild(option);
+});
+
+const WIDTH = window.innerWidth <= 520 ? 360 : 420;
+const HEIGHT = window.innerWidth <= 520 ? 560 : 620;
+
+viewerWrap.style.width = WIDTH + "px";
+viewerWrap.style.height = HEIGHT + "px";
+viewerEl.style.width = WIDTH + "px";
+viewerEl.style.height = HEIGHT + "px";
+
+const engine = Engine.create();
+const world = engine.world;
+
+const render = Render.create({
+  element: viewerEl,
+  engine,
+  options: {
+    width: WIDTH,
+    height: HEIGHT,
+    wireframes: false,
+    background: "transparent",
+    pixelRatio: window.devicePixelRatio || 1
   }
-
-  function drawSparkle(ctx, x, y, size, color, alpha = 1, rotation = 0, blur = 8) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = Math.max(1.2, size * 0.22);
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur;
-    ctx.beginPath();
-    ctx.moveTo(-size, 0);
-    ctx.lineTo(size, 0);
-    ctx.moveTo(0, -size);
-    ctx.lineTo(0, size);
-    ctx.moveTo(-size * 0.68, -size * 0.68);
-    ctx.lineTo(size * 0.68, size * 0.68);
-    ctx.moveTo(size * 0.68, -size * 0.68);
-    ctx.lineTo(-size * 0.68, size * 0.68);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawDiamond(ctx, x, y, size, color, alpha = 1, rotation = 0, blur = 10) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-
-    ctx.beginPath();
-    ctx.moveTo(0, -size);
-    ctx.lineTo(size * 0.72, -size * 0.18);
-    ctx.lineTo(size * 0.46, size * 0.86);
-    ctx.lineTo(-size * 0.46, size * 0.86);
-    ctx.lineTo(-size * 0.72, -size * 0.18);
-    ctx.closePath();
-
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(0, -size);
-    ctx.lineTo(0, size * 0.86);
-    ctx.moveTo(-size * 0.72, -size * 0.18);
-    ctx.lineTo(size * 0.72, -size * 0.18);
-    ctx.moveTo(-size * 0.24, size * 0.2);
-    ctx.lineTo(0, -size * 0.18);
-    ctx.lineTo(size * 0.24, size * 0.2);
-    ctx.strokeStyle = "rgba(255,255,255,0.72)";
-    ctx.lineWidth = Math.max(0.8, size * 0.08);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  function drawCircleCandy(ctx, x, y, size, colorA, colorB, alpha = 1, rotation = 0, blur = 8) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-
-    ctx.beginPath();
-    ctx.arc(0, 0, size, 0, Math.PI * 2);
-    const grad = ctx.createRadialGradient(-size * 0.3, -size * 0.3, size * 0.1, 0, 0, size);
-    grad.addColorStop(0, colorA);
-    grad.addColorStop(1, colorB);
-    ctx.fillStyle = grad;
-    ctx.shadowColor = colorB;
-    ctx.shadowBlur = blur;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(0, 0, size * 0.9, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.5)";
-    ctx.lineWidth = Math.max(0.8, size * 0.14);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  function drawBow(ctx, x, y, size, color, alpha = 1, blur = 8) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.globalAlpha = alpha;
-
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur;
-
-    ctx.beginPath();
-    ctx.ellipse(-size * 0.45, 0, size * 0.42, size * 0.28, -0.35, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.ellipse(size * 0.45, 0, size * 0.42, size * 0.28, 0.35, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(0, 0, size * 0.18, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(-size * 0.12, size * 0.18);
-    ctx.lineTo(-size * 0.32, size * 0.62);
-    ctx.lineTo(-size * 0.02, size * 0.36);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(size * 0.12, size * 0.18);
-    ctx.lineTo(size * 0.32, size * 0.62);
-    ctx.lineTo(size * 0.02, size * 0.36);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawButterfly(ctx, x, y, size, colorA, colorB, wingOpen = 1, alpha = 1, rotation = 0, blur = 8) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-
-    const spread = clamp(wingOpen, 0.2, 1.2);
-
-    ctx.fillStyle = colorA;
-    ctx.shadowColor = colorB;
-    ctx.shadowBlur = blur;
-
-    ctx.beginPath();
-    ctx.ellipse(-size * 0.42 * spread, -size * 0.1, size * 0.34, size * 0.26, -0.7, 0, Math.PI * 2);
-    ctx.ellipse(size * 0.42 * spread, -size * 0.1, size * 0.34, size * 0.26, 0.7, 0, Math.PI * 2);
-    ctx.ellipse(-size * 0.33 * spread, size * 0.26, size * 0.26, size * 0.18, -0.35, 0, Math.PI * 2);
-    ctx.ellipse(size * 0.33 * spread, size * 0.26, size * 0.18, size * 0.26, 0.35, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.42)";
-    ctx.lineWidth = Math.max(0.8, size * 0.06);
-    ctx.beginPath();
-    ctx.moveTo(0, -size * 0.5);
-    ctx.lineTo(0, size * 0.58);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(0, -size * 0.42);
-    ctx.quadraticCurveTo(-size * 0.12, -size * 0.68, -size * 0.22, -size * 0.82);
-    ctx.moveTo(0, -size * 0.42);
-    ctx.quadraticCurveTo(size * 0.12, -size * 0.68, size * 0.22, -size * 0.82);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  function drawCrescentMoon(ctx, x, y, size, color, shadowColor, alpha = 1, rotation = 0, blur = 8) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-
-    ctx.fillStyle = color;
-    ctx.shadowColor = shadowColor;
-    ctx.shadowBlur = blur;
-
-    ctx.beginPath();
-    ctx.arc(0, 0, size, 0, Math.PI * 2);
-    ctx.arc(size * 0.42, -size * 0.1, size * 0.88, 0, Math.PI * 2, true);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function getFrameDecorationPattern(frameName) {
-    switch (frameName) {
-      case "スターグロウ":
-        return ["starLarge","starSmall","starLarge","starSmall","starLarge","starSmall","starLarge","starSmall"];
-      case "ゴールドフレーム":
-        return ["star","star","star","star","star","star"];
-      case "ネオンパープル":
-        return ["star","sparkle","star","sparkle","star","sparkle","star","sparkle"];
-      case "シャイニーゴールド":
-        return ["star","heart","sparkle","star","heart","sparkle","star","heart"];
-      case "ハートピンク":
-        return ["heart","heart","heart","heart","heart","heart","heart","heart"];
-      case "ピンクフレーム":
-        return ["heart","sparkle","heart","sparkle","heart","sparkle"];
-      case "オーロラライン":
-        return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
-      case "ミントフレーム":
-        return ["heart","sparkle","heart","sparkle","heart","sparkle"];
-      case "スカイブルー":
-        return ["sparkle","heart","sparkle","heart","sparkle","heart"];
-      case "パープルフレーム":
-        return ["star","heart","star","heart","star","heart"];
-      case "クリスタルフレーム":
-        return ["diamond","diamond","sparkle","diamond","diamond","sparkle"];
-      case "リボンレース":
-        return ["lace","ribbon","lace","lace","ribbon","lace","lace","ribbon"];
-      case "バタフライフレーム":
-        return ["sparkle","butterfly","sparkle","butterfly","sparkle","butterfly"];
-      case "ダークムーン":
-        return ["moon","starSmall","sparkle","starSmall","moon","sparkle"];
-      case "ギャラクシー":
-        return ["orbit","orbit","starSmall","orbit","starSmall","orbit","starSmall","orbit"];
-      case "キャンディ":
-        return ["candy","heart","candy","heart","candy","heart","candy","heart"];
-      default:
-        return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
-    }
-  }
-
-  function drawDecorationByType(ctx, type, x, y, size, color, alpha, rotation, blur) {
-    if (type === "star") {
-      drawSoftDiamondStar(ctx, x, y, size, color, alpha, rotation, blur);
-      return;
-    }
-
-    if (type === "heart") {
-      drawHeart(ctx, x, y - size * 0.45, size * 1.05, color, alpha, blur);
-      return;
-    }
-
-    if (type === "starLarge") {
-      drawSoftDiamondStar(ctx, x, y, size, color, alpha, rotation, blur);
-      return;
-    }
-
-    if (type === "starSmall") {
-      drawTinyTwinkle(ctx, x, y, size, color, alpha, rotation, blur);
-      return;
-    }
-
-    if (type === "diamond") {
-      drawDiamond(ctx, x, y, size, color, alpha, rotation, blur);
-      return;
-    }
-
-    if (type === "lace") {
-      drawCircleCandy(ctx, x, y, size * 0.36, "rgba(255,255,255,0.95)", "rgba(255,230,244,0.9)", alpha, rotation, blur);
-      return;
-    }
-
-    if (type === "ribbon") {
-      drawBow(ctx, x, y, size, color, alpha, blur);
-      return;
-    }
-
-    if (type === "butterfly") {
-      drawButterfly(ctx, x, y, size, color, "rgba(255,255,255,0.72)", 0.9, alpha, rotation, blur);
-      return;
-    }
-
-    if (type === "moon") {
-      drawCrescentMoon(ctx, x, y, size * 0.72, color, color, alpha, rotation, blur);
-      return;
-    }
-
-    if (type === "orbit") {
-      drawCircleCandy(ctx, x, y, size * 0.42, "rgba(210,220,255,0.95)", color, alpha, rotation, blur);
-      return;
-    }
-
-    if (type === "candy") {
-      drawCircleCandy(ctx, x, y, size * 0.5, "rgba(255,255,255,0.96)", color, alpha, rotation, blur);
-      return;
-    }
-
-    drawSparkle(ctx, x, y, size, color, alpha, rotation, blur);
-  }
-
-  function alphaColor(base, alpha) {
-    if (base.startsWith("rgba(")) {
-      return base.replace(/rgba\(([^)]+),\s*[\d.]+\)/, "rgba($1, " + alpha + ")");
-    }
-
-    if (base.startsWith("rgb(")) {
-      return base.replace("rgb(", "rgba(").replace(")", ", " + alpha + ")");
-    }
-
-    return base;
-  }
-
-  function drawInnerGlow(ctx, x, y, r, meta) {
-    const gradient = ctx.createRadialGradient(x, y, r * 0.34, x, y, r * 0.98);
-    gradient.addColorStop(0, "rgba(255,255,255,0)");
-    gradient.addColorStop(0.7, "rgba(255,255,255,0)");
-    gradient.addColorStop(0.88, alphaColor(meta.glow, 0.12));
-    gradient.addColorStop(1, alphaColor(meta.glow, 0.26));
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.98, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    ctx.restore();
-  }
-
-  function drawBaseRing(ctx, x, y, r, meta) {
-    ctx.save();
-
-    ctx.beginPath();
-    ctx.arc(x, y, r - 1.2, 0, Math.PI * 2);
-    ctx.strokeStyle = meta.color;
-    ctx.lineWidth = Math.max(2.8, r * 0.095);
-    ctx.shadowColor = meta.glow;
-    ctx.shadowBlur = meta.rank === "SSR" ? 18 : meta.rank === "SR" ? 15 : 12;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(x, y, r - 4.2, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.32)";
-    ctx.lineWidth = Math.max(0.9, r * 0.026);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  function drawNormalDecorations(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-    const pattern = getFrameDecorationPattern(body.frameName);
-    const count = pattern.length;
-    const ringRadius = r * 0.82;
-
-    for (let i = 0; i < count; i++) {
-      const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
-      const wobble = Math.sin(time * 0.0008 + i * 1.7) * 0.035;
-      const angle = baseAngle + wobble;
-      const dx = x + Math.cos(angle) * ringRadius;
-      const dy = y + Math.sin(angle) * ringRadius;
-      const type = pattern[i];
-
-      let decoSize = Math.max(3.2, r * 0.11);
-      if (type === "heart") decoSize = Math.max(3.8, r * 0.132);
-      if (type === "star") decoSize = Math.max(3.6, r * 0.126);
-      if (type === "sparkle") decoSize = Math.max(3.0, r * 0.105);
-      if (type === "diamond") decoSize = Math.max(3.8, r * 0.13);
-      if (type === "ribbon") decoSize = Math.max(4.2, r * 0.14);
-      if (type === "lace") decoSize = Math.max(3.0, r * 0.1);
-      if (type === "butterfly") decoSize = Math.max(4.2, r * 0.14);
-      if (type === "moon") decoSize = Math.max(4.0, r * 0.135);
-      if (type === "orbit") decoSize = Math.max(3.4, r * 0.115);
-      if (type === "candy") decoSize = Math.max(3.8, r * 0.125);
-
-      const sizePulse = 1 + Math.sin(time * 0.0012 + i * 1.33) * 0.06;
-      const alpha = clamp(0.76 + Math.sin(time * 0.0011 + i * 0.95) * 0.18, 0.42, 1);
-      const rotation = time * 0.00035 + i * 0.22;
-
-      drawDecorationByType(
-        ctx,
-        type,
-        dx,
-        dy,
-        decoSize * sizePulse,
-        meta.color,
-        alpha,
-        rotation,
-        8
-      );
-    }
-  }
-
-  function drawHeartPinkSpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-    const count = 8;
-    const ringRadius = r * 0.82;
-    const palePink = "rgba(255,210,235,0.96)";
-
-    for (let i = 0; i < count; i++) {
-      const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
-      const wobble = Math.sin(time * 0.0007 + i * 1.35) * 0.04;
-      const angle = baseAngle + wobble;
-
-      const dx = x + Math.cos(angle) * ringRadius;
-      const dy = y + Math.sin(angle) * ringRadius;
-
-      const pulse = (Math.sin(time * 0.0022 + i * 1.91) + 1) / 2;
-      const alphaMain = clamp(0.2 + pulse * 0.95, 0.14, 1);
-      const alphaSub = clamp(0.08 + ((Math.sin(time * 0.0028 + i * 2.37 + 0.7) + 1) / 2) * 0.8, 0.05, 0.88);
-
-      const mainSize = Math.max(4.3, r * 0.145) * (0.94 + pulse * 0.14);
-      const subSize = mainSize * 0.58;
-
-      drawHeart(ctx, dx, dy - mainSize * 0.42, mainSize, meta.color, alphaMain, 10);
-
-      const offsetAngle = angle + 0.22;
-      const sx = dx + Math.cos(offsetAngle) * (mainSize * 0.22);
-      const sy = dy + Math.sin(offsetAngle) * (mainSize * 0.12);
-
-      drawHeart(ctx, sx, sy - subSize * 0.4, subSize, palePink, alphaSub, 8);
-    }
-  }
-
-  function drawStarGlowSpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-
-    const bigCount = 5;
-    const smallCount = 8;
-    const bigRingRadius = r * 0.82;
-    const smallRingRadius = r * 0.76;
-
-    const bigYellow = "#ffe680";
-    const bigYellow2 = "#ffd84d";
-    const smallWhite = "rgba(255,255,255,0.96)";
-
-    for (let i = 0; i < bigCount; i++) {
-      const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / bigCount);
-      const angle = baseAngle + Math.sin(time * 0.00055 + i * 1.05) * 0.08;
-      const dx = x + Math.cos(angle) * bigRingRadius;
-      const dy = y + Math.sin(angle) * bigRingRadius;
-
-      const pulse = (Math.sin(time * 0.0021 + i * 1.6) + 1) / 2;
-      const alpha = clamp(0.48 + pulse * 0.52, 0.34, 1);
-      const radius = Math.max(4.6, r * 0.16) * (0.9 + pulse * 0.14);
-      const rotation = time * 0.0007 + i * 0.7;
-
-      const color = i % 2 === 0 ? bigYellow : bigYellow2;
-      drawSoftDiamondStar(ctx, dx, dy, radius, color, alpha, rotation, 12);
-    }
-
-    for (let i = 0; i < smallCount; i++) {
-      const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / smallCount) + 0.18;
-      const angle = baseAngle + Math.sin(time * 0.0009 + i * 1.83) * 0.06;
-      const dx = x + Math.cos(angle) * smallRingRadius;
-      const dy = y + Math.sin(angle) * smallRingRadius;
-
-      const blink = Math.sin(time * 0.0046 + i * 2.31);
-      const alpha = blink > 0.15 ? clamp((blink - 0.15) / 0.85, 0, 1) * 0.95 : 0.02;
-      const size = Math.max(2.2, r * 0.078) * (0.9 + Math.sin(time * 0.0028 + i) * 0.08);
-      const rotation = -time * 0.001 + i * 0.36;
-
-      drawTinyTwinkle(ctx, dx, dy, size, smallWhite, alpha, rotation, 9);
-
-      const subBlink = Math.sin(time * 0.006 + i * 3.17 + 0.6);
-      if (subBlink > 0.62) {
-        const sx = dx + Math.cos(angle + 0.28) * (r * 0.08);
-        const sy = dy + Math.sin(angle + 0.28) * (r * 0.08);
-        const sAlpha = clamp((subBlink - 0.62) / 0.38, 0, 1) * 0.72;
-
-        drawTinyTwinkle(
-          ctx,
-          sx,
-          sy,
-          Math.max(1.4, r * 0.05),
-          "rgba(255,250,225,0.9)",
-          sAlpha,
-          time * 0.0012,
-          7
-        );
-      }
-    }
-  }
-
-  function drawAuroraRibbon(ctx, x, y, outerR, innerR, startAngle, endAngle, colors, alpha, blur) {
-    ctx.save();
-
-    ctx.beginPath();
-    ctx.arc(x, y, outerR, startAngle, endAngle);
-    ctx.arc(x, y, innerR, endAngle, startAngle, true);
-    ctx.closePath();
-
-    const mid = (startAngle + endAngle) / 2;
-    const gx1 = x + Math.cos(mid) * innerR;
-    const gy1 = y + Math.sin(mid) * innerR;
-    const gx2 = x + Math.cos(mid) * outerR;
-    const gy2 = y + Math.sin(mid) * outerR;
-
-    const gradient = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
-    gradient.addColorStop(0, colors[0]);
-    gradient.addColorStop(0.28, colors[1]);
-    gradient.addColorStop(0.55, colors[2]);
-    gradient.addColorStop(0.82, colors[3]);
-    gradient.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = colors[2];
-    ctx.shadowBlur = blur;
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawAuroraSpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-
-    const hueBase = (time * 0.02) % 360;
-    const bands = [
-      { speed: 0.00042, len: 1.24, thickness: 0.16, shift: 0.0, alpha: 0.82 },
-      { speed: -0.00031, len: 1.06, thickness: 0.14, shift: 46, alpha: 0.72 },
-      { speed: 0.00054, len: 1.36, thickness: 0.18, shift: 104, alpha: 0.68 },
-      { speed: -0.00024, len: 0.96, thickness: 0.13, shift: 168, alpha: 0.62 }
-    ];
-
-    bands.forEach((band, i) => {
-      const center = time * band.speed + i * 1.38;
-      const startAngle = center - band.len * 0.5;
-      const endAngle = center + band.len * 0.5;
-
-      const outerR = r - 1.4 - i * 0.45;
-      const innerR = outerR - Math.max(4.8, r * band.thickness);
-
-      const hue1 = (hueBase + band.shift + Math.sin(time * 0.0012 + i) * 24 + 360) % 360;
-      const hue2 = (hue1 + 34 + Math.cos(time * 0.0015 + i * 0.9) * 18 + 360) % 360;
-      const hue3 = (hue1 + 78 + Math.sin(time * 0.0011 + i * 1.3) * 22 + 360) % 360;
-
-      const colors = [
-        `hsla(${hue1}, 100%, 60%, 0.00)`,
-        `hsla(${hue1}, 100%, 68%, 0.22)`,
-        `hsla(${hue2}, 100%, 72%, 0.52)`,
-        `hsla(${hue3}, 100%, 76%, 0.22)`
-      ];
-
-      drawAuroraRibbon(
-        ctx,
-        x,
-        y,
-        outerR,
-        innerR,
-        startAngle,
-        endAngle,
-        colors,
-        band.alpha,
-        14
-      );
-    });
-
-    const neonSparkCount = 5;
-    const neonRadius = r * 0.79;
-
-    for (let i = 0; i < neonSparkCount; i++) {
-      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / neonSparkCount) + time * 0.00024;
-      const sx = x + Math.cos(angle) * neonRadius;
-      const sy = y + Math.sin(angle) * neonRadius;
-      const alpha = clamp(0.16 + ((Math.sin(time * 0.0024 + i * 1.8) + 1) / 2) * 0.46, 0.12, 0.68);
-
-      drawTinyTwinkle(
-        ctx,
-        sx,
-        sy,
-        Math.max(1.9, r * 0.06),
-        "rgba(220,255,255,0.96)",
-        alpha,
-        time * 0.0009,
-        8
-      );
-    }
-  }
-
-  function drawCrystalSpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-    const count = 7;
-    const ringRadius = r * 0.81;
-
-    for (let i = 0; i < count; i++) {
-      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / count) + Math.sin(time * 0.0008 + i) * 0.04;
-      const dx = x + Math.cos(angle) * ringRadius;
-      const dy = y + Math.sin(angle) * ringRadius;
-
-      const shine = (Math.sin(time * 0.002 + i * 1.64) + 1) / 2;
-      const pulse = (Math.sin(time * 0.0036 + i * 2.1) + 1) / 2;
-      const alpha = clamp(0.38 + shine * 0.54, 0.24, 1);
-      const size = Math.max(4.2, r * 0.142) * (0.92 + pulse * 0.16);
-      const rotation = Math.PI / 4 + time * 0.0006 + i * 0.5;
-
-      drawDiamond(ctx, dx, dy, size, "rgba(210,248,255,0.95)", alpha, rotation, 12);
-
-      if (pulse > 0.82) {
-        drawTinyTwinkle(
-          ctx,
-          dx + Math.cos(angle + 0.3) * (size * 0.2),
-          dy + Math.sin(angle + 0.3) * (size * 0.2),
-          Math.max(1.8, r * 0.06),
-          "rgba(255,255,255,0.95)",
-          clamp((pulse - 0.82) / 0.18, 0, 1),
-          time * 0.0012,
-          9
-        );
-      }
-    }
-
-    ctx.save();
-    const gloss = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
-    gloss.addColorStop(0, "rgba(255,255,255,0)");
-    gloss.addColorStop(0.35, "rgba(230,250,255,0.08)");
-    gloss.addColorStop(0.5, "rgba(255,255,255,0.18)");
-    gloss.addColorStop(0.65, "rgba(180,230,255,0.06)");
-    gloss.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
-    ctx.clip();
-    ctx.globalAlpha = 0.9;
-    ctx.strokeStyle = gloss;
-    ctx.lineWidth = Math.max(6, r * 0.32);
-    ctx.shadowColor = "rgba(220,245,255,0.4)";
-    ctx.shadowBlur = 14;
-    ctx.beginPath();
-    ctx.moveTo(x - r * 0.9, y + r * 0.3);
-    ctx.lineTo(x + r * 0.75, y - r * 0.65);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawRibbonLaceSpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-    const laceCount = 12;
-    const laceRadius = r * 0.83;
-    const laceColor = "rgba(255,245,252,0.95)";
-    const ribbonColor = meta.color;
-
-    for (let i = 0; i < laceCount; i++) {
-      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / laceCount);
-      const dx = x + Math.cos(angle) * laceRadius;
-      const dy = y + Math.sin(angle) * laceRadius;
-      const alpha = clamp(0.34 + ((Math.sin(time * 0.0018 + i * 0.92) + 1) / 2) * 0.44, 0.22, 0.82);
-
-      drawCircleCandy(ctx, dx, dy, Math.max(1.7, r * 0.05), "rgba(255,255,255,0.96)", laceColor, alpha, 0, 6);
-    }
-
-    const ribbonAngles = [-Math.PI / 2, Math.PI / 6, Math.PI * 5 / 6];
-    ribbonAngles.forEach((angle, i) => {
-      const dx = x + Math.cos(angle) * (r * 0.82);
-      const dy = y + Math.sin(angle) * (r * 0.82);
-      const pulse = (Math.sin(time * 0.0019 + i * 2.1) + 1) / 2;
-      const alpha = clamp(0.42 + pulse * 0.48, 0.28, 0.92);
-      const size = Math.max(4.4, r * 0.15) * (0.94 + pulse * 0.12);
-
-      drawBow(ctx, dx, dy, size, ribbonColor, alpha, 10);
-    });
-  }
-
-  function drawButterflySpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-    const butterflies = [
-      { angle: -Math.PI / 2, speed: 0.0022, radius: r * 0.8, tint: "#a98cff" },
-      { angle: Math.PI * 0.2, speed: 0.0018, radius: r * 0.76, tint: "#8fd8ff" },
-      { angle: Math.PI * 1.1, speed: 0.0025, radius: r * 0.78, tint: "#c3b3ff" }
-    ];
-
-    butterflies.forEach((bf, i) => {
-      const angle = bf.angle + Math.sin(time * 0.0007 + i) * 0.1;
-      const dx = x + Math.cos(angle) * bf.radius;
-      const dy = y + Math.sin(angle) * bf.radius;
-      const flap = 0.55 + ((Math.sin(time * bf.speed + i * 1.9) + 1) / 2) * 0.9;
-      const alpha = clamp(0.46 + ((Math.sin(time * 0.0016 + i * 2.3) + 1) / 2) * 0.42, 0.3, 0.9);
-      const size = Math.max(4.2, r * 0.145) * (0.95 + Math.sin(time * 0.0014 + i) * 0.08);
-      const rotation = Math.sin(time * 0.0008 + i * 1.2) * 0.18;
-
-      drawButterfly(ctx, dx, dy, size, bf.tint, "rgba(255,255,255,0.8)", flap, alpha, rotation, 10);
-    });
-
-    for (let i = 0; i < 5; i++) {
-      const angle = time * 0.00025 + i * 1.26;
-      const sx = x + Math.cos(angle) * (r * 0.72);
-      const sy = y + Math.sin(angle) * (r * 0.72);
-      const alpha = clamp(0.18 + ((Math.sin(time * 0.0022 + i * 1.4) + 1) / 2) * 0.35, 0.12, 0.52);
-
-      drawTinyTwinkle(ctx, sx, sy, Math.max(1.6, r * 0.05), "rgba(230,245,255,0.95)", alpha, 0, 7);
-    }
-  }
-
-  function drawDarkMoonSpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-
-    for (let i = 0; i < 3; i++) {
-      const angle = time * (0.00018 + i * 0.00004) + i * 2.1;
-      const cx = x + Math.cos(angle) * (r * 0.22);
-      const cy = y + Math.sin(angle) * (r * 0.22);
-      const grad = ctx.createRadialGradient(cx, cy, r * 0.08, x, y, r * (0.72 + i * 0.08));
-      grad.addColorStop(0, `rgba(120,70,170,${0.18 - i * 0.03})`);
-      grad.addColorStop(0.65, `rgba(55,25,85,${0.12 - i * 0.02})`);
-      grad.addColorStop(1, "rgba(0,0,0,0)");
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x, y, r * 0.95, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.fill();
-      ctx.restore();
-    }
-
-    const moonAngles = [-Math.PI / 2, Math.PI * 0.72];
-    moonAngles.forEach((angle, i) => {
-      const dx = x + Math.cos(angle) * (r * 0.8);
-      const dy = y + Math.sin(angle) * (r * 0.8);
-      const alpha = clamp(0.46 + ((Math.sin(time * 0.0014 + i * 2.2) + 1) / 2) * 0.42, 0.28, 0.9);
-      const size = Math.max(4.3, r * 0.14);
-
-      drawCrescentMoon(ctx, dx, dy, size, "#dbc4ff", "rgba(183,140,255,0.72)", alpha, angle + 0.6, 10);
-    });
-
-    for (let i = 0; i < 6; i++) {
-      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / 6) + time * 0.00016;
-      const sx = x + Math.cos(angle) * (r * 0.77);
-      const sy = y + Math.sin(angle) * (r * 0.77);
-      const alpha = clamp(0.16 + ((Math.sin(time * 0.0025 + i * 1.8) + 1) / 2) * 0.48, 0.08, 0.7);
-
-      drawTinyTwinkle(ctx, sx, sy, Math.max(1.6, r * 0.052), "rgba(240,225,255,0.95)", alpha, 0, 8);
-    }
-  }
-
-  function drawGalaxySpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-
-    const hueBase = 220 + Math.sin(time * 0.0004) * 18;
-    const arms = 3;
-
-    for (let arm = 0; arm < arms; arm++) {
-      const start = time * (0.00022 + arm * 0.00003) + arm * (Math.PI * 2 / arms);
-      const bandLen = 1.25;
-      const outerR = r - 1.6;
-      const innerR = outerR - Math.max(4.6, r * 0.16);
-
-      const colors = [
-        `hsla(${hueBase + arm * 16}, 95%, 58%, 0)`,
-        `hsla(${hueBase + 24 + arm * 10}, 100%, 68%, 0.22)`,
-        `hsla(${hueBase + 58 + arm * 18}, 100%, 74%, 0.52)`,
-        `hsla(${hueBase + 92 + arm * 12}, 100%, 76%, 0.16)`
-      ];
-
-      drawAuroraRibbon(
-        ctx,
-        x,
-        y,
-        outerR,
-        innerR,
-        start - bandLen * 0.5,
-        start + bandLen * 0.5,
-        colors,
-        0.72,
-        12
-      );
-    }
-
-    const dustCount = 10;
-    for (let i = 0; i < dustCount; i++) {
-      const angle = time * 0.00028 + i * 0.63;
-      const radius = r * (0.46 + (i % 4) * 0.09);
-      const px = x + Math.cos(angle + i * 0.45) * radius;
-      const py = y + Math.sin(angle + i * 0.45) * radius;
-      const alpha = clamp(0.14 + ((Math.sin(time * 0.002 + i * 1.3) + 1) / 2) * 0.46, 0.08, 0.62);
-
-      drawCircleCandy(
-        ctx,
-        px,
-        py,
-        Math.max(1.4, r * 0.038),
-        "rgba(255,255,255,0.95)",
-        "rgba(180,205,255,0.9)",
-        alpha,
-        0,
-        6
-      );
-    }
-
-    const streakCount = 3;
-    for (let i = 0; i < streakCount; i++) {
-      const phase = ((time * (0.0002 + i * 0.00005)) + i * 0.35) % 1;
-      const angle = -Math.PI / 4 + i * 0.38;
-      const dist = (phase * 2 - 1) * (r * 0.95);
-
-      const sx = x + Math.cos(angle) * dist;
-      const sy = y + Math.sin(angle) * dist;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x, y, r * 0.95, 0, Math.PI * 2);
-      ctx.clip();
-
-      const grad = ctx.createLinearGradient(
-        sx - r * 0.35,
-        sy - r * 0.15,
-        sx + r * 0.35,
-        sy + r * 0.15
-      );
-      grad.addColorStop(0, "rgba(255,255,255,0)");
-      grad.addColorStop(0.5, "rgba(235,240,255,0.7)");
-      grad.addColorStop(1, "rgba(255,255,255,0)");
-
-      ctx.globalAlpha = 0.42;
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = Math.max(2.2, r * 0.08);
-      ctx.shadowColor = "rgba(190,210,255,0.48)";
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.moveTo(sx - r * 0.3, sy - r * 0.12);
-      ctx.lineTo(sx + r * 0.3, sy + r * 0.12);
-      ctx.stroke();
-      ctx.restore();
-    }
-  }
-
-  function drawCandySpecial(ctx, body, meta, time) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-    const count = 8;
-    const ringRadius = r * 0.81;
-    const candyColors = [
-      "rgba(255,170,215,0.95)",
-      "rgba(255,205,120,0.95)",
-      "rgba(180,235,255,0.95)",
-      "rgba(210,190,255,0.95)"
-    ];
-
-    for (let i = 0; i < count; i++) {
-      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / count) + Math.sin(time * 0.0008 + i) * 0.04;
-      const dx = x + Math.cos(angle) * ringRadius;
-      const dy = y + Math.sin(angle) * ringRadius;
-
-      const pulse = (Math.sin(time * 0.0026 + i * 1.4) + 1) / 2;
-      const alpha = clamp(0.38 + pulse * 0.52, 0.2, 0.9);
-
-      if (i % 2 === 0) {
-        drawCircleCandy(
-          ctx,
-          dx,
-          dy,
-          Math.max(3.2, r * 0.11),
-          "rgba(255,255,255,0.96)",
-          candyColors[i % candyColors.length],
-          alpha,
-          time * 0.0008 + i,
-          8
-        );
-      } else {
-        const heartColor = i % 3 === 0 ? "rgba(255,190,220,0.96)" : "rgba(255,140,200,0.96)";
-        drawHeart(
-          ctx,
-          dx,
-          dy - Math.max(3.3, r * 0.11) * 0.4,
-          Math.max(4.2, r * 0.14),
-          heartColor,
-          alpha,
-          8
-        );
-      }
-    }
-  }
-
-  function drawSSRStreak(ctx, body, meta, time) {
-    if (meta.rank !== "SSR") return;
-
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-
-    const cycle = 3200;
-    const t = time % cycle;
-
-    if (t > 760) return;
-
-    const progress = t / 760;
-    const centerOffset = (progress * 2 - 1) * (r * 1.7);
-    const angle = -Math.PI / 4;
-    const nx = Math.cos(angle);
-    const ny = Math.sin(angle);
-
-    const cx = x + nx * centerOffset;
-    const cy = y + ny * centerOffset;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.96, 0, Math.PI * 2);
-    ctx.clip();
-
-    const streakLen = r * 1.9;
-    const streakWidth = Math.max(5.6, r * 0.36);
-
-    const x1 = cx - ny * streakWidth - nx * streakLen;
-    const y1 = cy + nx * streakWidth - ny * streakLen;
-    const x2 = cx + ny * streakWidth + nx * streakLen;
-    const y2 = cy - nx * streakWidth + ny * streakLen;
-
-    const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-    gradient.addColorStop(0, "rgba(255,255,255,0)");
-    gradient.addColorStop(0.4, "rgba(255,255,255,0.08)");
-    gradient.addColorStop(0.5, "rgba(255,255,255,0.76)");
-    gradient.addColorStop(0.58, "rgba(255,245,200,0.32)");
-    gradient.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.globalAlpha = Math.sin(progress * Math.PI);
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = streakWidth;
-    ctx.shadowColor = "rgba(255,255,255,0.58)";
-    ctx.shadowBlur = 12;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  function drawFrameForBody(ctx, body, getFrameMeta, time) {
-    if (!body.frameName) return;
-
-    const meta = getFrameMeta(body.frameName);
-    if (!meta) return;
-
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-
-    drawInnerGlow(ctx, x, y, r, meta);
-    drawBaseRing(ctx, x, y, r, meta);
-
-    if (body.frameName === "スターグロウ") {
-      drawStarGlowSpecial(ctx, body, meta, time);
-    } else if (body.frameName === "オーロラライン") {
-      drawAuroraSpecial(ctx, body, meta, time);
-    } else if (body.frameName === "ハートピンク" || body.frameName === "ピンクフレーム") {
-      drawHeartPinkSpecial(ctx, body, meta, time);
-    } else if (body.frameName === "クリスタルフレーム") {
-      drawCrystalSpecial(ctx, body, meta, time);
-    } else if (body.frameName === "リボンレース") {
-      drawRibbonLaceSpecial(ctx, body, meta, time);
-    } else if (body.frameName === "バタフライフレーム") {
-      drawButterflySpecial(ctx, body, meta, time);
-    } else if (body.frameName === "ダークムーン") {
-      drawDarkMoonSpecial(ctx, body, meta, time);
-    } else if (body.frameName === "ギャラクシー") {
-      drawGalaxySpecial(ctx, body, meta, time);
-    } else if (body.frameName === "キャンディ") {
-      drawCandySpecial(ctx, body, meta, time);
-    } else {
-      drawNormalDecorations(ctx, body, meta, time);
-    }
-
-    drawSSRStreak(ctx, body, meta, time);
-  }
-
-  function attachFrameRenderer(render, world, Composite, getFrameMeta) {
-    Events.on(render, "afterRender", () => {
-      const ctx = render.context;
-      const bodies = Composite.allBodies(world).filter(body => !body.isStatic && body.member);
-      const now = performance.now();
-
-      bodies.forEach(body => {
-        drawFrameForBody(ctx, body, getFrameMeta, now);
+});
+
+Render.run(render);
+Runner.run(Runner.create(), engine);
+
+const wall = 60;
+World.add(world, [
+  Bodies.rectangle(WIDTH / 2, HEIGHT + wall / 2, WIDTH, wall, { isStatic: true, render: { visible:false } }),
+  Bodies.rectangle(-wall / 2, HEIGHT / 2, wall, HEIGHT, { isStatic: true, render: { visible:false } }),
+  Bodies.rectangle(WIDTH + wall / 2, HEIGHT / 2, wall, HEIGHT, { isStatic: true, render: { visible:false } })
+]);
+
+function getFrameMeta(frameName){
+  return FRAME_MASTER[frameName] || null;
+}
+
+if (window.FaceGameFrames && typeof FaceGameFrames.attachFrameRenderer === "function") {
+  FaceGameFrames.attachFrameRenderer(render, world, Composite, getFrameMeta);
+} else {
+  statusEl.textContent = "frames.js の読み込みに失敗しています。";
+}
+
+let previewBody = null;
+let spinEnabled = false;
+let currentImageMeta = { width: 512, height: 512 };
+
+function setStatus(text) {
+  statusEl.textContent = text || "";
+}
+
+function loadImageMeta(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+
+    img.onload = () => {
+      resolve({
+        url,
+        width: img.naturalWidth || 512,
+        height: img.naturalHeight || 512
       });
-    });
+    };
+
+    img.onerror = () => {
+      reject(new Error("画像の読み込みに失敗しました"));
+    };
+
+    img.src = url;
+  });
+}
+
+function calcSpriteScale(radius, imageMeta) {
+  const longestSide = Math.max(imageMeta.width || 512, imageMeta.height || 512);
+  const scale = (radius * 2 * 0.92) / longestSide;
+  return {
+    xScale: scale,
+    yScale: scale
+  };
+}
+
+function removePreviewBody(){
+  if (previewBody) {
+    World.remove(world, previewBody);
+    previewBody = null;
+  }
+}
+
+async function createPreviewBody() {
+  removePreviewBody();
+
+  const radius = Number(sizeRange.value);
+  const frameName = frameSelect.value;
+  const imageUrl = imageSelect.value;
+
+  if (!imageUrl) {
+    setStatus("画像URLがありません。");
+    return;
   }
 
-  window.FaceGameFrames = {
-    attachFrameRenderer
-  };
+  setStatus("画像を読み込み中...");
+
+  try {
+    currentImageMeta = await loadImageMeta(imageUrl);
+  } catch (error) {
+    setStatus("画像の読み込みに失敗しました。URLを確認してください。");
+    frameDesc.textContent = "画像の読み込みに失敗しました";
+    miniPreview.removeAttribute("src");
+    miniName.textContent = frameName;
+    return;
+  }
+
+  const scale = calcSpriteScale(radius, currentImageMeta);
+
+  previewBody = Bodies.circle(WIDTH / 2, HEIGHT / 2, radius, {
+    isStatic: true,
+    restitution: 0,
+    friction: 0,
+    frictionAir: 0,
+    render: {
+      sprite: {
+        texture: imageUrl,
+        xScale: scale.xScale,
+        yScale: scale.yScale
+      }
+    }
+  });
+
+  previewBody.member = { name: "preview" };
+  previewBody.frameName = frameName;
+  previewBody.evoIndex = 0;
+
+  World.add(world, previewBody);
+
+  const meta = getFrameMeta(frameName);
+  frameDesc.textContent = meta
+    ? `${frameName} ｜ ${meta.rank} ｜ ${meta.desc}`
+    : frameName;
+
+  miniPreview.src = imageUrl;
+  miniName.textContent = frameName;
+  miniPreview.style.borderColor = meta ? meta.color : "rgba(145,201,255,0.55)";
+  miniPreview.style.boxShadow = meta ? `0 0 10px ${meta.glow}` : "none";
+
+  setStatus("表示中");
+}
+
+function updateBackgroundMode() {
+  document.body.classList.remove("bg-dark", "bg-light", "bg-pink");
+
+  if (bgSelect.value === "dark") {
+    document.body.classList.add("bg-dark");
+  } else if (bgSelect.value === "light") {
+    document.body.classList.add("bg-light");
+  } else if (bgSelect.value === "pink") {
+    document.body.classList.add("bg-pink");
+  }
+}
+
+frameSelect.addEventListener("change", () => {
+  createPreviewBody();
+});
+
+imageSelect.addEventListener("change", () => {
+  createPreviewBody();
+});
+
+sizeRange.addEventListener("input", () => {
+  sizeVal.textContent = sizeRange.value;
+  createPreviewBody();
+});
+
+bgSelect.addEventListener("change", updateBackgroundMode);
+
+applyCustomBtn.addEventListener("click", async () => {
+  const value = customImage.value.trim();
+  if (!value) {
+    setStatus("画像URLを入力してください。");
+    return;
+  }
+
+  setStatus("カスタム画像を確認中...");
+
+  try {
+    await loadImageMeta(value);
+  } catch (error) {
+    setStatus("カスタム画像の読み込みに失敗しました。");
+    return;
+  }
+
+  let existing = [...imageSelect.options].find(opt => opt.value === value);
+
+  if (!existing) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = "カスタム画像";
+    imageSelect.appendChild(option);
+    existing = option;
+  }
+
+  imageSelect.value = value;
+  createPreviewBody();
+});
+
+resetBtn.addEventListener("click", () => {
+  frameSelect.value = "スターグロウ";
+  imageSelect.value = TEST_IMAGES[0].url;
+  sizeRange.value = "58";
+  sizeVal.textContent = "58";
+  bgSelect.value = "default";
+  customImage.value = "";
+  updateBackgroundMode();
+  createPreviewBody();
+});
+
+toggleSpinBtn.addEventListener("click", () => {
+  spinEnabled = !spinEnabled;
+  setStatus(spinEnabled ? "回転ON" : "回転OFF");
+});
+
+(function animate(){
+  if (previewBody && spinEnabled) {
+    Body.rotate(previewBody, 0.01);
+  }
+  requestAnimationFrame(animate);
 })();
+
+frameSelect.value = "スターグロウ";
+imageSelect.value = TEST_IMAGES[0].url;
+sizeRange.value = "58";
+sizeVal.textContent = "58";
+bgSelect.value = "default";
+
+updateBackgroundMode();
+createPreviewBody();
+</script>
+</body>
+</html>
