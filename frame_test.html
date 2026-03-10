@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Frame Test</title>
+<title>フレーム一覧ギャラリー</title>
 
 <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
 
@@ -26,77 +26,80 @@ body{
   font-family:sans-serif;
   color:var(--text);
   background:
-    linear-gradient(rgba(5,11,74,0.88), rgba(5,11,74,0.94)),
+    linear-gradient(rgba(5,11,74,0.90), rgba(5,11,74,0.95)),
     url("https://i.imgur.com/b8qJMXj.jpeg") center/cover no-repeat fixed;
 }
 
+body.bg-dark{
+  background:
+    linear-gradient(rgba(10,6,25,0.92), rgba(7,4,18,0.96)),
+    radial-gradient(circle at top, rgba(125,95,255,0.18), transparent 25%);
+}
+
+body.bg-light{
+  background:
+    linear-gradient(rgba(190,220,255,0.88), rgba(130,180,255,0.94));
+  color:#fff;
+}
+
+body.bg-pink{
+  background:
+    linear-gradient(rgba(95,26,91,0.92), rgba(42,8,38,0.96)),
+    radial-gradient(circle at top, rgba(255,191,224,0.18), transparent 25%);
+}
+
 .page{
-  max-width:1100px;
+  max-width:1400px;
   margin:0 auto;
-  padding:20px 14px 32px;
+  padding:18px 14px 40px;
 }
 
 h1{
-  margin:0 0 14px;
-  font-size:28px;
+  margin:0 0 10px;
   text-align:center;
+  font-size:30px;
 }
 
 .top-note{
+  margin:0 0 18px;
   text-align:center;
   color:var(--text-sub);
   font-size:14px;
-  line-height:1.7;
-  margin:0 0 18px;
+  line-height:1.8;
 }
 
-.layout{
-  display:flex;
-  gap:18px;
-  align-items:flex-start;
-  justify-content:center;
-  flex-wrap:wrap;
-}
-
-.panel{
-  width:320px;
+.toolbar{
+  max-width:1100px;
+  margin:0 auto 20px;
   background:var(--panel);
   border:1px solid var(--panel-border);
   border-radius:18px;
-  padding:16px;
+  padding:14px;
   backdrop-filter:blur(10px);
   box-shadow:0 12px 28px rgba(0,0,0,0.2);
 }
 
-.panel h2{
-  margin:0 0 12px;
-  font-size:18px;
+.toolbar-grid{
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr 1fr auto auto;
+  gap:10px;
+  align-items:end;
 }
 
 .field{
-  margin-bottom:14px;
   text-align:left;
-}
-
-.field:last-child{
-  margin-bottom:0;
 }
 
 .label{
   display:block;
-  font-size:13px;
-  color:var(--text-sub);
   margin-bottom:6px;
+  color:var(--text-sub);
+  font-size:13px;
 }
 
-select,
-input[type="range"],
-input[type="text"]{
+input[type="text"],
+select{
   width:100%;
-}
-
-select,
-input[type="text"]{
   border:none;
   border-radius:10px;
   padding:10px 12px;
@@ -109,29 +112,6 @@ select option{
   color:#000;
 }
 
-.range-row{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.range-row input[type="range"]{
-  flex:1;
-}
-
-.range-val{
-  width:56px;
-  text-align:right;
-  font-size:13px;
-  color:#fff;
-}
-
-.btns{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
 button{
   padding:10px 14px;
   border:none;
@@ -140,144 +120,152 @@ button{
   color:#fff;
   cursor:pointer;
   box-shadow:0 8px 20px rgba(10,37,130,0.3);
+  white-space:nowrap;
 }
 
 button:hover{
   opacity:0.95;
 }
 
-.viewer-wrap{
-  width:420px;
-  height:620px;
-  position:relative;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+  gap:16px;
 }
 
-#viewer{
-  width:420px;
-  height:620px;
-  position:relative;
+.card{
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(143,211,255,0.28);
+  border-radius:18px;
+  padding:12px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 10px 24px rgba(0,0,0,0.18);
+}
+
+.card-head{
+  margin-bottom:10px;
+}
+
+.frame-name{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.frame-meta{
+  font-size:12px;
+  color:var(--text-sub);
+  line-height:1.6;
+  min-height:38px;
+}
+
+.viewer{
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:18px;
   overflow:hidden;
-  border-radius:20px;
-  border:3px solid #3aa7ff;
+  border:2px solid rgba(143,211,255,0.45);
   background:
     radial-gradient(circle at top, rgba(86,187,255,0.22), transparent 25%),
     linear-gradient(180deg,#09145f 0%,#071050 40%,#03083b 100%);
-  box-shadow:0 18px 40px rgba(0,0,0,0.28);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.05);
 }
 
-.preview-label{
-  margin-top:10px;
-  text-align:center;
-  font-size:14px;
-  color:var(--text-sub);
-  line-height:1.7;
-}
-
-.preview-card{
-  margin-top:14px;
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  flex-wrap:wrap;
-}
-
-.preview-mini{
-  width:76px;
-  text-align:center;
-  font-size:12px;
-  color:#fff;
-}
-
-.preview-mini img{
-  width:58px;
-  height:58px;
-  border-radius:50%;
-  object-fit:cover;
-  object-position:center;
-  border:2px solid rgba(145,201,255,0.55);
-  background:#fff;
-  display:block;
-  margin:0 auto 6px;
-}
-
-.notice{
-  margin-top:12px;
-  font-size:12px;
-  color:var(--text-sub);
-  line-height:1.7;
-}
-
-.bg-dark #viewer{
+body.bg-dark .viewer{
   background:
-    radial-gradient(circle at top, rgba(144,81,255,0.15), transparent 25%),
+    radial-gradient(circle at top, rgba(144,81,255,0.16), transparent 25%),
     linear-gradient(180deg,#14081f 0%,#0c0718 40%,#04030c 100%);
   border-color:#8b63ff;
 }
 
-.bg-light #viewer{
+body.bg-light .viewer{
   background:
-    radial-gradient(circle at top, rgba(255,255,255,0.45), transparent 20%),
+    radial-gradient(circle at top, rgba(255,255,255,0.45), transparent 22%),
     linear-gradient(180deg,#b9d8ff 0%,#9ec5ff 42%,#7db0ff 100%);
   border-color:#6ba7ff;
 }
 
-.bg-pink #viewer{
+body.bg-pink .viewer{
   background:
     radial-gradient(circle at top, rgba(255,214,240,0.34), transparent 22%),
     linear-gradient(180deg,#68205f 0%,#4c1246 40%,#2a0826 100%);
   border-color:#ff95d2;
 }
 
-.status{
-  margin-top:8px;
-  text-align:center;
-  font-size:13px;
-  color:#fff;
-  min-height:20px;
+.mini{
+  margin-top:10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
-@media (max-width:520px){
-  .viewer-wrap,
-  #viewer{
-    width:360px;
-    height:560px;
+.mini img{
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  object-fit:cover;
+  object-position:center;
+  background:#fff;
+  border:2px solid rgba(145,201,255,0.55);
+  flex-shrink:0;
+}
+
+.mini-text{
+  font-size:12px;
+  color:var(--text-sub);
+  line-height:1.5;
+}
+
+.notice{
+  max-width:1100px;
+  margin:18px auto 0;
+  color:var(--text-sub);
+  font-size:13px;
+  line-height:1.8;
+  text-align:center;
+}
+
+@media (max-width:980px){
+  .toolbar-grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media (max-width:560px){
+  .toolbar-grid{
+    grid-template-columns:1fr;
   }
 
-  .panel{
-    width:100%;
-    max-width:420px;
+  h1{
+    font-size:25px;
   }
 }
 </style>
 </head>
 <body>
 <div class="page">
-  <h1>フレーム確認用テストページ</h1>
+  <h1>フレーム一覧ギャラリー</h1>
   <p class="top-note">
-    frames.js の見た目確認専用ページです。<br>
-    フレーム、サイズ、背景、画像を切り替えてその場で動作確認できます。
+    すべてのフレームを同じ画像で同時に確認するページです。<br>
+    画像URLを変えると全部まとめて反映されます。
   </p>
 
-  <div class="layout">
-    <div class="panel">
-      <h2>テスト設定</h2>
-
+  <div class="toolbar">
+    <div class="toolbar-grid">
       <div class="field">
-        <label class="label" for="frameSelect">フレーム</label>
-        <select id="frameSelect"></select>
+        <label class="label" for="imageUrl">画像URL</label>
+        <input id="imageUrl" type="text" value="https://i.imgur.com/zODWDAC.png" placeholder="https://...">
       </div>
 
       <div class="field">
-        <label class="label" for="imageSelect">画像</label>
-        <select id="imageSelect"></select>
-      </div>
-
-      <div class="field">
-        <label class="label" for="sizeRange">サイズ</label>
-        <div class="range-row">
-          <input id="sizeRange" type="range" min="20" max="88" step="1" value="58">
-          <div id="sizeVal" class="range-val">58</div>
-        </div>
+        <label class="label" for="sizeSelect">サイズ</label>
+        <select id="sizeSelect">
+          <option value="42">小さめ</option>
+          <option value="52">中</option>
+          <option value="58" selected>標準</option>
+          <option value="68">大きめ</option>
+          <option value="78">かなり大きめ</option>
+        </select>
       </div>
 
       <div class="field">
@@ -291,45 +279,37 @@ button:hover{
       </div>
 
       <div class="field">
-        <label class="label" for="customImage">画像URLを直接入力</label>
-        <input id="customImage" type="text" placeholder="https://...">
+        <label class="label" for="filterRank">ランク絞り込み</label>
+        <select id="filterRank">
+          <option value="all">全部</option>
+          <option value="N">N</option>
+          <option value="R">R</option>
+          <option value="SR">SR</option>
+          <option value="SSR">SSR</option>
+        </select>
       </div>
 
-      <div class="field">
-        <div class="btns">
-          <button id="applyCustomBtn">画像URLを反映</button>
-          <button id="resetBtn">初期化</button>
-          <button id="toggleSpinBtn">回転ON/OFF</button>
-        </div>
-      </div>
-
-      <div class="notice">
-        ・frames.js の特殊演出がそのまま反映されます。<br>
-        ・本番に近い見え方で確認できます。<br>
-        ・画像URL反映時は読み込み完了後にプレビューを作り直します。
-      </div>
+      <button id="applyBtn">反映</button>
+      <button id="resetBtn">初期化</button>
     </div>
+  </div>
 
-    <div>
-      <div class="viewer-wrap" id="viewerWrap">
-        <div id="viewer"></div>
-      </div>
-      <div class="preview-label" id="frameDesc">フレーム説明</div>
-      <div class="status" id="statusText"></div>
+  <div id="grid" class="grid"></div>
 
-      <div class="preview-card">
-        <div class="preview-mini">
-          <img id="miniPreview" src="" alt="mini preview">
-          <div id="miniName">preview</div>
-        </div>
-      </div>
-    </div>
+  <div class="notice">
+    ・このページは frames.js の演出をそのまま使います。<br>
+    ・frames.js と frame_gallery.html は同じ階層に置いてください。<br>
+    ・ImgurはページURLではなく、直接画像URLを入れてください。
   </div>
 </div>
 
-<script src="frames.js"></script>
 <script>
-const { Engine, Render, Runner, World, Bodies, Body, Composite } = Matter;
+window.Events = Matter.Events;
+</script>
+<script src="frames.js"></script>
+
+<script>
+const { Engine, Render, Runner, World, Bodies, Composite } = Matter;
 
 const FRAME_MASTER = {
   "ピンクフレーム": {
@@ -446,270 +426,168 @@ const FRAME_MASTER = {
   }
 };
 
-const TEST_IMAGES = [
-  {
-    name: "テスト画像A",
-    url: "https://i.imgur.com/zODWDAC.png"
-  },
-  {
-    name: "テスト画像B",
-    url: "https://i.imgur.com/x52sjzD.png"
-  },
-  {
-    name: "テスト画像C",
-    url: "https://i.imgur.com/6L89KpD.png"
-  },
-  {
-    name: "テスト画像D",
-    url: "https://i.imgur.com/YJ9QZ9Y.png"
-  }
-];
-
-const viewerWrap = document.getElementById("viewerWrap");
-const viewerEl = document.getElementById("viewer");
-const frameSelect = document.getElementById("frameSelect");
-const imageSelect = document.getElementById("imageSelect");
-const sizeRange = document.getElementById("sizeRange");
-const sizeVal = document.getElementById("sizeVal");
-const bgSelect = document.getElementById("bgSelect");
-const customImage = document.getElementById("customImage");
-const applyCustomBtn = document.getElementById("applyCustomBtn");
+const imageUrlEl = document.getElementById("imageUrl");
+const sizeSelectEl = document.getElementById("sizeSelect");
+const bgSelectEl = document.getElementById("bgSelect");
+const filterRankEl = document.getElementById("filterRank");
+const applyBtn = document.getElementById("applyBtn");
 const resetBtn = document.getElementById("resetBtn");
-const toggleSpinBtn = document.getElementById("toggleSpinBtn");
-const frameDesc = document.getElementById("frameDesc");
-const miniPreview = document.getElementById("miniPreview");
-const miniName = document.getElementById("miniName");
-const statusText = document.getElementById("statusText");
+const gridEl = document.getElementById("grid");
 
-Object.keys(FRAME_MASTER).forEach(name => {
-  const option = document.createElement("option");
-  option.value = name;
-  option.textContent = name;
-  frameSelect.appendChild(option);
-});
-
-TEST_IMAGES.forEach(item => {
-  const option = document.createElement("option");
-  option.value = item.url;
-  option.textContent = item.name;
-  imageSelect.appendChild(option);
-});
-
-const WIDTH = window.innerWidth <= 520 ? 360 : 420;
-const HEIGHT = window.innerWidth <= 520 ? 560 : 620;
-
-viewerWrap.style.width = WIDTH + "px";
-viewerWrap.style.height = HEIGHT + "px";
-viewerEl.style.width = WIDTH + "px";
-viewerEl.style.height = HEIGHT + "px";
-
-const engine = Engine.create();
-const world = engine.world;
-
-const render = Render.create({
-  element: viewerEl,
-  engine,
-  options: {
-    width: WIDTH,
-    height: HEIGHT,
-    wireframes: false,
-    background: "transparent",
-    pixelRatio: window.devicePixelRatio || 1
-  }
-});
-
-Render.run(render);
-Runner.run(Runner.create(), engine);
-
-const wall = 60;
-World.add(world, [
-  Bodies.rectangle(WIDTH / 2, HEIGHT + wall / 2, WIDTH, wall, { isStatic: true, render: { visible:false } }),
-  Bodies.rectangle(-wall / 2, HEIGHT / 2, wall, HEIGHT, { isStatic: true, render: { visible:false } }),
-  Bodies.rectangle(WIDTH + wall / 2, HEIGHT / 2, wall, HEIGHT, { isStatic: true, render: { visible:false } })
-]);
+const previewCards = [];
 
 function getFrameMeta(frameName){
   return FRAME_MASTER[frameName] || null;
 }
 
-FaceGameFrames.attachFrameRenderer(render, world, Composite, getFrameMeta);
+function setBodyBg(mode){
+  document.body.classList.remove("bg-dark", "bg-light", "bg-pink");
 
-let previewBody = null;
-let spinEnabled = false;
-let currentImageNatural = { width: 512, height: 512 };
-
-function setStatus(text){
-  statusText.textContent = text || "";
+  if (mode === "dark") document.body.classList.add("bg-dark");
+  if (mode === "light") document.body.classList.add("bg-light");
+  if (mode === "pink") document.body.classList.add("bg-pink");
 }
 
-function getSpriteScale(imageMeta, diameter){
-  const longestSide = Math.max(imageMeta.width || 512, imageMeta.height || 512);
-  const scale = (diameter * 0.92) / longestSide;
-  return { xScale: scale, yScale: scale };
-}
+function buildCard(frameName, meta, imageUrl, radius){
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.rank = meta.rank;
 
-function loadImageMeta(url){
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      resolve({
-        width: img.naturalWidth || 512,
-        height: img.naturalHeight || 512,
-        url
-      });
-    };
-    img.onerror = () => {
-      reject(new Error("画像を読み込めませんでした"));
-    };
-    img.src = url;
+  const head = document.createElement("div");
+  head.className = "card-head";
+  head.innerHTML = `
+    <div class="frame-name">${frameName}</div>
+    <div class="frame-meta">${meta.rank} ｜ ${meta.icons} ｜ ${meta.desc}</div>
+  `;
+
+  const viewer = document.createElement("div");
+  viewer.className = "viewer";
+
+  const mini = document.createElement("div");
+  mini.className = "mini";
+  mini.innerHTML = `
+    <img src="${imageUrl}" alt="${frameName}">
+    <div class="mini-text">${frameName}<br>${meta.rank}</div>
+  `;
+
+  card.appendChild(head);
+  card.appendChild(viewer);
+  card.appendChild(mini);
+  gridEl.appendChild(card);
+
+  const width = viewer.clientWidth;
+  const height = viewer.clientWidth;
+
+  const engine = Engine.create();
+  const world = engine.world;
+
+  const render = Render.create({
+    element: viewer,
+    engine,
+    options: {
+      width,
+      height,
+      wireframes: false,
+      background: "transparent",
+      pixelRatio: window.devicePixelRatio || 1
+    }
   });
-}
 
-function removePreviewBody(){
-  if (previewBody) {
-    World.remove(world, previewBody);
-    previewBody = null;
-  }
-}
+  Render.run(render);
+  Runner.run(Runner.create(), engine);
 
-function createPreviewBody() {
-  removePreviewBody();
+  const wall = 60;
+  World.add(world, [
+    Bodies.rectangle(width / 2, height + wall / 2, width, wall, { isStatic: true, render: { visible:false } }),
+    Bodies.rectangle(-wall / 2, height / 2, wall, height, { isStatic: true, render: { visible:false } }),
+    Bodies.rectangle(width + wall / 2, height / 2, wall, height, { isStatic: true, render: { visible:false } })
+  ]);
 
-  const radius = Number(sizeRange.value);
-  const frameName = frameSelect.value;
-  const imageUrl = imageSelect.value;
-  const scale = getSpriteScale(currentImageNatural, radius * 2);
-
-  previewBody = Bodies.circle(WIDTH / 2, HEIGHT / 2, radius, {
+  const body = Bodies.circle(width / 2, height / 2, radius, {
     isStatic: true,
     restitution: 0,
     friction: 0,
     frictionAir: 0,
-    inertia: Infinity,
     render: {
       sprite: {
         texture: imageUrl,
-        xScale: scale.xScale,
-        yScale: scale.yScale
+        xScale: (radius * 2 * 0.92) / 512,
+        yScale: (radius * 2 * 0.92) / 512
       }
     }
   });
 
-  previewBody.member = { name: "preview" };
-  previewBody.frameName = frameName;
-  previewBody.evoIndex = 0;
+  body.member = { name: frameName };
+  body.frameName = frameName;
+  body.evoIndex = 0;
 
-  World.add(world, previewBody);
+  World.add(world, body);
+  FaceGameFrames.attachFrameRenderer(render, world, Composite, getFrameMeta);
 
-  const meta = getFrameMeta(frameName);
-  frameDesc.textContent = meta
-    ? `${frameName} ｜ ${meta.rank} ｜ ${meta.desc}`
-    : frameName;
+  const miniImg = mini.querySelector("img");
+  miniImg.style.borderColor = meta.color;
+  miniImg.style.boxShadow = `0 0 10px ${meta.glow}`;
 
-  miniPreview.src = imageUrl;
-  miniName.textContent = frameName;
-  miniPreview.style.borderColor = meta ? meta.color : "rgba(145,201,255,0.55)";
-  miniPreview.style.boxShadow = meta ? `0 0 10px ${meta.glow}` : "none";
-
-  setStatus("プレビュー更新完了");
+  previewCards.push({
+    card,
+    viewer,
+    engine,
+    render,
+    world,
+    body,
+    miniImg,
+    frameName
+  });
 }
 
-async function applyImageUrl(url) {
-  const value = (url || "").trim();
-  if (!value) return;
-
-  setStatus("画像を読み込み中...");
-
-  try {
-    const meta = await loadImageMeta(value);
-    currentImageNatural = {
-      width: meta.width,
-      height: meta.height
-    };
-
-    const exists = [...imageSelect.options].some(option => option.value === value);
-    if (!exists) {
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = "カスタム画像";
-      imageSelect.appendChild(option);
-    }
-
-    imageSelect.value = value;
-    miniPreview.src = value;
-    createPreviewBody();
-  } catch (error) {
-    setStatus("画像の読み込みに失敗しました");
-  }
+function clearCards(){
+  previewCards.forEach(item => {
+    try{
+      if (item.render && item.render.canvas) {
+        item.render.canvas.remove();
+      }
+      if (item.render && item.render.textures) {
+        item.render.textures = {};
+      }
+    }catch(e){}
+  });
+  previewCards.length = 0;
+  gridEl.innerHTML = "";
 }
 
-function updateBackgroundMode() {
-  document.body.classList.remove("bg-dark", "bg-light", "bg-pink");
+function renderGallery(){
+  clearCards();
 
-  if (bgSelect.value === "dark") {
-    document.body.classList.add("bg-dark");
-  } else if (bgSelect.value === "light") {
-    document.body.classList.add("bg-light");
-  } else if (bgSelect.value === "pink") {
-    document.body.classList.add("bg-pink");
-  }
+  const imageUrl = imageUrlEl.value.trim() || "https://i.imgur.com/zODWDAC.png";
+  const radius = Number(sizeSelectEl.value);
+  const rankFilter = filterRankEl.value;
+
+  Object.entries(FRAME_MASTER).forEach(([frameName, meta]) => {
+    if (rankFilter !== "all" && meta.rank !== rankFilter) return;
+    buildCard(frameName, meta, imageUrl, radius);
+  });
 }
 
-frameSelect.addEventListener("change", createPreviewBody);
-
-imageSelect.addEventListener("change", async () => {
-  await applyImageUrl(imageSelect.value);
+applyBtn.addEventListener("click", () => {
+  setBodyBg(bgSelectEl.value);
+  renderGallery();
 });
 
-sizeRange.addEventListener("input", () => {
-  sizeVal.textContent = sizeRange.value;
-  createPreviewBody();
+resetBtn.addEventListener("click", () => {
+  imageUrlEl.value = "https://i.imgur.com/zODWDAC.png";
+  sizeSelectEl.value = "58";
+  bgSelectEl.value = "default";
+  filterRankEl.value = "all";
+  setBodyBg("default");
+  renderGallery();
 });
 
-bgSelect.addEventListener("change", updateBackgroundMode);
-
-applyCustomBtn.addEventListener("click", async () => {
-  await applyImageUrl(customImage.value);
+bgSelectEl.addEventListener("change", () => {
+  setBodyBg(bgSelectEl.value);
 });
 
-customImage.addEventListener("keydown", async e => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    await applyImageUrl(customImage.value);
-  }
-});
-
-resetBtn.addEventListener("click", async () => {
-  frameSelect.value = "スターグロウ";
-  sizeRange.value = "58";
-  sizeVal.textContent = "58";
-  bgSelect.value = "default";
-  customImage.value = "";
-  updateBackgroundMode();
-  await applyImageUrl(TEST_IMAGES[0].url);
-});
-
-toggleSpinBtn.addEventListener("click", () => {
-  spinEnabled = !spinEnabled;
-  setStatus(spinEnabled ? "回転ON" : "回転OFF");
-});
-
-(function animate(){
-  if (previewBody && spinEnabled) {
-    Body.setAngle(previewBody, previewBody.angle + 0.01);
-  }
-  requestAnimationFrame(animate);
-})();
-
-(async function init(){
-  frameSelect.value = "スターグロウ";
-  sizeRange.value = "58";
-  sizeVal.textContent = "58";
-  bgSelect.value = "default";
-  updateBackgroundMode();
-  await applyImageUrl(TEST_IMAGES[0].url);
-})();
+setBodyBg("default");
+renderGallery();
 </script>
 </body>
 </html>
