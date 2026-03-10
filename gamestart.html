@@ -192,6 +192,183 @@ button:hover{
   border:2px solid rgba(145,201,255,0.55);
 }
 
+.daily-mission-panel{
+  max-width:860px;
+  margin:0 auto 14px;
+  padding:14px 14px 12px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(103,154,255,0.35);
+  border-radius:16px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 10px 24px rgba(0,0,0,0.18);
+}
+
+.daily-mission-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+.daily-mission-title{
+  font-size:16px;
+  font-weight:700;
+  color:#ffffff;
+}
+
+.daily-mission-progress{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:1;
+  min-width:220px;
+}
+
+.daily-mission-progressbar{
+  flex:1;
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.12);
+  overflow:hidden;
+  border:1px solid rgba(143,211,255,0.18);
+}
+
+.daily-mission-progressbar span{
+  display:block;
+  width:0%;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#7ed7ff,#7aa8ff,#b78cff);
+  box-shadow:0 0 12px rgba(143,211,255,0.35);
+  transition:width 0.25s ease;
+}
+
+.daily-mission-progresstext{
+  min-width:52px;
+  text-align:right;
+  font-size:12px;
+  color:#d8e3ff;
+  font-weight:700;
+}
+
+.daily-mission-body{
+  display:flex;
+  gap:12px;
+  align-items:stretch;
+}
+
+.daily-mission-list{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.daily-mission-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);
+  text-align:left;
+}
+
+.daily-mission-item.done{
+  background:rgba(111,255,176,0.12);
+  border-color:rgba(111,255,176,0.35);
+}
+
+.daily-mission-item-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  flex:1;
+}
+
+.daily-mission-check{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  border:2px solid rgba(143,211,255,0.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  color:transparent;
+  flex-shrink:0;
+}
+
+.daily-mission-item.done .daily-mission-check{
+  background:#6fff9e;
+  border-color:#6fff9e;
+  color:#06321a;
+}
+
+.daily-mission-text{
+  font-size:13px;
+  color:#fff;
+  line-height:1.45;
+  word-break:break-word;
+}
+
+.daily-mission-status{
+  flex-shrink:0;
+  font-size:12px;
+  color:#d8e3ff;
+  font-weight:700;
+}
+
+.daily-mission-item.done .daily-mission-status{
+  color:#9dffbf;
+}
+
+.daily-mission-chest{
+  width:88px;
+  min-width:88px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:6px;
+  padding:10px 8px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+.daily-mission-chest-icon{
+  font-size:34px;
+  line-height:1;
+  filter:drop-shadow(0 0 10px rgba(255,220,120,0.25));
+}
+
+.daily-mission-chest.ready .daily-mission-chest-icon{
+  animation:chestGlow 1s infinite alternate;
+}
+
+.daily-mission-chest-label{
+  font-size:11px;
+  color:#d8e3ff;
+  line-height:1.4;
+}
+
+@keyframes chestGlow{
+  0%{
+    transform:scale(1);
+    filter:drop-shadow(0 0 8px rgba(255,220,120,0.3));
+  }
+  100%{
+    transform:scale(1.08);
+    filter:drop-shadow(0 0 16px rgba(255,220,120,0.65));
+  }
+}
+
 .game-wrap{
   width:420px;
   height:620px;
@@ -644,6 +821,16 @@ img{
     width:42px;
     height:42px;
   }
+
+  .daily-mission-body{
+    flex-direction:column;
+  }
+
+  .daily-mission-chest{
+    width:100%;
+    min-width:0;
+    flex-direction:row;
+  }
 }
 </style>
 </head>
@@ -670,6 +857,25 @@ img{
       </div>
       <img id="nextImg" alt="next">
       <div id="nextName"></div>
+    </div>
+  </div>
+
+  <div class="daily-mission-panel">
+    <div class="daily-mission-head">
+      <div class="daily-mission-title">デイリーミッション</div>
+      <div class="daily-mission-progress">
+        <div class="daily-mission-progressbar">
+          <span id="dailyMissionProgressBar"></span>
+        </div>
+        <div class="daily-mission-progresstext" id="dailyMissionProgressText">0/3</div>
+      </div>
+    </div>
+    <div class="daily-mission-body">
+      <div class="daily-mission-list" id="dailyMissionList"></div>
+      <div class="daily-mission-chest" id="dailyMissionChest">
+        <div class="daily-mission-chest-icon">🎁</div>
+        <div class="daily-mission-chest-label">3個達成で宝箱</div>
+      </div>
     </div>
   </div>
 
