@@ -482,7 +482,6 @@ TEST_IMAGES.forEach(item => {
   const option = document.createElement("option");
   option.value = item.url;
   option.textContent = item.name;
-  frameSelect;
   imageSelect.appendChild(option);
 });
 
@@ -495,6 +494,7 @@ viewerEl.style.width = WIDTH + "px";
 viewerEl.style.height = HEIGHT + "px";
 
 const engine = Engine.create();
+engine.world.gravity.y = 0;
 const world = engine.world;
 
 const render = Render.create({
@@ -594,11 +594,11 @@ async function createPreviewBody() {
   }
 
   previewBody = Bodies.circle(WIDTH / 2, HEIGHT / 2, radius, {
-    isStatic: true,
+    isStatic: false,
+    inertia: Infinity,
     restitution: 0,
     friction: 0,
-    frictionAir: 0,
-    inertia: Infinity,
+    frictionAir: 0.08,
     render: {
       sprite: {
         texture: imageUrl,
@@ -611,6 +611,11 @@ async function createPreviewBody() {
   previewBody.member = { name: "preview" };
   previewBody.frameName = frameName;
   previewBody.evoIndex = 0;
+  previewBody.isPreview = true;
+
+  Body.setPosition(previewBody, { x: WIDTH / 2, y: HEIGHT / 2 });
+  Body.setVelocity(previewBody, { x: 0, y: 0 });
+  Body.setAngularVelocity(previewBody, 0);
 
   World.add(world, previewBody);
 
@@ -709,9 +714,17 @@ toggleSpinBtn.addEventListener("click", () => {
 });
 
 (function animate(){
-  if (previewBody && spinEnabled) {
-    Body.setAngle(previewBody, previewBody.angle + 0.01);
+  if (previewBody) {
+    Body.setPosition(previewBody, { x: WIDTH / 2, y: HEIGHT / 2 });
+    Body.setVelocity(previewBody, { x: 0, y: 0 });
+
+    if (spinEnabled) {
+      Body.setAngle(previewBody, previewBody.angle + 0.01);
+    } else {
+      Body.setAngularVelocity(previewBody, 0);
+    }
   }
+
   requestAnimationFrame(animate);
 })();
 
@@ -722,13 +735,14 @@ sizeVal.textContent = "58";
 bgSelect.value = "default";
 
 updateBackgroundMode();
-createPreviewBody();
 
 if (window.FaceGameFrames && typeof window.FaceGameFrames.attachFrameRenderer === "function") {
   FaceGameFrames.attachFrameRenderer(render, world, Composite, getFrameMeta);
 } else {
   frameDesc.textContent = "frames.js の読み込みに失敗しています";
 }
+
+createPreviewBody();
 </script>
 </body>
 </html>
