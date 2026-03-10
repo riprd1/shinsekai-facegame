@@ -334,8 +334,10 @@ let isGameOver = false;
 let isTouchDragging = false;
 let lv11CreatedThisRun = 0;
 let maxLevelReachedThisRun = 0;
-let validPlayCountedThisRun = false;
+let playCountedThisRun = false;
 let rewardAnimating = false;
+let currentCombo = 0;
+let maxComboThisRun = 0;
 
 const imageSizeMap = new Map();
 
@@ -358,26 +360,43 @@ function hashString(str){
 function seededShuffle(array, seed){
   const arr = [...array];
   let s = seed || 1;
+
   function rand(){
     s = (s * 1664525 + 1013904223) >>> 0;
     return s / 4294967296;
   }
+
   for(let i = arr.length - 1; i > 0; i--){
     const j = Math.floor(rand() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+
   return arr;
 }
 
 const MISSION_POOL = [
-  { id:"score120", text:"Score 120達成", type:"score", target:120 },
-  { id:"score200", text:"Score 200達成", type:"score", target:200 },
-  { id:"score320", text:"Score 320達成", type:"score", target:320 },
+  { id:"score101", text:"Score 101達成", type:"score", target:101 },
+  { id:"score1500", text:"Score 1500達成", type:"score", target:1500 },
+  { id:"score2000", text:"Score 2000達成", type:"score", target:2000 },
+  { id:"score3000", text:"Score 3000達成", type:"score", target:3000 },
+  { id:"score3500", text:"Score 3500達成", type:"score", target:3500 },
+
   { id:"lv6", text:"Lv.6を作成", type:"level", target:6 },
   { id:"lv7", text:"Lv.7を作成", type:"level", target:7 },
   { id:"lv8", text:"Lv.8を作成", type:"level", target:8 },
-  { id:"play3", text:"Lv.5到達を3回達成", type:"validPlay", target:3 },
-  { id:"play5", text:"Lv.5到達を5回達成", type:"validPlay", target:5 }
+  { id:"lv9", text:"Lv.9を作成", type:"level", target:9 },
+
+  { id:"lv7x2", text:"Lv.7を2回作成", type:"levelCount", level:7, target:2 },
+  { id:"lv8x2", text:"Lv.8を2回作成", type:"levelCount", level:8, target:2 },
+  { id:"lv9x2", text:"Lv.9を2回作成", type:"levelCount", level:9, target:2 },
+
+  { id:"play3", text:"3回プレイ", type:"playCount", target:3 },
+  { id:"play5", text:"5回プレイ", type:"playCount", target:5 },
+  { id:"play7", text:"7回プレイ", type:"playCount", target:7 },
+
+  { id:"combo5", text:"5コンボ達成", type:"combo", target:5 },
+  { id:"combo7", text:"7コンボ達成", type:"combo", target:7 },
+  { id:"combo8", text:"8コンボ達成", type:"combo", target:8 }
 ];
 
 function buildDailyMissionState() {
@@ -385,6 +404,10 @@ function buildDailyMissionState() {
   const saved = JSON.parse(localStorage.getItem("facegame_daily_mission_state") || "null");
 
   if (saved && saved.date === today) {
+    if (typeof saved.dailyPlayCount !== "number") saved.dailyPlayCount = 0;
+    if (!saved.dailyLevelCounts || typeof saved.dailyLevelCounts !== "object") saved.dailyLevelCounts = {};
+    if (typeof saved.rewardClaimed !== "boolean") saved.rewardClaimed = false;
+    if (!Array.isArray(saved.missions)) saved.missions = [];
     return saved;
   }
 
@@ -394,6 +417,7 @@ function buildDailyMissionState() {
     text: m.text,
     type: m.type,
     target: m.target,
+    level: m.level || null,
     done: false
   }));
 
@@ -401,7 +425,8 @@ function buildDailyMissionState() {
     date: today,
     missions: selected,
     rewardClaimed: false,
-    dailyValidPlayCount: 0
+    dailyPlayCount: 0,
+    dailyLevelCounts: {}
   };
 
   localStorage.setItem("facegame_daily_mission_state", JSON.stringify(state));
@@ -414,7 +439,115 @@ function saveDailyMissionState() {
   localStorage.setItem("facegame_daily_mission_state", JSON.stringify(dailyMissionState));
 }
 
+function ensureDailyMissionStateCurrent() {
+  const today = getTodayKey();
+
+  if (dailyMissionState.date !== today) {
+    dailyMissionState = buildDailyMissionState();
+    renderMissionProgress();
+  }
+}
+
+function getMissionCurrentValue(mission) {
+  ensureDailyMissionStateCurrent();
+
+  if (mission.type === "score") {
+    return Math.min(score, mission.target);
+  }
+
+  if (mission.type === "level") {
+    return Math.min(maxLevelReachedThisRun, mission.target);
+  }
+
+  if (mission.type === "levelCount") {
+    const current = Number(dailyMissionState.dailyLevelCounts[String(mission.level)] || 0);
+    return Math.min(current, mission.target);
+  }
+
+  if (mission.type === "playCount") {
+    return Math.min(dailyMissionState.dailyPlayCount || 0, mission.target);
+  }
+
+  if (mission.type === "combo") {
+    return Math.min(maxComboThisRun, mission.target);
+  }
+
+  return 0;
+}
+
+function getCompletedMissionCount() {
+  return dailyMissionState.missions.filter(m => m.done).length;
+}
+
+function getOwnedSkins() {
+  return JSON.parse(localStorage.getItem("facegame_owned_skins") || "[]");
+}
+
+function saveOwnedSkins(list) {
+  localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
+}
+
+function pickDailyRewardSkins(count = 3) {
+  const allSkins = Object.keys(FRAME_MASTER);
+  const owned = getOwnedSkins();
+  const unowned = allSkins.filter(name => !owned.includes(name));
+  const source = unowned.length >= count ? unowned : allSkins;
+  const shuffled = seededShuffle(source, hashString(`${dailyMissionState.date}-reward-${owned.length}`));
+  const selected = shuffled.slice(0, count);
+
+  const merged = [...new Set([...owned, ...selected])];
+  saveOwnedSkins(merged);
+
+  return selected;
+}
+
+function checkMissionReward() {
+  if (dailyMissionState.rewardClaimed) return;
+  if (getCompletedMissionCount() < 3) return;
+
+  dailyMissionState.rewardClaimed = true;
+  saveDailyMissionState();
+
+  const rewards = pickDailyRewardSkins(3);
+  showSkinRewardOverlay(rewards);
+}
+
+function renderMissionProgress() {
+  const missionListEl = document.getElementById("dailyMissionList");
+  const missionProgressBarEl = document.getElementById("dailyMissionProgressBar");
+  const missionProgressTextEl = document.getElementById("dailyMissionProgressText");
+  const missionChestEl = document.getElementById("dailyMissionChest");
+
+  if (missionListEl) {
+    missionListEl.innerHTML = dailyMissionState.missions.map(mission => {
+      const current = getMissionCurrentValue(mission);
+      const doneClass = mission.done ? " done" : "";
+      const mark = mission.done ? "✓" : "・";
+      return `<div class="daily-mission-item${doneClass}">${mark} ${mission.text}<span style="float:right;">${current}/${mission.target}</span></div>`;
+    }).join("");
+  }
+
+  const completed = getCompletedMissionCount();
+  const total = dailyMissionState.missions.length || 3;
+  const percent = Math.max(0, Math.min(100, (completed / total) * 100));
+
+  if (missionProgressBarEl) {
+    missionProgressBarEl.style.width = `${percent}%`;
+  }
+
+  if (missionProgressTextEl) {
+    missionProgressTextEl.textContent = `${completed}/${total}`;
+  }
+
+  if (missionChestEl) {
+    missionChestEl.classList.toggle("ready", completed >= 3 && !dailyMissionState.rewardClaimed);
+    missionChestEl.classList.toggle("opened", !!dailyMissionState.rewardClaimed);
+  }
+}
+
 function updateMissionProgress() {
+  ensureDailyMissionStateCurrent();
+
   let changed = false;
 
   dailyMissionState.missions.forEach(m => {
@@ -430,7 +563,20 @@ function updateMissionProgress() {
       changed = true;
     }
 
-    if (m.type === "validPlay" && dailyMissionState.dailyValidPlayCount >= m.target) {
+    if (m.type === "levelCount") {
+      const count = Number(dailyMissionState.dailyLevelCounts[String(m.level)] || 0);
+      if (count >= m.target) {
+        m.done = true;
+        changed = true;
+      }
+    }
+
+    if (m.type === "playCount" && (dailyMissionState.dailyPlayCount || 0) >= m.target) {
+      m.done = true;
+      changed = true;
+    }
+
+    if (m.type === "combo" && maxComboThisRun >= m.target) {
       m.done = true;
       changed = true;
     }
@@ -439,15 +585,45 @@ function updateMissionProgress() {
   if (changed) {
     saveDailyMissionState();
   }
+
+  renderMissionProgress();
+  checkMissionReward();
 }
 
-function registerValidPlayIfNeeded(level) {
-  if (level >= 5 && !validPlayCountedThisRun) {
-    validPlayCountedThisRun = true;
-    dailyMissionState.dailyValidPlayCount += 1;
+function registerPlayIfNeeded(level) {
+  ensureDailyMissionStateCurrent();
+
+  if (level >= 6 && !playCountedThisRun) {
+    playCountedThisRun = true;
+    dailyMissionState.dailyPlayCount += 1;
     saveDailyMissionState();
     updateMissionProgress();
   }
+}
+
+function registerLevelCreated(level) {
+  ensureDailyMissionStateCurrent();
+
+  if (level >= 7 && level <= 9) {
+    const key = String(level);
+    dailyMissionState.dailyLevelCounts[key] = Number(dailyMissionState.dailyLevelCounts[key] || 0) + 1;
+    saveDailyMissionState();
+    updateMissionProgress();
+  }
+}
+
+function registerComboMerge() {
+  currentCombo += 1;
+
+  if (currentCombo > maxComboThisRun) {
+    maxComboThisRun = currentCombo;
+  }
+
+  updateMissionProgress();
+}
+
+function resetComboChain() {
+  currentCombo = 0;
 }
 
 function updateMaxLevel(level) {
@@ -593,6 +769,8 @@ function checkSpecialUnlock() {
 function spawn(x) {
   if (!canDrop || isGameOver) return;
 
+  resetComboChain();
+
   const safeX = getSafeX(x);
   const r = SIZE[next.evoIndex];
   const gameImg = getGameImg(next.member);
@@ -621,7 +799,8 @@ function spawn(x) {
   World.add(world, body);
 
   updateMaxLevel(next.evoIndex + 1);
-  registerValidPlayIfNeeded(next.evoIndex + 1);
+  registerPlayIfNeeded(next.evoIndex + 1);
+  registerLevelCreated(next.evoIndex + 1);
 
   canDrop = false;
   setTimeout(() => canDrop = true, 320);
@@ -870,7 +1049,9 @@ function restart() {
   score = 0;
   lv11CreatedThisRun = 0;
   maxLevelReachedThisRun = 0;
-  validPlayCountedThisRun = false;
+  playCountedThisRun = false;
+  currentCombo = 0;
+  maxComboThisRun = 0;
   scoreEl.textContent = "0";
   finalScoreEl.textContent = "0";
   finalMaxLevelEl.textContent = "0";
@@ -955,6 +1136,8 @@ Events.on(engine, "collisionStart", async event => {
     World.remove(world, a);
     World.remove(world, b);
 
+    registerComboMerge();
+
     if (nextIndex >= members.length) {
       lv11CreatedThisRun += 1;
       updateMaxLevel(members.length);
@@ -1001,7 +1184,8 @@ Events.on(engine, "collisionStart", async event => {
     mergeEffect(x, y, r, newMember.name, nextIndex, false);
     playMergeSound(nextIndex + 1);
     updateMaxLevel(nextIndex + 1);
-    registerValidPlayIfNeeded(nextIndex + 1);
+    registerPlayIfNeeded(nextIndex + 1);
+    registerLevelCreated(nextIndex + 1);
 
     if (nextIndex === members.length - 1) {
       lv11CreatedThisRun += 1;
@@ -1049,9 +1233,15 @@ document.addEventListener("selectstart", e => {
   e.preventDefault();
 });
 
+setInterval(() => {
+  ensureDailyMissionStateCurrent();
+  renderMissionProgress();
+}, 30000);
+
 preloadImages().then(() => {
   renderSelectedMembers();
   updateNext();
   updateGhostPosition();
   updateMissionProgress();
+  renderMissionProgress();
 });
