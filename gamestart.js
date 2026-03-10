@@ -116,6 +116,48 @@ const FRAME_MASTER = {
     color: "#fff1a6",
     glow: "rgba(255,241,166,0.68)",
     desc: "特別感のある豪華フレーム"
+  },
+  "クリスタルフレーム": {
+    rank: "SR",
+    icons: "💎",
+    color: "#bff3ff",
+    glow: "rgba(191,243,255,0.58)",
+    desc: "氷みたいに透き通るクリスタルフレーム"
+  },
+  "リボンレース": {
+    rank: "R",
+    icons: "🎀",
+    color: "#ffc3df",
+    glow: "rgba(255,195,223,0.52)",
+    desc: "リボンとレースが上品に光るフレーム"
+  },
+  "バタフライフレーム": {
+    rank: "SR",
+    icons: "🦋",
+    color: "#a9c8ff",
+    glow: "rgba(169,200,255,0.54)",
+    desc: "蝶がふわっと羽ばたく幻想フレーム"
+  },
+  "ダークムーン": {
+    rank: "SR",
+    icons: "🌙",
+    color: "#b78cff",
+    glow: "rgba(103,48,143,0.42)",
+    desc: "三日月と紫黒のもやが妖しく揺れる"
+  },
+  "ギャラクシー": {
+    rank: "SSR",
+    icons: "🌌",
+    color: "#8ea7ff",
+    glow: "rgba(142,167,255,0.58)",
+    desc: "青紫の宇宙がゆっくり回るフレーム"
+  },
+  "キャンディ": {
+    rank: "R",
+    icons: "🍬",
+    color: "#ff9fd6",
+    glow: "rgba(255,159,214,0.5)",
+    desc: "パステルに弾けるポップなキャンディフレーム"
   }
 };
 
