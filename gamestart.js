@@ -496,7 +496,7 @@ function saveOwnedSkins(list) {
   localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
 }
 
-function pickDailyRewardSkins(count = 3) {
+function pickDailyRewardSkins(count = 2) {
   const allSkins = Object.keys(FRAME_MASTER);
   const owned = getOwnedSkins();
   const unowned = allSkins.filter(name => !owned.includes(name));
@@ -645,7 +645,6 @@ function showSkinRewardOverlay(rewards) {
   skinRewardListEl.innerHTML = `
     <div class="skin-reward-item">？？？</div>
     <div class="skin-reward-item">？？？</div>
-    <div class="skin-reward-item">？？？</div>
   `;
 
   const itemEls = [...skinRewardListEl.querySelectorAll(".skin-reward-item")];
@@ -669,7 +668,7 @@ function showSkinRewardOverlay(rewards) {
 
   setTimeout(() => {
     skinRewardListEl.classList.remove("roulette");
-    skinRewardResultEl.innerHTML = `・${rewards[0]}<br>・${rewards[1]}<br>・${rewards[2]}<br><br>のスキンが手に入りました。`;
+    skinRewardResultEl.innerHTML = `・${rewards[0]}<br>・${rewards[1]}<br><br>のスキンが手に入りました。`;
     skinRewardCloseBtn.disabled = false;
     rewardAnimating = false;
   }, 2600);
@@ -722,11 +721,18 @@ function createNext() {
   };
 }
 
+function formatNextLabel(level, rawName) {
+  const name = displayName(rawName);
+  const maxChars = 8;
+  const shortName = name.length > maxChars ? `${name.slice(0, maxChars)}…` : name;
+  return `Lv${level} ${shortName}`;
+}
+
 function updateNext() {
   const frameName = getEquippedFrameName(next.member.name);
 
   nextImgEl.src = getGameImg(next.member);
-  nextNameEl.textContent = `Lv${next.evoIndex + 1} ${displayName(next.member.name)}`;
+  nextNameEl.textContent = formatNextLabel(next.evoIndex + 1, next.member.name);
   dropGhostImgEl.src = getGameImg(next.member);
 
   const previewBase = 88;
@@ -1072,7 +1078,7 @@ async function openMissionChest() {
   dailyMissionChestEl.classList.remove("opening");
   dailyMissionChestEl.classList.add("opened");
 
-  const rewards = pickDailyRewardSkins(3);
+  const rewards = pickDailyRewardSkins(2);
   renderMissionProgress();
   showSkinRewardOverlay(rewards);
 
