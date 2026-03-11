@@ -754,8 +754,8 @@
     ctx.rotate(rotation);
     ctx.globalAlpha = alpha;
 
-    const outerColor = "rgba(120,0,40,1)";
-const innerColor = "rgba(170,0,70,1)";
+    const outerColor = "rgba(24,24,24,1)";
+    const innerColor = "rgba(38,38,38,1)";
     const highlight = "rgba(255,255,255,0.08)";
     const bloom = 0.42 + open * 0.9;
 
@@ -934,7 +934,7 @@ const innerColor = "rgba(170,0,70,1)";
         px,
         py,
         Math.max(2.6, r * 0.088),
-        i % 2 === 0 ? "rgba(120,0,40,0.98)" : "rgba(170,0,70,0.98)"
+        i % 2 === 0 ? "rgba(34,34,34,0.98)" : "rgba(48,48,48,0.98)",
         alpha,
         rot,
         5
