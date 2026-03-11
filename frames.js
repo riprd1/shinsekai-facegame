@@ -19,6 +19,23 @@
     return base;
   }
 
+  function hashSeed(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function seededRandom(seed) {
+    let s = seed >>> 0;
+    return function () {
+      s = Math.imul(1664525, s) + 1013904223;
+      return ((s >>> 0) / 4294967296);
+    };
+  }
+
   function drawStarShape(ctx, radius) {
     ctx.beginPath();
     for (let i = 0; i < 4; i++) {
@@ -76,6 +93,7 @@
     ctx.moveTo(size * 0.45, -size * 0.45);
     ctx.lineTo(-size * 0.45, size * 0.45);
     ctx.stroke();
+
     ctx.restore();
   }
 
@@ -281,29 +299,46 @@
     ctx.rotate(rotation);
     ctx.globalAlpha = alpha;
 
-    const grad = ctx.createLinearGradient(0, -size, 0, size);
-    grad.addColorStop(0, "rgba(255,250,195,1)");
-    grad.addColorStop(0.45, color);
-    grad.addColorStop(1, "rgba(194,126,22,1)");
+    const grad = ctx.createLinearGradient(0, -size * 1.1, 0, size * 0.9);
+    grad.addColorStop(0, "rgba(255,250,205,1)");
+    grad.addColorStop(0.25, "rgba(255,230,120,1)");
+    grad.addColorStop(0.58, color);
+    grad.addColorStop(1, "rgba(176,116,16,1)");
 
     ctx.fillStyle = grad;
-    ctx.shadowColor = color;
+    ctx.shadowColor = "rgba(255,220,90,0.95)";
     ctx.shadowBlur = blur;
 
     ctx.beginPath();
-    ctx.moveTo(-size, size * 0.42);
-    ctx.lineTo(-size * 0.72, -size * 0.25);
-    ctx.lineTo(-size * 0.28, size * 0.02);
-    ctx.lineTo(0, -size * 0.58);
-    ctx.lineTo(size * 0.28, size * 0.02);
-    ctx.lineTo(size * 0.72, -size * 0.25);
-    ctx.lineTo(size, size * 0.42);
+    ctx.moveTo(-size * 1.02, size * 0.34);
+    ctx.lineTo(-size * 0.82, -size * 0.18);
+    ctx.lineTo(-size * 0.48, size * 0.02);
+    ctx.lineTo(-size * 0.16, -size * 0.44);
+    ctx.lineTo(0, size * 0.02);
+    ctx.lineTo(size * 0.16, -size * 0.52);
+    ctx.lineTo(size * 0.48, size * 0.02);
+    ctx.lineTo(size * 0.82, -size * 0.18);
+    ctx.lineTo(size * 1.02, size * 0.34);
     ctx.closePath();
     ctx.fill();
 
     ctx.beginPath();
-    ctx.roundRect(-size * 1.02, size * 0.3, size * 2.04, size * 0.38, size * 0.12);
+    ctx.roundRect(-size * 1.06, size * 0.26, size * 2.12, size * 0.42, size * 0.12);
     ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,249,212,0.9)";
+    ctx.lineWidth = Math.max(0.9, size * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.88, size * 0.26);
+    ctx.lineTo(-size * 0.7, -size * 0.1);
+    ctx.lineTo(-size * 0.38, size * 0.08);
+    ctx.lineTo(-size * 0.14, -size * 0.28);
+    ctx.lineTo(0, size * 0.08);
+    ctx.lineTo(size * 0.14, -size * 0.36);
+    ctx.lineTo(size * 0.38, size * 0.08);
+    ctx.lineTo(size * 0.7, -size * 0.1);
+    ctx.lineTo(size * 0.88, size * 0.26);
+    ctx.stroke();
 
     ctx.restore();
   }
@@ -486,6 +521,59 @@
 
     drawSoftDiamondStar(ctx, size * 0.38, 0, size * 0.42, "rgba(255,255,255,0.98)", alpha, 0.3, blur);
     ctx.restore();
+  }
+
+  function getFrameDecorationPattern(frameName) {
+    switch (frameName) {
+      case "スターグロウ":
+        return ["starLarge","starSmall","starLarge","starSmall","starLarge","starSmall","starLarge","starSmall"];
+      case "ゴールドフレーム":
+        return ["star","star","star","star","star","star"];
+      case "ネオンパープル":
+        return ["star","sparkle","star","sparkle","star","sparkle","star","sparkle"];
+      case "シャイニーゴールド":
+        return ["star","heart","sparkle","star","heart","sparkle","star","heart"];
+      case "ハートピンク":
+        return ["heart","heart","heart","heart","heart","heart","heart","heart"];
+      case "ピンクフレーム":
+        return ["heart","sparkle","heart","sparkle","heart","sparkle"];
+      case "オーロラライン":
+        return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
+      case "ミントフレーム":
+        return ["heart","sparkle","heart","sparkle","heart","sparkle"];
+      case "スカイブルー":
+        return ["sparkle","heart","sparkle","heart","sparkle","heart"];
+      case "パープルフレーム":
+        return ["star","heart","star","heart","star","heart"];
+      case "クリスタルフレーム":
+        return ["diamond","diamond","sparkle","diamond","diamond","sparkle"];
+      case "リボンレース":
+        return ["lace","ribbon","lace","lace","ribbon","lace","lace","ribbon"];
+      case "バタフライフレーム":
+        return ["sparkle","butterfly","sparkle","butterfly","sparkle","butterfly"];
+      case "ダークムーン":
+        return ["moon","starSmall","sparkle","starSmall","moon","sparkle"];
+      case "ギャラクシー":
+        return ["orbit","orbit","starSmall","orbit","starSmall","orbit","starSmall","orbit"];
+      case "キャンディ":
+        return ["candy","heart","candy","heart","candy","heart","candy","heart"];
+      case "クラウン":
+        return ["crown","sparkle","starSmall","crown","sparkle","starSmall"];
+      case "ダークローズ":
+        return ["rose","sparkle","rose","sparkle","rose","sparkle"];
+      case "流れ星":
+        return ["shootingStar","starSmall","shootingStar","starSmall","shootingStar","starSmall"];
+      case "桜":
+        return ["petal","petal","sparkle","petal","petal","sparkle","petal","petal"];
+      case "天使のはね":
+        return ["wing","sparkle","wing","sparkle","wing","sparkle"];
+      case "雪結晶":
+        return ["snowflake","sparkle","snowflake","sparkle","snowflake","sparkle"];
+      case "犬のあしあと":
+        return ["paw","paw","sparkle","paw","paw","sparkle","paw","sparkle"];
+      default:
+        return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
+    }
   }
 
   function drawInnerGlow(ctx, x, y, r, meta) {
@@ -837,39 +925,45 @@
       drawAuroraRibbon(ctx, x, y, outerR, innerR, startAngle, endAngle, colors, band.alpha, 16);
     });
 
-    const decoCount = 8;
-    const decoRadius = r * 0.79;
+    const seed = hashSeed(`${Math.round(x)}-${Math.round(y)}-neon`);
+    const rand = seededRandom(seed);
+    const sparkleCount = 12;
 
-    for (let i = 0; i < decoCount; i++) {
-      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / decoCount) + time * 0.00035;
-      const dx = x + Math.cos(angle) * decoRadius;
-      const dy = y + Math.sin(angle) * decoRadius;
+    for (let i = 0; i < sparkleCount; i++) {
+      const angle = rand() * Math.PI * 2 + Math.sin(time * 0.00018 + i) * 0.08;
+      const radius = (0.18 + rand() * 0.62) * r;
+      const sx = x + Math.cos(angle) * radius;
+      const sy = y + Math.sin(angle) * radius;
 
-      const mix = (Math.sin(time * 0.002 + i * 1.6) + 1) / 2;
-      const color = mix > 0.5 ? "rgba(255,90,220,0.98)" : "rgba(160,90,255,0.98)";
-      const alpha = clamp(0.34 + mix * 0.56, 0.22, 0.9);
+      const blinkSpeed = 0.0012 + rand() * 0.0022;
+      const blink = (Math.sin(time * blinkSpeed + i * 2.3 + rand() * 6) + 1) / 2;
+      const hueMix = (Math.sin(time * 0.0015 + i * 1.1) + 1) / 2;
+      const color = hueMix > 0.5 ? "rgba(255,80,220,0.98)" : "rgba(150,70,255,0.98)";
+      const alpha = clamp(0.06 + blink * 0.78, 0.05, 0.84);
 
-      drawSoftDiamondStar(
-        ctx,
-        dx,
-        dy,
-        Math.max(2.3, r * 0.066) * (0.95 + mix * 0.16),
-        color,
-        alpha,
-        Math.PI / 4 + time * 0.0008 + i * 0.18,
-        10
-      );
-
-      drawTinyTwinkle(
-        ctx,
-        dx,
-        dy,
-        Math.max(1.7, r * 0.048),
-        "rgba(255,255,255,0.82)",
-        alpha * 0.7,
-        time * 0.0006,
-        7
-      );
+      if (rand() > 0.45) {
+        drawSoftDiamondStar(
+          ctx,
+          sx,
+          sy,
+          Math.max(1.8, r * (0.045 + rand() * 0.03)) * (0.9 + blink * 0.2),
+          color,
+          alpha,
+          Math.PI / 4 + i * 0.2,
+          9
+        );
+      } else {
+        drawTinyTwinkle(
+          ctx,
+          sx,
+          sy,
+          Math.max(1.4, r * (0.035 + rand() * 0.022)) * (0.9 + blink * 0.15),
+          "rgba(255,255,255,0.9)",
+          alpha,
+          time * 0.0006 + i * 0.1,
+          7
+        );
+      }
     }
   }
 
@@ -1090,8 +1184,8 @@
     ctx.restore();
 
     const crownX = x;
-    const crownY = y - r * 0.95;
-    const crownSize = Math.max(5.8, r * 0.2);
+    const crownY = y - r * 0.98;
+    const crownSize = Math.max(6.6, r * 0.235);
 
     drawCrown(
       ctx,
@@ -1099,22 +1193,22 @@
       crownY,
       crownSize,
       "rgba(255,215,70,0.98)",
-      0.98,
-      Math.sin(time * 0.00055) * 0.03,
-      12
+      1,
+      Math.sin(time * 0.00045) * 0.02,
+      14
     );
 
     const sparkles = [
-      { angle: -Math.PI * 0.34, radius: r * 0.8, kind: "big", color: "rgba(255,240,170,0.98)" },
-      { angle: -Math.PI * 0.12, radius: r * 0.72, kind: "small", color: "rgba(255,255,255,0.98)" },
-      { angle: Math.PI * 0.12, radius: r * 0.72, kind: "small", color: "rgba(255,255,255,0.98)" },
-      { angle: Math.PI * 0.34, radius: r * 0.8, kind: "big", color: "rgba(255,232,140,0.98)" },
-      { angle: Math.PI * 0.72, radius: r * 0.74, kind: "small", color: "rgba(255,255,255,0.92)" },
-      { angle: Math.PI * 1.28, radius: r * 0.74, kind: "small", color: "rgba(255,248,210,0.9)" }
+      { angle: -Math.PI * 0.34, radius: r * 0.82, kind: "big", color: "rgba(255,235,150,0.98)" },
+      { angle: -Math.PI * 0.16, radius: r * 0.72, kind: "small", color: "rgba(255,255,255,0.96)" },
+      { angle: Math.PI * 0.16, radius: r * 0.72, kind: "small", color: "rgba(255,255,255,0.96)" },
+      { angle: Math.PI * 0.34, radius: r * 0.82, kind: "big", color: "rgba(255,224,120,0.98)" },
+      { angle: Math.PI * 0.82, radius: r * 0.7, kind: "small", color: "rgba(255,248,210,0.92)" },
+      { angle: Math.PI * 1.18, radius: r * 0.7, kind: "small", color: "rgba(255,255,255,0.88)" }
     ];
 
     sparkles.forEach((sp, i) => {
-      const pulse = (Math.sin(time * 0.002 + i * 1.7) + 1) / 2;
+      const pulse = (Math.sin(time * 0.0018 + i * 1.9) + 1) / 2;
       const sx = x + Math.cos(sp.angle) * sp.radius;
       const sy = y + Math.sin(sp.angle) * sp.radius;
 
@@ -1123,10 +1217,10 @@
           ctx,
           sx,
           sy,
-          Math.max(2.6, r * 0.078) * (0.95 + pulse * 0.18),
+          Math.max(2.8, r * 0.082) * (0.95 + pulse * 0.2),
           sp.color,
-          clamp(0.3 + pulse * 0.55, 0.22, 0.92),
-          Math.PI / 4 + i * 0.2,
+          clamp(0.32 + pulse * 0.55, 0.22, 0.95),
+          Math.PI / 4,
           10
         );
       } else {
@@ -1134,10 +1228,10 @@
           ctx,
           sx,
           sy,
-          Math.max(1.7, r * 0.05) * (0.95 + pulse * 0.1),
+          Math.max(1.8, r * 0.052) * (0.95 + pulse * 0.12),
           sp.color,
-          clamp(0.2 + pulse * 0.55, 0.16, 0.82),
-          time * 0.0006 + i * 0.25,
+          clamp(0.2 + pulse * 0.58, 0.16, 0.84),
+          time * 0.00045,
           7
         );
       }
@@ -1149,31 +1243,14 @@
     const y = body.position.y;
     const r = body.circleRadius || 20;
 
-    function getCirclePoint(angle, radius) {
-      return {
-        x: x + Math.cos(angle) * radius,
-        y: y + Math.sin(angle) * radius
-      };
-    }
-
-    function drawThornPath(angleStart, angleEnd, wiggle, thickness, alpha) {
-      const steps = 9;
-      const points = [];
-      for (let i = 0; i <= steps; i++) {
-        const t = i / steps;
-        const angle = angleStart + (angleEnd - angleStart) * t;
-        const radius = r * (0.86 + Math.sin(time * 0.0005 + t * 6 + wiggle) * 0.025);
-        const p = getCirclePoint(angle, radius);
-        points.push(p);
-      }
-
+    function drawThornStroke(points, width, alpha) {
       ctx.save();
-      ctx.strokeStyle = `rgba(50,10,24,${alpha})`;
-      ctx.lineWidth = thickness;
+      ctx.strokeStyle = `rgba(42,8,20,${alpha})`;
+      ctx.lineWidth = width;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      ctx.shadowColor = "rgba(140,32,70,0.24)";
-      ctx.shadowBlur = 5;
+      ctx.shadowColor = "rgba(120,28,62,0.22)";
+      ctx.shadowBlur = 4;
 
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
@@ -1188,26 +1265,68 @@
       ctx.stroke();
 
       for (let i = 1; i < points.length - 1; i++) {
-        const p1 = points[i - 1];
-        const p2 = points[i];
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
+        const a = points[i - 1];
+        const b = points[i];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
         const len = Math.max(1, Math.hypot(dx, dy));
         const nx = -dy / len;
         const ny = dx / len;
-        const thornLen = thickness * 1.05;
+        const tlen = width * 1.05 * (i % 2 === 0 ? 1 : 0.8);
 
         ctx.beginPath();
-        ctx.moveTo(p2.x, p2.y);
+        ctx.moveTo(b.x, b.y);
         ctx.lineTo(
-          p2.x + nx * thornLen * (i % 2 === 0 ? 1 : -1),
-          p2.y + ny * thornLen * (i % 2 === 0 ? 1 : -1)
+          b.x + nx * tlen * (i % 2 === 0 ? 1 : -1),
+          b.y + ny * tlen * (i % 2 === 0 ? 1 : -1)
         );
         ctx.stroke();
       }
-
       ctx.restore();
     }
+
+    function p(ax, ay) {
+      return { x: x + ax * r, y: y + ay * r };
+    }
+
+    const leftVine = [
+      p(-0.92, -0.92),
+      p(-1.02, -0.5),
+      p(-1.0, -0.05),
+      p(-0.9, 0.34),
+      p(-0.72, 0.68),
+      p(-0.42, 0.94),
+      p(-0.04, 1.02)
+    ];
+
+    const bottomVine = [
+      p(-0.34, 0.96),
+      p(-0.08, 1.06),
+      p(0.22, 1.06),
+      p(0.52, 0.98),
+      p(0.84, 0.86)
+    ];
+
+    const rightTopVine = [
+      p(0.36, -1.02),
+      p(0.72, -0.96),
+      p(0.98, -0.78),
+      p(1.02, -0.46),
+      p(0.9, -0.16),
+      p(0.68, 0.1)
+    ];
+
+    const rightLowerVine = [
+      p(0.86, 0.12),
+      p(0.98, 0.38),
+      p(0.92, 0.68),
+      p(0.74, 0.92)
+    ];
+
+    drawThornStroke(leftVine, Math.max(2, r * 0.085), 0.96);
+    drawThornStroke(bottomVine, Math.max(1.9, r * 0.078), 0.94);
+    drawThornStroke(rightTopVine, Math.max(2, r * 0.085), 0.96);
+    drawThornStroke(rightLowerVine, Math.max(1.9, r * 0.078), 0.94);
 
     function drawLeaf(px, py, size, angle, alpha) {
       ctx.save();
@@ -1219,50 +1338,47 @@
       ctx.quadraticCurveTo(size * 0.65, -size * 0.42, size, 0);
       ctx.quadraticCurveTo(size * 0.65, size * 0.42, 0, 0);
       ctx.closePath();
-      ctx.fillStyle = "rgba(36,18,22,0.92)";
-      ctx.shadowColor = "rgba(92,28,54,0.22)";
-      ctx.shadowBlur = 4;
+      ctx.fillStyle = "rgba(34,16,20,0.9)";
+      ctx.shadowColor = "rgba(92,28,54,0.18)";
+      ctx.shadowBlur = 3;
       ctx.fill();
       ctx.restore();
     }
 
-    drawThornPath(Math.PI * 0.92, Math.PI * 1.72, 0.4, Math.max(2.1, r * 0.09), 0.94);
-    drawThornPath(-Math.PI * 0.18, Math.PI * 0.52, 1.2, Math.max(2.1, r * 0.09), 0.94);
-    drawThornPath(-Math.PI * 0.82, -Math.PI * 0.12, 2.1, Math.max(2.1, r * 0.09), 0.94);
-    drawThornPath(Math.PI * 0.5, Math.PI * 0.96, 3.0, Math.max(1.8, r * 0.08), 0.88);
+    drawLeaf(x - r * 0.88, y + r * 0.08, Math.max(4, r * 0.11), -1.85, 0.66);
+    drawLeaf(x - r * 0.66, y + r * 0.62, Math.max(4.2, r * 0.12), -0.8, 0.7);
+    drawLeaf(x + r * 0.9, y - r * 0.18, Math.max(4, r * 0.11), 2.25, 0.66);
+    drawLeaf(x + r * 0.74, y + r * 0.7, Math.max(4.2, r * 0.12), 1.1, 0.72);
 
     const roses = [
-      { angle: -2.45, radius: r * 0.86, size: r * 0.17, rot: -0.24 },
-      { angle: -1.98, radius: r * 0.84, size: r * 0.165, rot: 0.18 },
-      { angle: -0.72, radius: r * 0.86, size: r * 0.17, rot: -0.15 },
-      { angle: -0.18, radius: r * 0.84, size: r * 0.165, rot: 0.22 },
-      { angle: 0.72, radius: r * 0.86, size: r * 0.17, rot: -0.22 },
-      { angle: 1.28, radius: r * 0.84, size: r * 0.17, rot: 0.12 },
-      { angle: 2.24, radius: r * 0.84, size: r * 0.17, rot: -0.18 }
+      { x: x - r * 0.96, y: y - r * 0.5, seed: 11, rot: -0.18 },
+      { x: x - r * 0.88, y: y + r * 0.08, seed: 21, rot: 0.16 },
+      { x: x - r * 0.64, y: y + r * 0.7, seed: 31, rot: -0.24 },
+      { x: x + r * 0.82, y: y - r * 0.78, seed: 41, rot: 0.14 },
+      { x: x + r * 0.98, y: y - r * 0.22, seed: 51, rot: -0.16 },
+      { x: x + r * 0.8, y: y + r * 0.72, seed: 61, rot: 0.18 }
     ];
 
     roses.forEach((rose, i) => {
-      const px = x + Math.cos(rose.angle) * rose.radius;
-      const py = y + Math.sin(rose.angle) * rose.radius;
-      const pulse = 0.94 + Math.sin(time * 0.0014 + i * 1.5) * 0.03;
+      const bloom = (Math.sin(time * 0.0014 + rose.seed) + 1) / 2;
+      const pop = bloom > 0.52 ? Math.pow((bloom - 0.52) / 0.48, 0.75) : 0;
+      const alpha = clamp(pop, 0, 1) * 0.96;
+      const size = Math.max(4.4, r * 0.17) * (0.62 + pop * 0.52);
 
-      drawRose(
-        ctx,
-        px,
-        py,
-        Math.max(4.6, rose.size * pulse),
-        "rgba(116,26,62,0.98)",
-        "rgba(210,100,146,0.84)",
-        0.96,
-        rose.rot,
-        11
-      );
+      if (alpha > 0.02) {
+        drawRose(
+          ctx,
+          rose.x,
+          rose.y,
+          size,
+          "rgba(116,26,62,0.98)",
+          "rgba(214,104,150,0.84)",
+          alpha,
+          rose.rot,
+          11
+        );
+      }
     });
-
-    drawLeaf(x - r * 0.78, y + r * 0.22, Math.max(4, r * 0.11), -1.8, 0.66);
-    drawLeaf(x - r * 0.48, y + r * 0.72, Math.max(4.2, r * 0.12), -0.7, 0.7);
-    drawLeaf(x + r * 0.66, y - r * 0.02, Math.max(4, r * 0.11), 2.2, 0.66);
-    drawLeaf(x + r * 0.62, y + r * 0.66, Math.max(4.2, r * 0.12), 1.15, 0.72);
   }
 
   function drawShootingStarSpecial(ctx, body, meta, time) {
@@ -1445,37 +1561,37 @@
     ctx.stroke();
     ctx.restore();
 
-    const path = [
-      { x: x - r * 0.8, y: y - r * 0.42, rot: -0.4 },
-      { x: x - r * 0.34, y: y - r * 0.8, rot: -0.12 },
-      { x: x + r * 0.28, y: y - r * 0.76, rot: 0.14 },
-      { x: x + r * 0.78, y: y - r * 0.26, rot: 0.44 },
-      { x: x + r * 0.76, y: y + r * 0.38, rot: 0.58 },
-      { x: x + r * 0.18, y: y + r * 0.82, rot: 0.18 },
-      { x: x - r * 0.48, y: y + r * 0.74, rot: -0.28 },
-      { x: x - r * 0.84, y: y + r * 0.16, rot: -0.64 }
-    ];
+    const stepMs = 700;
+    const walkers = 6;
+    const radiusLimit = r * 0.62;
 
-    const total = path.length;
-    const progress = (time * 0.00011) % total;
+    for (let i = 0; i < walkers; i++) {
+      const currentStep = Math.floor(time / stepMs) + i * 13;
+      const progress = (time % stepMs) / stepMs;
 
-    for (let i = 0; i < total; i++) {
-      const step = (progress - i + total) % total;
-      const phase = 1 - Math.min(step / 3.2, 1);
-      const alpha = clamp(0.1 + phase * 0.78, 0.08, 0.88);
-      const size = Math.max(3.2, r * 0.112) * (0.92 + phase * 0.16);
-      const color = i % 2 === 0 ? "rgba(20,20,20,0.98)" : "rgba(255,255,255,0.94)";
+      const randA = seededRandom(hashSeed(`paw-${i}-${currentStep}`));
+      const randB = seededRandom(hashSeed(`paw-${i}-${currentStep + 1}`));
 
-      drawPawPrint(
-        ctx,
-        path[i].x,
-        path[i].y,
-        size,
-        color,
-        alpha,
-        path[i].rot,
-        i % 2 === 0 ? 6 : 5
-      );
+      const a1 = randA() * Math.PI * 2;
+      const d1 = Math.sqrt(randA()) * radiusLimit;
+      const a2 = randB() * Math.PI * 2;
+      const d2 = Math.sqrt(randB()) * radiusLimit;
+
+      const x1 = x + Math.cos(a1) * d1;
+      const y1 = y + Math.sin(a1) * d1;
+      const x2 = x + Math.cos(a2) * d2;
+      const y2 = y + Math.sin(a2) * d2;
+
+      const px = x1 + (x2 - x1) * progress;
+      const py = y1 + (y2 - y1) * progress;
+      const rot = Math.atan2(y2 - y1, x2 - x1);
+      const lift = Math.sin(progress * Math.PI);
+
+      const color = i % 2 === 0 ? "rgba(18,18,18,0.98)" : "rgba(255,255,255,0.96)";
+      const alpha = clamp(0.32 + lift * 0.58, 0.2, 0.9);
+      const size = Math.max(3.1, r * 0.108) * (0.94 + lift * 0.14);
+
+      drawPawPrint(ctx, px, py - lift * r * 0.03, size, color, alpha, rot, i % 2 === 0 ? 6 : 5);
     }
   }
 
