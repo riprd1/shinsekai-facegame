@@ -345,6 +345,17 @@ button:hover{
   line-height:1.5;
 }
 
+.frame-chip-count{
+  margin-top:8px;
+  font-size:12px;
+  font-weight:bold;
+  color:#d8e3ff;
+}
+
+.frame-chip-count.max{
+  color:#ffb347;
+}
+
 .frame-empty{
   text-align:center;
   font-size:13px;
@@ -834,7 +845,7 @@ const FRAME_MASTER = {
     icons: "❄️",
     desc: "雪の結晶がきらめく透明感フレーム"
   },
-  "犬の足跡": {
+  "犬のあしあと": {
     rank: "R",
     icons: "🐾",
     desc: "肉球の足あとがぺたぺた歩くフレーム"
@@ -868,12 +879,47 @@ function saveOwnedSkins(list){
   localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
 }
 
+function getOwnedSkinCountMap(){
+  const ownedSkins = getOwnedSkins();
+  const countMap = {};
+
+  ownedSkins.forEach(name => {
+    countMap[name] = (countMap[name] || 0) + 1;
+  });
+
+  return countMap;
+}
+
+function getUniqueOwnedSkins(){
+  return [...new Set(getOwnedSkins())];
+}
+
 function getEquippedFrames(){
   return JSON.parse(localStorage.getItem("facegame_equipped_frames") || "{}");
 }
 
 function saveEquippedFrames(data){
   localStorage.setItem("facegame_equipped_frames", JSON.stringify(data));
+}
+
+function getEquippedCountByFrame(){
+  const equipped = getEquippedFrames();
+  const countMap = {};
+
+  Object.values(equipped).forEach(frameName => {
+    countMap[frameName] = (countMap[frameName] || 0) + 1;
+  });
+
+  return countMap;
+}
+
+function getFrameEquipCapacity(copyCount){
+  if(copyCount >= 5) return 11;
+  if(copyCount === 4) return 8;
+  if(copyCount === 3) return 6;
+  if(copyCount === 2) return 4;
+  if(copyCount === 1) return 2;
+  return 0;
 }
 
 function seededShuffle(array, seed){
@@ -898,12 +944,74 @@ function hashString(str){
   return h;
 }
 
-function getRewardSkins(count=1){
-  const owned=getOwnedSkins();
-  const notOwned=SKIN_POOL.filter(name => !owned.includes(name));
-  const firstPool = notOwned.length >= count ? notOwned : [...SKIN_POOL];
-  const shuffled = seededShuffle(firstPool, hashString(String(Date.now()) + String(owned.length)));
-  return shuffled.slice(0, count);
+function pickWeightedRank(availableByRank){
+  const weights = {
+    N: 38,
+    R: 34,
+    SR: 20,
+    SSR: 8
+  };
+
+  const ranks = Object.keys(availableByRank).filter(rank => availableByRank[rank].length > 0);
+  if(!ranks.length) return null;
+
+  const totalWeight = ranks.reduce((sum, rank) => sum + (weights[rank] || 0), 0);
+  let roll = Math.random() * totalWeight;
+
+  for(const rank of ranks){
+    roll -= (weights[rank] || 0);
+    if(roll < 0){
+      return rank;
+    }
+  }
+
+  return ranks[ranks.length - 1];
+}
+
+function getRewardSkins(count=2){
+  const owned = getOwnedSkins();
+  const tempCounts = {};
+
+  owned.forEach(name => {
+    tempCounts[name] = (tempCounts[name] || 0) + 1;
+  });
+
+  const rewards = [];
+
+  for(let i = 0; i < count; i++){
+    const availableFrames = SKIN_POOL.filter(name => (tempCounts[name] || 0) < 5);
+
+    if(!availableFrames.length){
+      break;
+    }
+
+    const availableByRank = {
+      N: [],
+      R: [],
+      SR: [],
+      SSR: []
+    };
+
+    availableFrames.forEach(name => {
+      const meta = getFrameMeta(name);
+      if(availableByRank[meta.rank]){
+        availableByRank[meta.rank].push(name);
+      }
+    });
+
+    const pickedRank = pickWeightedRank(availableByRank);
+    if(!pickedRank || !availableByRank[pickedRank].length){
+      break;
+    }
+
+    const rankFrames = availableByRank[pickedRank];
+    const pickedFrame = rankFrames[Math.floor(Math.random() * rankFrames.length)];
+
+    rewards.push(pickedFrame);
+    tempCounts[pickedFrame] = (tempCounts[pickedFrame] || 0) + 1;
+  }
+
+  return rewards;
 }
 
 function getFrameMeta(frameName){
@@ -941,16 +1049,21 @@ function renderEquippedList(){
 
 function renderFrameInventory(){
   const ownedSkins = getOwnedSkins();
+  const countMap = getOwnedSkinCountMap();
+  const ownedFrameNames = [...new Set(ownedSkins)];
 
-  if(!ownedSkins.length){
+  if(!ownedFrameNames.length){
     frameListEl.innerHTML = `<div class="frame-empty">まだフレームを持っていません</div>`;
     selectedFrameName = "";
     equipFrameBtn.classList.remove("show");
     return;
   }
 
-  frameListEl.innerHTML = ownedSkins.map(frame => {
+  frameListEl.innerHTML = ownedFrameNames.map(frame => {
     const meta = getFrameMeta(frame);
+    const count = countMap[frame] || 0;
+    const isMax = count >= 5;
+
     return `
       <button type="button" class="frame-chip${selectedFrameName === frame ? " active" : ""}" data-frame="${frame}">
         <div class="frame-chip-top">
@@ -959,6 +1072,7 @@ function renderFrameInventory(){
         </div>
         <div class="frame-chip-icons">${meta.icons}</div>
         <div class="frame-chip-desc">${meta.desc}</div>
+        <div class="frame-chip-count${isMax ? " max" : ""}">所持数 ${count}/5</div>
       </button>
     `;
   }).join("");
@@ -1031,9 +1145,17 @@ missionRewardBtn.onclick = () => {
   const allDone = missionState.missions.every(m => m.done);
   if(!allDone || missionState.rewardClaimed) return;
 
-  const reward = getRewardSkins(1)[0];
+  const rewards = getRewardSkins(2);
+  if(!rewards.length){
+    alert("受け取れるフレームがありません");
+    missionState.rewardClaimed = true;
+    localStorage.setItem("facegame_daily_mission_state", JSON.stringify(missionState));
+    renderMissionPopup();
+    return;
+  }
+
   const owned = getOwnedSkins();
-  const merged = [...new Set([...owned, reward])];
+  const merged = [...owned, ...rewards];
   saveOwnedSkins(merged);
 
   missionState.rewardClaimed = true;
@@ -1041,8 +1163,12 @@ missionRewardBtn.onclick = () => {
 
   renderMissionPopup();
 
-  const meta = getFrameMeta(reward);
-  alert(`フレームGET！\n${meta.icons} ${reward} [${meta.rank}]`);
+  const rewardText = rewards.map(name => {
+    const meta = getFrameMeta(name);
+    return `${meta.icons} ${name} [${meta.rank}]`;
+  }).join("\n");
+
+  alert(`フレームGET！\n${rewardText}`);
 };
 
 equipMemberSelect.onchange = () => {
@@ -1057,7 +1183,26 @@ equipMemberSelect.onchange = () => {
 equipFrameBtn.onclick = () => {
   if(!selectedFrameName || !selectedEquipMemberName) return;
 
+  const ownedCountMap = getOwnedSkinCountMap();
+  const copyCount = ownedCountMap[selectedFrameName] || 0;
+  const capacity = getFrameEquipCapacity(copyCount);
+
+  if(capacity <= 0){
+    alert("このフレームは所持していません");
+    return;
+  }
+
   const equipped = getEquippedFrames();
+  const currentUsingCount = Object.entries(equipped).filter(([memberName, frameName]) => {
+    if(memberName === selectedEquipMemberName) return false;
+    return frameName === selectedFrameName;
+  }).length;
+
+  if(currentUsingCount >= capacity){
+    alert(`このフレームは ${copyCount}/5 所持中のため、${capacity}人まで装着可能です`);
+    return;
+  }
+
   equipped[selectedEquipMemberName] = selectedFrameName;
   saveEquippedFrames(equipped);
 
