@@ -363,46 +363,46 @@
         "rgba(120,70,255,0.34)"
       ];
 
-      drawAuroraRibbon(ctx, x, y, outerR, innerR, startAngle, endAngle, colors, band.alpha, 16);
+      drawAuroraRibbon(ctx, x, y, outerR, innerR, startAngle, endAngle, colors, band.alpha, 18);
     });
 
     const seed = core.hashSeed(`${Math.round(x)}-${Math.round(y)}-neon`);
     const rand = core.seededRandom(seed);
-    const sparkleCount = 12;
+    const sparkleCount = 13;
 
     for (let i = 0; i < sparkleCount; i++) {
       const angle = rand() * Math.PI * 2 + Math.sin(time * 0.00018 + i) * 0.08;
-      const radius = (0.18 + rand() * 0.62) * r;
+      const radius = Math.sqrt(rand()) * r * 0.72;
       const sx = x + Math.cos(angle) * radius;
       const sy = y + Math.sin(angle) * radius;
 
-      const blinkSpeed = 0.0012 + rand() * 0.0022;
+      const blinkSpeed = 0.0011 + rand() * 0.0023;
       const blink = (Math.sin(time * blinkSpeed + i * 2.3 + rand() * 6) + 1) / 2;
       const hueMix = (Math.sin(time * 0.0015 + i * 1.1) + 1) / 2;
       const color = hueMix > 0.5 ? "rgba(255,80,220,0.98)" : "rgba(150,70,255,0.98)";
-      const alpha = core.clamp(0.06 + blink * 0.78, 0.05, 0.84);
+      const alpha = core.clamp(0.05 + blink * 0.8, 0.04, 0.88);
 
-      if (rand() > 0.45) {
+      if (rand() > 0.42) {
         core.drawSoftDiamondStar(
           ctx,
           sx,
           sy,
-          Math.max(1.8, r * (0.045 + rand() * 0.03)) * (0.9 + blink * 0.2),
+          Math.max(1.8, r * (0.045 + rand() * 0.03)) * (0.92 + blink * 0.22),
           color,
           alpha,
           Math.PI / 4 + i * 0.2,
-          9
+          10
         );
       } else {
         core.drawTinyTwinkle(
           ctx,
           sx,
           sy,
-          Math.max(1.4, r * (0.035 + rand() * 0.022)) * (0.9 + blink * 0.15),
+          Math.max(1.4, r * (0.035 + rand() * 0.022)) * (0.92 + blink * 0.18),
           "rgba(255,255,255,0.9)",
           alpha,
           time * 0.0006 + i * 0.1,
-          7
+          8
         );
       }
     }
@@ -603,76 +603,30 @@
     }
   }
 
-  function drawFancyCrown(ctx, x, y, size, alpha, time) {
+  function drawCrownGem(ctx, x, y, size, fill, glow) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(Math.sin(time * 0.00045) * 0.025);
-    ctx.globalAlpha = alpha;
-
-    const grad = ctx.createLinearGradient(0, -size * 1.3, 0, size);
-    grad.addColorStop(0, "rgba(255,252,215,1)");
-    grad.addColorStop(0.18, "rgba(255,239,155,1)");
-    grad.addColorStop(0.52, "rgba(255,202,58,1)");
-    grad.addColorStop(0.78, "rgba(215,132,18,1)");
-    grad.addColorStop(1, "rgba(132,74,8,1)");
-
-    ctx.shadowColor = "rgba(255,220,110,0.95)";
-    ctx.shadowBlur = size * 0.55;
-    ctx.fillStyle = grad;
 
     ctx.beginPath();
-    ctx.moveTo(-size * 1.25, size * 0.34);
-    ctx.lineTo(-size * 1.02, -size * 0.12);
-    ctx.lineTo(-size * 0.72, size * 0.04);
-    ctx.lineTo(-size * 0.46, -size * 0.52);
-    ctx.lineTo(-size * 0.16, size * 0.02);
-    ctx.lineTo(0, -size * 0.92);
-    ctx.lineTo(size * 0.16, size * 0.02);
-    ctx.lineTo(size * 0.46, -size * 0.52);
-    ctx.lineTo(size * 0.72, size * 0.04);
-    ctx.lineTo(size * 1.02, -size * 0.12);
-    ctx.lineTo(size * 1.25, size * 0.34);
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size * 0.74, 0);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size * 0.74, 0);
     ctx.closePath();
+
+    const g = ctx.createLinearGradient(0, -size, 0, size);
+    g.addColorStop(0, "rgba(255,255,255,0.96)");
+    g.addColorStop(0.3, fill);
+    g.addColorStop(1, "rgba(255,180,70,0.95)");
+
+    ctx.fillStyle = g;
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = size * 1.8;
     ctx.fill();
 
-    ctx.beginPath();
-    ctx.roundRect(-size * 1.3, size * 0.26, size * 2.6, size * 0.48, size * 0.15);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,249,220,0.92)";
-    ctx.lineWidth = Math.max(1.2, size * 0.08);
-    ctx.beginPath();
-    ctx.moveTo(-size * 1.1, size * 0.26);
-    ctx.lineTo(-size * 0.9, -size * 0.02);
-    ctx.lineTo(-size * 0.68, size * 0.12);
-    ctx.lineTo(-size * 0.42, -size * 0.34);
-    ctx.lineTo(-size * 0.12, size * 0.1);
-    ctx.lineTo(0, -size * 0.72);
-    ctx.lineTo(size * 0.12, size * 0.1);
-    ctx.lineTo(size * 0.42, -size * 0.34);
-    ctx.lineTo(size * 0.68, size * 0.12);
-    ctx.lineTo(size * 0.9, -size * 0.02);
-    ctx.lineTo(size * 1.1, size * 0.26);
+    ctx.strokeStyle = "rgba(255,248,210,0.95)";
+    ctx.lineWidth = Math.max(0.8, size * 0.16);
     ctx.stroke();
-
-    const jewels = [
-      { x: -size * 0.78, y: 0.06, c: "rgba(255,232,120,1)", s: 0.16 },
-      { x: -size * 0.42, y: -0.24, c: "rgba(255,246,196,1)", s: 0.12 },
-      { x: 0, y: -0.58, c: "rgba(255,244,176,1)", s: 0.18 },
-      { x: size * 0.42, y: -0.24, c: "rgba(255,246,196,1)", s: 0.12 },
-      { x: size * 0.78, y: 0.06, c: "rgba(255,232,120,1)", s: 0.16 }
-    ];
-
-    jewels.forEach((j, i) => {
-      const pulse = 0.9 + ((Math.sin(time * 0.0022 + i * 1.7) + 1) / 2) * 0.28;
-      ctx.beginPath();
-      ctx.arc(j.x, j.y * size, size * j.s * pulse, 0, Math.PI * 2);
-      ctx.fillStyle = j.c;
-      ctx.shadowColor = j.c;
-      ctx.shadowBlur = size * 0.24;
-      ctx.fill();
-    });
-
     ctx.restore();
   }
 
@@ -683,68 +637,73 @@
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x, y, r - 1.2, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,214,78,0.98)";
-    ctx.lineWidth = Math.max(3.2, r * 0.105);
-    ctx.shadowColor = "rgba(255,220,120,0.82)";
+    ctx.arc(x, y, r - 1.1, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,223,96,1)";
+    ctx.lineWidth = Math.max(3.1, r * 0.104);
+    ctx.shadowColor = "rgba(255,216,90,0.75)";
     ctx.shadowBlur = 14;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(x, y, r - 5, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,244,182,0.55)";
+    ctx.arc(x, y, r - 5.2, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,248,206,0.45)";
     ctx.lineWidth = Math.max(1, r * 0.024);
     ctx.stroke();
     ctx.restore();
 
     const crownX = x;
-    const crownY = y - r * 1.02;
-    const crownSize = Math.max(8.4, r * 0.31);
+    const crownY = y - r * 0.98;
+    const crownSize = Math.max(7.2, r * 0.255);
 
-    drawFancyCrown(ctx, crownX, crownY, crownSize, 1, time);
+    core.drawCrown(
+      ctx,
+      crownX,
+      crownY,
+      crownSize,
+      "rgba(255,210,58,1)",
+      1,
+      Math.sin(time * 0.00035) * 0.018,
+      18
+    );
 
-    const orbitStars = [
-      { angle: -Math.PI * 0.38, radius: r * 0.9, size: 0.12, color: "rgba(255,229,120,1)" },
-      { angle: -Math.PI * 0.22, radius: r * 0.76, size: 0.08, color: "rgba(255,255,255,0.96)" },
-      { angle: -Math.PI * 0.08, radius: r * 0.7, size: 0.07, color: "rgba(255,244,190,0.96)" },
-      { angle: Math.PI * 0.08, radius: r * 0.7, size: 0.07, color: "rgba(255,244,190,0.96)" },
-      { angle: Math.PI * 0.22, radius: r * 0.76, size: 0.08, color: "rgba(255,255,255,0.96)" },
-      { angle: Math.PI * 0.38, radius: r * 0.9, size: 0.12, color: "rgba(255,229,120,1)" },
-      { angle: Math.PI * 0.82, radius: r * 0.76, size: 0.08, color: "rgba(255,236,156,0.96)" },
-      { angle: Math.PI * 1.18, radius: r * 0.76, size: 0.08, color: "rgba(255,236,156,0.96)" }
-    ];
+    drawCrownGem(ctx, x, crownY - crownSize * 0.2, Math.max(2.1, r * 0.07), "rgba(255,230,120,0.98)", "rgba(255,230,120,0.95)");
+    drawCrownGem(ctx, x - crownSize * 0.56, crownY + crownSize * 0.08, Math.max(1.6, r * 0.052), "rgba(255,145,70,0.98)", "rgba(255,170,90,0.9)");
+    drawCrownGem(ctx, x + crownSize * 0.56, crownY + crownSize * 0.08, Math.max(1.6, r * 0.052), "rgba(255,145,70,0.98)", "rgba(255,170,90,0.9)");
 
-    orbitStars.forEach((sp, i) => {
-      const pulse = (Math.sin(time * 0.0023 + i * 1.64) + 1) / 2;
-      const sx = x + Math.cos(sp.angle) * sp.radius;
-      const sy = y + Math.sin(sp.angle) * sp.radius;
-      const size = Math.max(2.2, r * sp.size) * (0.94 + pulse * 0.28);
-      const alpha = core.clamp(0.28 + pulse * 0.68, 0.2, 1);
+    const sparkleSeed = core.hashSeed(`${Math.round(x)}-${Math.round(y)}-crown`);
+    const rand = core.seededRandom(sparkleSeed);
 
-      if (i % 2 === 0) {
-        core.drawSoftDiamondStar(ctx, sx, sy, size, sp.color, alpha, Math.PI / 4, 12);
+    for (let i = 0; i < 15; i++) {
+      const angle = rand() * Math.PI * 2;
+      const radius = r * (0.34 + rand() * 0.68);
+      const sx = x + Math.cos(angle) * radius;
+      const sy = y + Math.sin(angle) * radius * (0.9 + rand() * 0.18);
+      const pulse = (Math.sin(time * (0.0015 + rand() * 0.0015) + i * 2.4) + 1) / 2;
+      const alpha = core.clamp(0.12 + pulse * 0.86, 0.08, 0.98);
+
+      if (rand() > 0.35) {
+        core.drawSoftDiamondStar(
+          ctx,
+          sx,
+          sy,
+          Math.max(2.1, r * (0.04 + rand() * 0.05)) * (0.9 + pulse * 0.22),
+          rand() > 0.45 ? "rgba(255,245,188,0.98)" : "rgba(255,213,70,0.98)",
+          alpha,
+          Math.PI / 4 + i * 0.13,
+          12
+        );
       } else {
-        core.drawTinyTwinkle(ctx, sx, sy, size, sp.color, alpha, time * 0.0005 + i * 0.18, 9);
+        core.drawTinyTwinkle(
+          ctx,
+          sx,
+          sy,
+          Math.max(1.5, r * (0.03 + rand() * 0.03)) * (0.92 + pulse * 0.18),
+          "rgba(255,255,255,0.98)",
+          alpha,
+          i * 0.1 + time * 0.0004,
+          9
+        );
       }
-    });
-
-    const bottomStarCount = 5;
-    for (let i = 0; i < bottomStarCount; i++) {
-      const spread = -0.62 + (1.24 * i) / (bottomStarCount - 1);
-      const sx = x + spread * r;
-      const sy = y + r * 0.96;
-      const pulse = (Math.sin(time * 0.0018 + i * 1.42) + 1) / 2;
-
-      core.drawSoftDiamondStar(
-        ctx,
-        sx,
-        sy,
-        Math.max(3.4, r * (i === 2 ? 0.16 : 0.11)) * (0.94 + pulse * 0.18),
-        i === 2 ? "rgba(255,214,82,1)" : "rgba(255,239,160,0.98)",
-        core.clamp(0.42 + pulse * 0.5, 0.3, 1),
-        Math.PI / 4,
-        12
-      );
     }
   }
 
@@ -754,34 +713,52 @@
     ctx.rotate(rotation);
     ctx.globalAlpha = alpha;
 
-    const outerColor = "rgba(24,24,24,1)";
-    const innerColor = "rgba(38,38,38,1)";
-    const highlight = "rgba(255,255,255,0.08)";
-    const bloom = 0.42 + open * 0.9;
+    const outerColor = "rgba(84,14,40,0.98)";
+    const midColor = "rgba(122,22,56,0.98)";
+    const innerColor = "rgba(168,48,88,0.95)";
+    const highlight = "rgba(233,136,166,0.7)";
 
-    ctx.shadowColor = "rgba(0,0,0,0.46)";
-    ctx.shadowBlur = size * 0.24;
+    ctx.shadowColor = "rgba(110,20,50,0.55)";
+    ctx.shadowBlur = size * 0.9;
 
-    for (let i = 0; i < 6; i++) {
+    const outerSpread = 0.5 + open * 0.65;
+    const outerLift = 0.18 + open * 0.12;
+    const outerCount = 6;
+
+    for (let i = 0; i < outerCount; i++) {
       ctx.save();
-      ctx.rotate((Math.PI * 2 * i) / 6 + 0.08);
+      ctx.rotate((Math.PI * 2 * i) / outerCount + 0.16);
       ctx.beginPath();
-      ctx.moveTo(0, -size * 0.08);
-      ctx.bezierCurveTo(size * 0.22, -size * 0.82 * bloom, size * 0.86, -size * 0.54 * bloom, size * 0.52, size * 0.08);
-      ctx.bezierCurveTo(size * 0.26, size * 0.34, -size * 0.08, size * 0.18, 0, -size * 0.08);
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(size * 0.16, -size * (0.24 + outerLift), size * (0.28 + outerSpread * 0.3), -size * (0.34 + outerLift * 0.5), 0, -size * (0.72 + outerSpread * 0.24));
+      ctx.bezierCurveTo(-size * (0.28 + outerSpread * 0.3), -size * (0.34 + outerLift * 0.5), -size * 0.16, -size * (0.24 + outerLift), 0, 0);
       ctx.closePath();
       ctx.fillStyle = outerColor;
       ctx.fill();
       ctx.restore();
     }
 
-    for (let i = 0; i < 5; i++) {
+    const midCount = 5;
+    for (let i = 0; i < midCount; i++) {
       ctx.save();
-      ctx.rotate((Math.PI * 2 * i) / 5 + 0.38);
+      ctx.rotate((Math.PI * 2 * i) / midCount + 0.45);
       ctx.beginPath();
-      ctx.moveTo(0, -size * 0.02);
-      ctx.bezierCurveTo(size * 0.16, -size * 0.54 * bloom, size * 0.56, -size * 0.32 * bloom, size * 0.34, size * 0.05);
-      ctx.bezierCurveTo(size * 0.16, size * 0.18, -size * 0.05, size * 0.12, 0, -size * 0.02);
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(size * 0.12, -size * 0.22, size * 0.24, -size * 0.32, 0, -size * (0.48 + open * 0.14));
+      ctx.bezierCurveTo(-size * 0.24, -size * 0.32, -size * 0.12, -size * 0.22, 0, 0);
+      ctx.closePath();
+      ctx.fillStyle = midColor;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    for (let i = 0; i < 4; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 * i) / 4 + timeSpin(rotation) * 0.04 + 0.2);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(size * 0.1, -size * 0.16, size * 0.18, -size * 0.22, 0, -size * 0.32);
+      ctx.bezierCurveTo(-size * 0.18, -size * 0.22, -size * 0.1, -size * 0.16, 0, 0);
       ctx.closePath();
       ctx.fillStyle = innerColor;
       ctx.fill();
@@ -789,74 +766,52 @@
     }
 
     ctx.beginPath();
-    ctx.arc(0, 0, size * 0.12, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(18,18,18,1)";
+    ctx.arc(0, -size * 0.08, size * 0.12, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,214,228,0.92)";
     ctx.fill();
 
+    ctx.strokeStyle = highlight;
+    ctx.lineWidth = Math.max(0.7, size * 0.04);
     ctx.beginPath();
-    ctx.arc(-size * 0.16, -size * 0.18, size * 0.1, 0, Math.PI * 2);
-    ctx.fillStyle = highlight;
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawRoseLeaf(ctx, x, y, size, rotation, alpha) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-    ctx.shadowColor = "rgba(0,0,0,0.18)";
-    ctx.shadowBlur = 3;
-
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(size * 0.66, -size * 0.42, size, 0);
-    ctx.quadraticCurveTo(size * 0.66, size * 0.42, 0, 0);
-    ctx.closePath();
-    ctx.fillStyle = "rgba(24,24,24,0.96)";
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawThornStrokeFancy(ctx, points, width) {
-    ctx.save();
-    ctx.strokeStyle = "rgba(12,12,12,0.98)";
-    ctx.lineWidth = width;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.shadowColor = "rgba(0,0,0,0.2)";
-    ctx.shadowBlur = 3;
-
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      const mx = (prev.x + curr.x) * 0.5;
-      const my = (prev.y + curr.y) * 0.5;
-      ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
-    }
-    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.moveTo(-size * 0.18, -size * 0.26);
+    ctx.quadraticCurveTo(0, -size * 0.4, size * 0.18, -size * 0.26);
     ctx.stroke();
 
-    for (let i = 1; i < points.length - 1; i++) {
-      const a = points[i - 1];
-      const b = points[i];
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
-      const len = Math.max(1, Math.hypot(dx, dy));
-      const nx = -dy / len;
-      const ny = dx / len;
-      const dir = i % 2 === 0 ? 1 : -1;
-      const thorn = width * (0.95 + (i % 3) * 0.1);
+    ctx.restore();
+  }
 
-      ctx.beginPath();
-      ctx.moveTo(b.x, b.y);
-      ctx.lineTo(b.x + nx * thorn * dir, b.y + ny * thorn * dir);
-      ctx.stroke();
-    }
+  function timeSpin(v) {
+    return Math.sin(v * 7.3 + 0.4);
+  }
+
+  function drawDarkRosePetal(ctx, x, y, size, angle, alpha, drift) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.globalAlpha = alpha;
+
+    const grad = ctx.createLinearGradient(0, -size, 0, size);
+    grad.addColorStop(0, "rgba(176,54,96,0.96)");
+    grad.addColorStop(0.55, "rgba(120,24,56,0.94)");
+    grad.addColorStop(1, "rgba(72,12,32,0.92)");
+
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.bezierCurveTo(size * 0.68, -size * 0.34, size * 0.72, size * 0.44, 0, size);
+    ctx.bezierCurveTo(-size * 0.72, size * 0.44, -size * 0.68, -size * 0.34, 0, -size);
+    ctx.closePath();
+
+    ctx.fillStyle = grad;
+    ctx.shadowColor = "rgba(126,24,58,0.38)";
+    ctx.shadowBlur = size * 0.9;
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(240,165,190,0.22)";
+    ctx.lineWidth = Math.max(0.55, size * 0.05);
+    ctx.beginPath();
+    ctx.moveTo(0, -size * 0.72);
+    ctx.quadraticCurveTo(size * 0.1 + drift, 0, 0, size * 0.7);
+    ctx.stroke();
 
     ctx.restore();
   }
@@ -870,76 +825,172 @@
       return { x: x + ax * r, y: y + ay * r };
     }
 
-    const vines = [
-      [p(-0.94, -0.76), p(-1.02, -0.42), p(-0.98, -0.02), p(-0.9, 0.28), p(-0.78, 0.58), p(-0.56, 0.82)],
-      [p(-0.72, -0.96), p(-0.38, -1.02), p(-0.08, -0.96), p(0.26, -0.88)],
-      [p(0.46, -0.94), p(0.78, -0.9), p(0.98, -0.72), p(1.02, -0.42), p(0.96, -0.08), p(0.84, 0.16)],
-      [p(0.92, 0.16), p(1.0, 0.42), p(0.96, 0.72), p(0.78, 0.96)],
-      [p(-0.36, 0.96), p(-0.08, 1.04), p(0.26, 1.02), p(0.58, 0.92)]
+    function drawThornVine(points, width, alpha) {
+      ctx.save();
+      ctx.strokeStyle = `rgba(48,10,24,${alpha})`;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.shadowColor = "rgba(96,22,48,0.24)";
+      ctx.shadowBlur = 4;
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        const prev = points[i - 1];
+        const curr = points[i];
+        const mx = (prev.x + curr.x) * 0.5;
+        const my = (prev.y + curr.y) * 0.5;
+        ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
+      }
+      ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+      ctx.stroke();
+
+      for (let i = 1; i < points.length - 1; i++) {
+        const a = points[i - 1];
+        const b = points[i];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.max(1, Math.hypot(dx, dy));
+        const nx = -dy / len;
+        const ny = dx / len;
+        const thornLen = width * (0.95 + (i % 2) * 0.18);
+        const dir = i % 2 === 0 ? 1 : -1;
+
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x + nx * thornLen * dir, b.y + ny * thornLen * dir);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    const leftVine = [
+      p(-0.9, -0.96),
+      p(-1.02, -0.62),
+      p(-1.0, -0.16),
+      p(-0.88, 0.22),
+      p(-0.72, 0.58),
+      p(-0.42, 0.9),
+      p(-0.04, 1.04)
     ];
 
-    vines.forEach(points => {
-      drawThornStrokeFancy(ctx, points, Math.max(2, r * 0.074));
-    });
+    const bottomVine = [
+      p(-0.34, 0.98),
+      p(-0.08, 1.08),
+      p(0.24, 1.06),
+      p(0.56, 0.98),
+      p(0.88, 0.82)
+    ];
 
-    drawRoseLeaf(ctx, x - r * 0.92, y - r * 0.34, Math.max(4.6, r * 0.12), -2.18, 0.96);
-    drawRoseLeaf(ctx, x - r * 0.88, y + r * 0.18, Math.max(4.6, r * 0.12), -1.56, 0.96);
-    drawRoseLeaf(ctx, x - r * 0.7, y + r * 0.72, Math.max(4.9, r * 0.13), -0.92, 0.96);
-    drawRoseLeaf(ctx, x + r * 0.86, y - r * 0.56, Math.max(4.8, r * 0.125), 0.52, 0.96);
-    drawRoseLeaf(ctx, x + r * 0.98, y - r * 0.12, Math.max(4.7, r * 0.12), 0.06, 0.96);
-    drawRoseLeaf(ctx, x + r * 0.82, y + r * 0.74, Math.max(4.9, r * 0.13), 1.02, 0.96);
-    drawRoseLeaf(ctx, x - r * 0.18, y - r * 0.96, Math.max(4.4, r * 0.115), -0.3, 0.92);
-    drawRoseLeaf(ctx, x + r * 0.18, y + r * 1.0, Math.max(4.4, r * 0.115), 0.35, 0.92);
+    const rightTopVine = [
+      p(0.32, -1.02),
+      p(0.7, -0.98),
+      p(0.98, -0.8),
+      p(1.04, -0.46),
+      p(0.92, -0.14),
+      p(0.7, 0.16)
+    ];
+
+    const rightLowerVine = [
+      p(0.84, 0.18),
+      p(0.98, 0.42),
+      p(0.94, 0.68),
+      p(0.78, 0.92)
+    ];
+
+    drawThornVine(leftVine, Math.max(1.9, r * 0.082), 0.98);
+    drawThornVine(bottomVine, Math.max(1.8, r * 0.075), 0.96);
+    drawThornVine(rightTopVine, Math.max(1.95, r * 0.083), 0.98);
+    drawThornVine(rightLowerVine, Math.max(1.8, r * 0.075), 0.96);
+
+    function drawLeaf(px, py, size, angle, alpha) {
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(angle);
+      ctx.globalAlpha = alpha;
+
+      const leafGrad = ctx.createLinearGradient(0, -size * 0.4, size, size * 0.4);
+      leafGrad.addColorStop(0, "rgba(48,24,28,0.9)");
+      leafGrad.addColorStop(1, "rgba(20,10,14,0.95)");
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(size * 0.68, -size * 0.4, size, 0);
+      ctx.quadraticCurveTo(size * 0.68, size * 0.4, 0, 0);
+      ctx.closePath();
+
+      ctx.fillStyle = leafGrad;
+      ctx.shadowColor = "rgba(92,28,54,0.18)";
+      ctx.shadowBlur = 4;
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(120,60,76,0.28)";
+      ctx.lineWidth = Math.max(0.5, size * 0.06);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(size * 0.84, 0);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    drawLeaf(x - r * 0.88, y + r * 0.06, Math.max(4, r * 0.11), -1.78, 0.72);
+    drawLeaf(x - r * 0.66, y + r * 0.62, Math.max(4.2, r * 0.12), -0.76, 0.74);
+    drawLeaf(x + r * 0.88, y - r * 0.16, Math.max(4, r * 0.11), 2.2, 0.7);
+    drawLeaf(x + r * 0.74, y + r * 0.72, Math.max(4.2, r * 0.12), 1.08, 0.74);
 
     const roses = [
-      { x: x - r * 0.98, y: y - r * 0.48, seed: 11, rot: -0.28, size: 0.19 },
-      { x: x - r * 0.9, y: y + r * 0.1, seed: 21, rot: 0.08, size: 0.18 },
-      { x: x - r * 0.62, y: y + r * 0.74, seed: 31, rot: -0.18, size: 0.18 },
-      { x: x - r * 0.1, y: y - r * 0.98, seed: 39, rot: 0.08, size: 0.16 },
-      { x: x + r * 0.42, y: y - r * 0.9, seed: 45, rot: 0.2, size: 0.16 },
-      { x: x + r * 0.84, y: y - r * 0.7, seed: 51, rot: 0.16, size: 0.18 },
-      { x: x + r * 0.98, y: y - r * 0.18, seed: 61, rot: -0.1, size: 0.17 },
-      { x: x + r * 0.84, y: y + r * 0.68, seed: 71, rot: 0.2, size: 0.18 },
-      { x: x + r * 0.18, y: y + r * 0.98, seed: 81, rot: 0.12, size: 0.17 }
+      { x: x - r * 0.96, y: y - r * 0.5, seed: 11, rot: -0.16, size: 0.182 },
+      { x: x - r * 0.88, y: y + r * 0.08, seed: 21, rot: 0.16, size: 0.17 },
+      { x: x - r * 0.64, y: y + r * 0.72, seed: 31, rot: -0.22, size: 0.176 },
+      { x: x + r * 0.82, y: y - r * 0.78, seed: 41, rot: 0.13, size: 0.178 },
+      { x: x + r * 0.98, y: y - r * 0.22, seed: 51, rot: -0.15, size: 0.17 },
+      { x: x + r * 0.8, y: y + r * 0.72, seed: 61, rot: 0.18, size: 0.18 }
     ];
 
-    roses.forEach((rose, i) => {
-      const bloom = (Math.sin(time * 0.0012 + rose.seed) + 1) / 2;
-      const open = Math.pow(bloom, 1.2);
-      const alpha = core.clamp(0.22 + open * 0.78, 0.18, 1);
-      const size = Math.max(4.8, r * rose.size) * (0.7 + open * 0.55);
+    roses.forEach((rose, idx) => {
+      const phase = (Math.sin(time * 0.0011 + rose.seed) + 1) / 2;
+      const open = Math.pow(phase, 0.82);
+      const pop = phase > 0.16 ? (phase - 0.16) / 0.84 : 0;
+      const alpha = core.clamp(pop * 1.04, 0, 0.98);
+      const size = Math.max(5, r * rose.size) * (0.56 + open * 0.58);
 
-      drawRoseBloom(
-        ctx,
-        rose.x,
-        rose.y,
-        size,
-        open,
-        alpha,
-        rose.rot + Math.sin(time * 0.00045 + i) * 0.03
-      );
+      if (alpha > 0.03) {
+        drawRoseBloom(
+          ctx,
+          rose.x,
+          rose.y,
+          size,
+          open,
+          alpha,
+          rose.rot + Math.sin(time * 0.00045 + idx) * 0.03
+        );
+      }
     });
 
-    const petalCount = 7;
-    for (let i = 0; i < petalCount; i++) {
-      const phase = ((time * (0.00012 + i * 0.00002)) + i * 0.17) % 1;
-      const sway = Math.sin(phase * Math.PI * 2 + i * 1.4) * (r * 0.16);
-      const px = x - r * 0.6 + ((i % 4) * r * 0.38) + sway * 0.2;
-      const py = y - r * 0.88 + phase * (r * 2.04);
-      const rot = -0.4 + Math.sin(phase * Math.PI * 2 + i) * 0.9 + phase * 1.3;
-      const alpha = core.clamp(0.04 + Math.sin(phase * Math.PI) * 0.48, 0.03, 0.5);
+    const petalSeed = core.hashSeed(`${Math.round(x)}-${Math.round(y)}-rose-petal`);
+    const petalRand = core.seededRandom(petalSeed);
+    const petalCount = 8;
 
-      core.drawPetal(
-        ctx,
-        px,
-        py,
-        Math.max(2.6, r * 0.088),
-        i % 2 === 0 ? "rgba(34,34,34,0.98)" : "rgba(48,48,48,0.98)",
-        alpha,
-        rot,
-        5
-      );
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.94, 0, Math.PI * 2);
+    ctx.clip();
+
+    for (let i = 0; i < petalCount; i++) {
+      const lane = (time * (0.00012 + i * 0.00001) + i * 0.17 + petalRand() * 0.3) % 1;
+      const sway = Math.sin(time * (0.0014 + i * 0.00009) + i * 1.4 + petalRand() * 5) * (r * 0.18);
+      const px = x - r * 0.62 + (i % 4) * r * 0.38 + sway * 0.18;
+      const py = y - r * 0.92 + lane * (r * 2.02);
+      const size = Math.max(2.2, r * (0.055 + (i % 3) * 0.01));
+      const alpha = core.clamp(0.06 + Math.sin(lane * Math.PI) * 0.5, 0.04, 0.46);
+      const rot = lane * 3.1 + i * 0.4 + Math.sin(time * 0.001 + i) * 0.2;
+
+      drawDarkRosePetal(ctx, px + sway * 0.45, py, size, rot, alpha, sway * 0.02);
     }
+
+    ctx.restore();
   }
 
   function drawShootingStarSpecial(ctx, body, meta, time, core) {
@@ -1109,73 +1160,65 @@
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, r - 1.4, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(30,24,20,0.98)";
-    ctx.lineWidth = Math.max(2.7, r * 0.095);
-    ctx.shadowColor = "rgba(0,0,0,0.34)";
+    ctx.strokeStyle = "rgba(44,24,18,0.96)";
+    ctx.lineWidth = Math.max(2.5, r * 0.09);
+    ctx.shadowColor = "rgba(0,0,0,0.32)";
     ctx.shadowBlur = 7;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(x, y, r - 5, 0, Math.PI * 2);
+    ctx.arc(x, y, r - 5.2, 0, Math.PI * 2);
     ctx.strokeStyle = "rgba(255,255,255,0.18)";
     ctx.lineWidth = Math.max(0.9, r * 0.022);
     ctx.stroke();
     ctx.restore();
 
-    const walkers = 5;
     const stepMs = 700;
-    const pathRadius = r * 0.56;
+    const pawCount = 6;
+    const seed = core.hashSeed(`${Math.round(x)}-${Math.round(y)}-paw-walk`);
+    const rand = core.seededRandom(seed);
+    const steps = [];
 
-    for (let i = 0; i < walkers; i++) {
-      const pathSeed = core.hashSeed(`paw-path-${Math.round(x)}-${Math.round(y)}-${i}`);
-      const rand = core.seededRandom(pathSeed);
+    for (let i = 0; i < pawCount; i++) {
+      const a = rand() * Math.PI * 2;
+      const d = Math.sqrt(rand()) * r * 0.56;
+      steps.push({
+        x: x + Math.cos(a) * d,
+        y: y + Math.sin(a) * d,
+        rot: rand() * Math.PI * 2,
+        color: i % 2 === 0 ? "rgba(56,34,28,0.96)" : "rgba(255,244,236,0.94)"
+      });
+    }
 
-      const pointCount = 7;
-      const points = [];
-      for (let p = 0; p < pointCount; p++) {
-        const angle = rand() * Math.PI * 2;
-        const dist = Math.sqrt(rand()) * pathRadius;
-        points.push({
-          x: x + Math.cos(angle) * dist,
-          y: y + Math.sin(angle) * dist
-        });
+    const activeIndex = Math.floor(time / stepMs) % pawCount;
+    const phase = (time % stepMs) / stepMs;
+
+    for (let i = 0; i < pawCount; i++) {
+      const isActive = i === activeIndex;
+      const isPrev = i === (activeIndex - 1 + pawCount) % pawCount;
+
+      let alpha = 0.18;
+      let lift = 0;
+      let sizeMul = 0.94;
+
+      if (isActive) {
+        alpha = core.clamp(0.34 + Math.sin(phase * Math.PI) * 0.62, 0.3, 0.96);
+        lift = Math.sin(phase * Math.PI) * r * 0.05;
+        sizeMul = 0.94 + Math.sin(phase * Math.PI) * 0.16;
+      } else if (isPrev) {
+        alpha = 0.34 * (1 - phase) + 0.16;
       }
-
-      const totalSteps = pointCount - 1;
-      const stepOffset = i * 0.9;
-      const exactStep = (time / stepMs) + stepOffset;
-      const segmentIndex = Math.floor(exactStep) % totalSteps;
-      const phase = exactStep - Math.floor(exactStep);
-
-      const a = points[segmentIndex];
-      const b = points[segmentIndex + 1];
-
-      const px = a.x + (b.x - a.x) * phase;
-      const py = a.y + (b.y - a.y) * phase;
-      const rot = Math.atan2(b.y - a.y, b.x - a.x);
-      const stepLift = Math.sin(phase * Math.PI);
-
-      const appear = phase < 0.18 ? phase / 0.18 : phase > 0.82 ? (1 - phase) / 0.18 : 1;
-      const alpha = core.clamp(0.18 + stepLift * 0.82, 0.12, 1) * core.clamp(appear, 0.25, 1);
-      const size = Math.max(3.3, r * 0.112) * (0.9 + stepLift * 0.16);
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x, y, r * 0.88, 0, Math.PI * 2);
-      ctx.clip();
 
       core.drawPawPrint(
         ctx,
-        px,
-        py - stepLift * r * 0.05,
-        size,
-        i % 2 === 0 ? "rgba(42,28,22,0.98)" : "rgba(198,154,126,0.96)",
+        steps[i].x,
+        steps[i].y - lift,
+        Math.max(3.2, r * 0.11) * sizeMul,
+        steps[i].color,
         alpha,
-        rot,
-        5
+        steps[i].rot,
+        i % 2 === 0 ? 5 : 4
       );
-
-      ctx.restore();
     }
   }
 
