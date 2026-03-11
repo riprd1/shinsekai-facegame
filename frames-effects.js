@@ -754,8 +754,8 @@
     ctx.rotate(rotation);
     ctx.globalAlpha = alpha;
 
-    const outerColor = "rgba(24,24,24,1)";
-    const innerColor = "rgba(38,38,38,1)";
+    const outerColor = "rgba(120,0,40,1)";
+const innerColor = "rgba(170,0,70,1)";
     const highlight = "rgba(255,255,255,0.08)";
     const bloom = 0.42 + open * 0.9;
 
