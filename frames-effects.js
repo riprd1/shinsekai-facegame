@@ -603,6 +603,79 @@
     }
   }
 
+  function drawFancyCrown(ctx, x, y, size, alpha, time) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.sin(time * 0.00045) * 0.025);
+    ctx.globalAlpha = alpha;
+
+    const grad = ctx.createLinearGradient(0, -size * 1.3, 0, size);
+    grad.addColorStop(0, "rgba(255,252,215,1)");
+    grad.addColorStop(0.18, "rgba(255,239,155,1)");
+    grad.addColorStop(0.52, "rgba(255,202,58,1)");
+    grad.addColorStop(0.78, "rgba(215,132,18,1)");
+    grad.addColorStop(1, "rgba(132,74,8,1)");
+
+    ctx.shadowColor = "rgba(255,220,110,0.95)";
+    ctx.shadowBlur = size * 0.55;
+    ctx.fillStyle = grad;
+
+    ctx.beginPath();
+    ctx.moveTo(-size * 1.25, size * 0.34);
+    ctx.lineTo(-size * 1.02, -size * 0.12);
+    ctx.lineTo(-size * 0.72, size * 0.04);
+    ctx.lineTo(-size * 0.46, -size * 0.52);
+    ctx.lineTo(-size * 0.16, size * 0.02);
+    ctx.lineTo(0, -size * 0.92);
+    ctx.lineTo(size * 0.16, size * 0.02);
+    ctx.lineTo(size * 0.46, -size * 0.52);
+    ctx.lineTo(size * 0.72, size * 0.04);
+    ctx.lineTo(size * 1.02, -size * 0.12);
+    ctx.lineTo(size * 1.25, size * 0.34);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.roundRect(-size * 1.3, size * 0.26, size * 2.6, size * 0.48, size * 0.15);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,249,220,0.92)";
+    ctx.lineWidth = Math.max(1.2, size * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(-size * 1.1, size * 0.26);
+    ctx.lineTo(-size * 0.9, -size * 0.02);
+    ctx.lineTo(-size * 0.68, size * 0.12);
+    ctx.lineTo(-size * 0.42, -size * 0.34);
+    ctx.lineTo(-size * 0.12, size * 0.1);
+    ctx.lineTo(0, -size * 0.72);
+    ctx.lineTo(size * 0.12, size * 0.1);
+    ctx.lineTo(size * 0.42, -size * 0.34);
+    ctx.lineTo(size * 0.68, size * 0.12);
+    ctx.lineTo(size * 0.9, -size * 0.02);
+    ctx.lineTo(size * 1.1, size * 0.26);
+    ctx.stroke();
+
+    const jewels = [
+      { x: -size * 0.78, y: 0.06, c: "rgba(255,232,120,1)", s: 0.16 },
+      { x: -size * 0.42, y: -0.24, c: "rgba(255,246,196,1)", s: 0.12 },
+      { x: 0, y: -0.58, c: "rgba(255,244,176,1)", s: 0.18 },
+      { x: size * 0.42, y: -0.24, c: "rgba(255,246,196,1)", s: 0.12 },
+      { x: size * 0.78, y: 0.06, c: "rgba(255,232,120,1)", s: 0.16 }
+    ];
+
+    jewels.forEach((j, i) => {
+      const pulse = 0.9 + ((Math.sin(time * 0.0022 + i * 1.7) + 1) / 2) * 0.28;
+      ctx.beginPath();
+      ctx.arc(j.x, j.y * size, size * j.s * pulse, 0, Math.PI * 2);
+      ctx.fillStyle = j.c;
+      ctx.shadowColor = j.c;
+      ctx.shadowBlur = size * 0.24;
+      ctx.fill();
+    });
+
+    ctx.restore();
+  }
+
   function drawCrownSpecial(ctx, body, meta, time, core) {
     const x = body.position.x;
     const y = body.position.y;
@@ -610,73 +683,182 @@
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x, y, r - 1.4, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,222,92,0.98)";
-    ctx.lineWidth = Math.max(2.8, r * 0.095);
-    ctx.shadowColor = "rgba(255,216,90,0.58)";
-    ctx.shadowBlur = 10;
+    ctx.arc(x, y, r - 1.2, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,214,78,0.98)";
+    ctx.lineWidth = Math.max(3.2, r * 0.105);
+    ctx.shadowColor = "rgba(255,220,120,0.82)";
+    ctx.shadowBlur = 14;
     ctx.stroke();
 
     ctx.beginPath();
     ctx.arc(x, y, r - 5, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,246,185,0.38)";
+    ctx.strokeStyle = "rgba(255,244,182,0.55)";
     ctx.lineWidth = Math.max(1, r * 0.024);
     ctx.stroke();
     ctx.restore();
 
     const crownX = x;
-    const crownY = y - r * 0.98;
-    const crownSize = Math.max(6.6, r * 0.235);
+    const crownY = y - r * 1.02;
+    const crownSize = Math.max(8.4, r * 0.31);
 
-    core.drawCrown(
-      ctx,
-      crownX,
-      crownY,
-      crownSize,
-      "rgba(255,215,70,0.98)",
-      1,
-      Math.sin(time * 0.00045) * 0.02,
-      14
-    );
+    drawFancyCrown(ctx, crownX, crownY, crownSize, 1, time);
 
-    const sparkles = [
-      { angle: -Math.PI * 0.34, radius: r * 0.82, kind: "big", color: "rgba(255,235,150,0.98)" },
-      { angle: -Math.PI * 0.16, radius: r * 0.72, kind: "small", color: "rgba(255,255,255,0.96)" },
-      { angle: Math.PI * 0.16, radius: r * 0.72, kind: "small", color: "rgba(255,255,255,0.96)" },
-      { angle: Math.PI * 0.34, radius: r * 0.82, kind: "big", color: "rgba(255,224,120,0.98)" },
-      { angle: Math.PI * 0.82, radius: r * 0.7, kind: "small", color: "rgba(255,248,210,0.92)" },
-      { angle: Math.PI * 1.18, radius: r * 0.7, kind: "small", color: "rgba(255,255,255,0.88)" }
+    const orbitStars = [
+      { angle: -Math.PI * 0.38, radius: r * 0.9, size: 0.12, color: "rgba(255,229,120,1)" },
+      { angle: -Math.PI * 0.22, radius: r * 0.76, size: 0.08, color: "rgba(255,255,255,0.96)" },
+      { angle: -Math.PI * 0.08, radius: r * 0.7, size: 0.07, color: "rgba(255,244,190,0.96)" },
+      { angle: Math.PI * 0.08, radius: r * 0.7, size: 0.07, color: "rgba(255,244,190,0.96)" },
+      { angle: Math.PI * 0.22, radius: r * 0.76, size: 0.08, color: "rgba(255,255,255,0.96)" },
+      { angle: Math.PI * 0.38, radius: r * 0.9, size: 0.12, color: "rgba(255,229,120,1)" },
+      { angle: Math.PI * 0.82, radius: r * 0.76, size: 0.08, color: "rgba(255,236,156,0.96)" },
+      { angle: Math.PI * 1.18, radius: r * 0.76, size: 0.08, color: "rgba(255,236,156,0.96)" }
     ];
 
-    sparkles.forEach((sp, i) => {
-      const pulse = (Math.sin(time * 0.0018 + i * 1.9) + 1) / 2;
+    orbitStars.forEach((sp, i) => {
+      const pulse = (Math.sin(time * 0.0023 + i * 1.64) + 1) / 2;
       const sx = x + Math.cos(sp.angle) * sp.radius;
       const sy = y + Math.sin(sp.angle) * sp.radius;
+      const size = Math.max(2.2, r * sp.size) * (0.94 + pulse * 0.28);
+      const alpha = core.clamp(0.28 + pulse * 0.68, 0.2, 1);
 
-      if (sp.kind === "big") {
-        core.drawSoftDiamondStar(
-          ctx,
-          sx,
-          sy,
-          Math.max(2.8, r * 0.082) * (0.95 + pulse * 0.2),
-          sp.color,
-          core.clamp(0.32 + pulse * 0.55, 0.22, 0.95),
-          Math.PI / 4,
-          10
-        );
+      if (i % 2 === 0) {
+        core.drawSoftDiamondStar(ctx, sx, sy, size, sp.color, alpha, Math.PI / 4, 12);
       } else {
-        core.drawTinyTwinkle(
-          ctx,
-          sx,
-          sy,
-          Math.max(1.8, r * 0.052) * (0.95 + pulse * 0.12),
-          sp.color,
-          core.clamp(0.2 + pulse * 0.58, 0.16, 0.84),
-          time * 0.00045,
-          7
-        );
+        core.drawTinyTwinkle(ctx, sx, sy, size, sp.color, alpha, time * 0.0005 + i * 0.18, 9);
       }
     });
+
+    const bottomStarCount = 5;
+    for (let i = 0; i < bottomStarCount; i++) {
+      const spread = -0.62 + (1.24 * i) / (bottomStarCount - 1);
+      const sx = x + spread * r;
+      const sy = y + r * 0.96;
+      const pulse = (Math.sin(time * 0.0018 + i * 1.42) + 1) / 2;
+
+      core.drawSoftDiamondStar(
+        ctx,
+        sx,
+        sy,
+        Math.max(3.4, r * (i === 2 ? 0.16 : 0.11)) * (0.94 + pulse * 0.18),
+        i === 2 ? "rgba(255,214,82,1)" : "rgba(255,239,160,0.98)",
+        core.clamp(0.42 + pulse * 0.5, 0.3, 1),
+        Math.PI / 4,
+        12
+      );
+    }
+  }
+
+  function drawRoseBloom(ctx, x, y, size, open, alpha, rotation) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+
+    const outerColor = "rgba(24,24,24,1)";
+    const innerColor = "rgba(38,38,38,1)";
+    const highlight = "rgba(255,255,255,0.08)";
+    const bloom = 0.42 + open * 0.9;
+
+    ctx.shadowColor = "rgba(0,0,0,0.46)";
+    ctx.shadowBlur = size * 0.24;
+
+    for (let i = 0; i < 6; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 * i) / 6 + 0.08);
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.08);
+      ctx.bezierCurveTo(size * 0.22, -size * 0.82 * bloom, size * 0.86, -size * 0.54 * bloom, size * 0.52, size * 0.08);
+      ctx.bezierCurveTo(size * 0.26, size * 0.34, -size * 0.08, size * 0.18, 0, -size * 0.08);
+      ctx.closePath();
+      ctx.fillStyle = outerColor;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    for (let i = 0; i < 5; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 * i) / 5 + 0.38);
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.02);
+      ctx.bezierCurveTo(size * 0.16, -size * 0.54 * bloom, size * 0.56, -size * 0.32 * bloom, size * 0.34, size * 0.05);
+      ctx.bezierCurveTo(size * 0.16, size * 0.18, -size * 0.05, size * 0.12, 0, -size * 0.02);
+      ctx.closePath();
+      ctx.fillStyle = innerColor;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.12, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(18,18,18,1)";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(-size * 0.16, -size * 0.18, size * 0.1, 0, Math.PI * 2);
+    ctx.fillStyle = highlight;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawRoseLeaf(ctx, x, y, size, rotation, alpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = "rgba(0,0,0,0.18)";
+    ctx.shadowBlur = 3;
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(size * 0.66, -size * 0.42, size, 0);
+    ctx.quadraticCurveTo(size * 0.66, size * 0.42, 0, 0);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(24,24,24,0.96)";
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawThornStrokeFancy(ctx, points, width) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(12,12,12,0.98)";
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.shadowColor = "rgba(0,0,0,0.2)";
+    ctx.shadowBlur = 3;
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const curr = points[i];
+      const mx = (prev.x + curr.x) * 0.5;
+      const my = (prev.y + curr.y) * 0.5;
+      ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.stroke();
+
+    for (let i = 1; i < points.length - 1; i++) {
+      const a = points[i - 1];
+      const b = points[i];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.max(1, Math.hypot(dx, dy));
+      const nx = -dy / len;
+      const ny = dx / len;
+      const dir = i % 2 === 0 ? 1 : -1;
+      const thorn = width * (0.95 + (i % 3) * 0.1);
+
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x + nx * thorn * dir, b.y + ny * thorn * dir);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
 
   function drawDarkRoseSpecial(ctx, body, meta, time, core) {
@@ -684,142 +866,80 @@
     const y = body.position.y;
     const r = body.circleRadius || 20;
 
-    function drawThornStroke(points, width, alpha) {
-      ctx.save();
-      ctx.strokeStyle = `rgba(42,8,20,${alpha})`;
-      ctx.lineWidth = width;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.shadowColor = "rgba(120,28,62,0.22)";
-      ctx.shadowBlur = 4;
-
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        const prev = points[i - 1];
-        const curr = points[i];
-        const mx = (prev.x + curr.x) * 0.5;
-        const my = (prev.y + curr.y) * 0.5;
-        ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
-      }
-      ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
-      ctx.stroke();
-
-      for (let i = 1; i < points.length - 1; i++) {
-        const a = points[i - 1];
-        const b = points[i];
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const len = Math.max(1, Math.hypot(dx, dy));
-        const nx = -dy / len;
-        const ny = dx / len;
-        const tlen = width * 1.05 * (i % 2 === 0 ? 1 : 0.8);
-
-        ctx.beginPath();
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(
-          b.x + nx * tlen * (i % 2 === 0 ? 1 : -1),
-          b.y + ny * tlen * (i % 2 === 0 ? 1 : -1)
-        );
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-
     function p(ax, ay) {
       return { x: x + ax * r, y: y + ay * r };
     }
 
-    const leftVine = [
-      p(-0.92, -0.92),
-      p(-1.02, -0.5),
-      p(-1.0, -0.05),
-      p(-0.9, 0.34),
-      p(-0.72, 0.68),
-      p(-0.42, 0.94),
-      p(-0.04, 1.02)
+    const vines = [
+      [p(-0.94, -0.76), p(-1.02, -0.42), p(-0.98, -0.02), p(-0.9, 0.28), p(-0.78, 0.58), p(-0.56, 0.82)],
+      [p(-0.72, -0.96), p(-0.38, -1.02), p(-0.08, -0.96), p(0.26, -0.88)],
+      [p(0.46, -0.94), p(0.78, -0.9), p(0.98, -0.72), p(1.02, -0.42), p(0.96, -0.08), p(0.84, 0.16)],
+      [p(0.92, 0.16), p(1.0, 0.42), p(0.96, 0.72), p(0.78, 0.96)],
+      [p(-0.36, 0.96), p(-0.08, 1.04), p(0.26, 1.02), p(0.58, 0.92)]
     ];
 
-    const bottomVine = [
-      p(-0.34, 0.96),
-      p(-0.08, 1.06),
-      p(0.22, 1.06),
-      p(0.52, 0.98),
-      p(0.84, 0.86)
-    ];
+    vines.forEach(points => {
+      drawThornStrokeFancy(ctx, points, Math.max(2, r * 0.074));
+    });
 
-    const rightTopVine = [
-      p(0.36, -1.02),
-      p(0.72, -0.96),
-      p(0.98, -0.78),
-      p(1.02, -0.46),
-      p(0.9, -0.16),
-      p(0.68, 0.1)
-    ];
-
-    const rightLowerVine = [
-      p(0.86, 0.12),
-      p(0.98, 0.38),
-      p(0.92, 0.68),
-      p(0.74, 0.92)
-    ];
-
-    drawThornStroke(leftVine, Math.max(2, r * 0.085), 0.96);
-    drawThornStroke(bottomVine, Math.max(1.9, r * 0.078), 0.94);
-    drawThornStroke(rightTopVine, Math.max(2, r * 0.085), 0.96);
-    drawThornStroke(rightLowerVine, Math.max(1.9, r * 0.078), 0.94);
-
-    function drawLeaf(px, py, size, angle, alpha) {
-      ctx.save();
-      ctx.translate(px, py);
-      ctx.rotate(angle);
-      ctx.globalAlpha = alpha;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(size * 0.65, -size * 0.42, size, 0);
-      ctx.quadraticCurveTo(size * 0.65, size * 0.42, 0, 0);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(34,16,20,0.9)";
-      ctx.shadowColor = "rgba(92,28,54,0.18)";
-      ctx.shadowBlur = 3;
-      ctx.fill();
-      ctx.restore();
-    }
-
-    drawLeaf(x - r * 0.88, y + r * 0.08, Math.max(4, r * 0.11), -1.85, 0.66);
-    drawLeaf(x - r * 0.66, y + r * 0.62, Math.max(4.2, r * 0.12), -0.8, 0.7);
-    drawLeaf(x + r * 0.9, y - r * 0.18, Math.max(4, r * 0.11), 2.25, 0.66);
-    drawLeaf(x + r * 0.74, y + r * 0.7, Math.max(4.2, r * 0.12), 1.1, 0.72);
+    drawRoseLeaf(ctx, x - r * 0.92, y - r * 0.34, Math.max(4.6, r * 0.12), -2.18, 0.96);
+    drawRoseLeaf(ctx, x - r * 0.88, y + r * 0.18, Math.max(4.6, r * 0.12), -1.56, 0.96);
+    drawRoseLeaf(ctx, x - r * 0.7, y + r * 0.72, Math.max(4.9, r * 0.13), -0.92, 0.96);
+    drawRoseLeaf(ctx, x + r * 0.86, y - r * 0.56, Math.max(4.8, r * 0.125), 0.52, 0.96);
+    drawRoseLeaf(ctx, x + r * 0.98, y - r * 0.12, Math.max(4.7, r * 0.12), 0.06, 0.96);
+    drawRoseLeaf(ctx, x + r * 0.82, y + r * 0.74, Math.max(4.9, r * 0.13), 1.02, 0.96);
+    drawRoseLeaf(ctx, x - r * 0.18, y - r * 0.96, Math.max(4.4, r * 0.115), -0.3, 0.92);
+    drawRoseLeaf(ctx, x + r * 0.18, y + r * 1.0, Math.max(4.4, r * 0.115), 0.35, 0.92);
 
     const roses = [
-      { x: x - r * 0.96, y: y - r * 0.5, seed: 11, rot: -0.18 },
-      { x: x - r * 0.88, y: y + r * 0.08, seed: 21, rot: 0.16 },
-      { x: x - r * 0.64, y: y + r * 0.7, seed: 31, rot: -0.24 },
-      { x: x + r * 0.82, y: y - r * 0.78, seed: 41, rot: 0.14 },
-      { x: x + r * 0.98, y: y - r * 0.22, seed: 51, rot: -0.16 },
-      { x: x + r * 0.8, y: y + r * 0.72, seed: 61, rot: 0.18 }
+      { x: x - r * 0.98, y: y - r * 0.48, seed: 11, rot: -0.28, size: 0.19 },
+      { x: x - r * 0.9, y: y + r * 0.1, seed: 21, rot: 0.08, size: 0.18 },
+      { x: x - r * 0.62, y: y + r * 0.74, seed: 31, rot: -0.18, size: 0.18 },
+      { x: x - r * 0.1, y: y - r * 0.98, seed: 39, rot: 0.08, size: 0.16 },
+      { x: x + r * 0.42, y: y - r * 0.9, seed: 45, rot: 0.2, size: 0.16 },
+      { x: x + r * 0.84, y: y - r * 0.7, seed: 51, rot: 0.16, size: 0.18 },
+      { x: x + r * 0.98, y: y - r * 0.18, seed: 61, rot: -0.1, size: 0.17 },
+      { x: x + r * 0.84, y: y + r * 0.68, seed: 71, rot: 0.2, size: 0.18 },
+      { x: x + r * 0.18, y: y + r * 0.98, seed: 81, rot: 0.12, size: 0.17 }
     ];
 
-    roses.forEach((rose) => {
-      const bloom = (Math.sin(time * 0.0014 + rose.seed) + 1) / 2;
-      const pop = bloom > 0.52 ? Math.pow((bloom - 0.52) / 0.48, 0.75) : 0;
-      const alpha = core.clamp(pop, 0, 1) * 0.96;
-      const size = Math.max(4.4, r * 0.17) * (0.62 + pop * 0.52);
+    roses.forEach((rose, i) => {
+      const bloom = (Math.sin(time * 0.0012 + rose.seed) + 1) / 2;
+      const open = Math.pow(bloom, 1.2);
+      const alpha = core.clamp(0.22 + open * 0.78, 0.18, 1);
+      const size = Math.max(4.8, r * rose.size) * (0.7 + open * 0.55);
 
-      if (alpha > 0.02) {
-        core.drawRose(
-          ctx,
-          rose.x,
-          rose.y,
-          size,
-          "rgba(116,26,62,0.98)",
-          "rgba(214,104,150,0.84)",
-          alpha,
-          rose.rot,
-          11
-        );
-      }
+      drawRoseBloom(
+        ctx,
+        rose.x,
+        rose.y,
+        size,
+        open,
+        alpha,
+        rose.rot + Math.sin(time * 0.00045 + i) * 0.03
+      );
     });
+
+    const petalCount = 7;
+    for (let i = 0; i < petalCount; i++) {
+      const phase = ((time * (0.00012 + i * 0.00002)) + i * 0.17) % 1;
+      const sway = Math.sin(phase * Math.PI * 2 + i * 1.4) * (r * 0.16);
+      const px = x - r * 0.6 + ((i % 4) * r * 0.38) + sway * 0.2;
+      const py = y - r * 0.88 + phase * (r * 2.04);
+      const rot = -0.4 + Math.sin(phase * Math.PI * 2 + i) * 0.9 + phase * 1.3;
+      const alpha = core.clamp(0.04 + Math.sin(phase * Math.PI) * 0.48, 0.03, 0.5);
+
+      core.drawPetal(
+        ctx,
+        px,
+        py,
+        Math.max(2.6, r * 0.088),
+        i % 2 === 0 ? "rgba(34,34,34,0.98)" : "rgba(48,48,48,0.98)",
+        alpha,
+        rot,
+        5
+      );
+    }
   }
 
   function drawShootingStarSpecial(ctx, body, meta, time, core) {
@@ -989,50 +1109,73 @@
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, r - 1.4, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(28,28,28,0.98)";
+    ctx.strokeStyle = "rgba(30,24,20,0.98)";
     ctx.lineWidth = Math.max(2.7, r * 0.095);
-    ctx.shadowColor = "rgba(0,0,0,0.45)";
-    ctx.shadowBlur = 8;
+    ctx.shadowColor = "rgba(0,0,0,0.34)";
+    ctx.shadowBlur = 7;
     ctx.stroke();
 
     ctx.beginPath();
     ctx.arc(x, y, r - 5, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.strokeStyle = "rgba(255,255,255,0.18)";
     ctx.lineWidth = Math.max(0.9, r * 0.022);
     ctx.stroke();
     ctx.restore();
 
+    const walkers = 5;
     const stepMs = 700;
-    const walkers = 6;
-    const radiusLimit = r * 0.62;
+    const pathRadius = r * 0.56;
 
     for (let i = 0; i < walkers; i++) {
-      const currentStep = Math.floor(time / stepMs) + i * 13;
-      const progress = (time % stepMs) / stepMs;
+      const pathSeed = core.hashSeed(`paw-path-${Math.round(x)}-${Math.round(y)}-${i}`);
+      const rand = core.seededRandom(pathSeed);
 
-      const randA = core.seededRandom(core.hashSeed(`paw-${i}-${currentStep}`));
-      const randB = core.seededRandom(core.hashSeed(`paw-${i}-${currentStep + 1}`));
+      const pointCount = 7;
+      const points = [];
+      for (let p = 0; p < pointCount; p++) {
+        const angle = rand() * Math.PI * 2;
+        const dist = Math.sqrt(rand()) * pathRadius;
+        points.push({
+          x: x + Math.cos(angle) * dist,
+          y: y + Math.sin(angle) * dist
+        });
+      }
 
-      const a1 = randA() * Math.PI * 2;
-      const d1 = Math.sqrt(randA()) * radiusLimit;
-      const a2 = randB() * Math.PI * 2;
-      const d2 = Math.sqrt(randB()) * radiusLimit;
+      const totalSteps = pointCount - 1;
+      const stepOffset = i * 0.9;
+      const exactStep = (time / stepMs) + stepOffset;
+      const segmentIndex = Math.floor(exactStep) % totalSteps;
+      const phase = exactStep - Math.floor(exactStep);
 
-      const x1 = x + Math.cos(a1) * d1;
-      const y1 = y + Math.sin(a1) * d1;
-      const x2 = x + Math.cos(a2) * d2;
-      const y2 = y + Math.sin(a2) * d2;
+      const a = points[segmentIndex];
+      const b = points[segmentIndex + 1];
 
-      const px = x1 + (x2 - x1) * progress;
-      const py = y1 + (y2 - y1) * progress;
-      const rot = Math.atan2(y2 - y1, x2 - x1);
-      const lift = Math.sin(progress * Math.PI);
+      const px = a.x + (b.x - a.x) * phase;
+      const py = a.y + (b.y - a.y) * phase;
+      const rot = Math.atan2(b.y - a.y, b.x - a.x);
+      const stepLift = Math.sin(phase * Math.PI);
 
-      const color = i % 2 === 0 ? "rgba(18,18,18,0.98)" : "rgba(255,255,255,0.96)";
-      const alpha = core.clamp(0.32 + lift * 0.58, 0.2, 0.9);
-      const size = Math.max(3.1, r * 0.108) * (0.94 + lift * 0.14);
+      const appear = phase < 0.18 ? phase / 0.18 : phase > 0.82 ? (1 - phase) / 0.18 : 1;
+      const alpha = core.clamp(0.18 + stepLift * 0.82, 0.12, 1) * core.clamp(appear, 0.25, 1);
+      const size = Math.max(3.3, r * 0.112) * (0.9 + stepLift * 0.16);
 
-      core.drawPawPrint(ctx, px, py - lift * r * 0.03, size, color, alpha, rot, i % 2 === 0 ? 6 : 5);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.88, 0, Math.PI * 2);
+      ctx.clip();
+
+      core.drawPawPrint(
+        ctx,
+        px,
+        py - stepLift * r * 0.05,
+        size,
+        i % 2 === 0 ? "rgba(42,28,22,0.98)" : "rgba(198,154,126,0.96)",
+        alpha,
+        rot,
+        5
+      );
+
+      ctx.restore();
     }
   }
 
