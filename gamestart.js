@@ -158,6 +158,55 @@ const FRAME_MASTER = {
     color: "#ff9fd6",
     glow: "rgba(255,159,214,0.5)",
     desc: "パステルに弾けるポップなキャンディフレーム"
+  },
+  "クラウン": {
+    rank: "SR",
+    icons: "👑",
+    color: "#ffd95e",
+    glow: "rgba(255,217,94,0.58)",
+    desc: "王冠モチーフがきらめく高貴なフレーム"
+  },
+  "ダークローズ": {
+    rank: "R",
+    icons: "🌹",
+    color: "#b03060",
+    glow: "rgba(176,48,96,0.5)",
+    desc: "深紅の薔薇が妖しく咲くフレーム"
+  },
+  "流れ星": {
+    rank: "SSR",
+    icons: "🌠",
+    color: "#fff1a8",
+    glow: "rgba(255,241,168,0.72)",
+    desc: "夜空を流れる星が駆け抜けるフレーム"
+  },
+  "桜": {
+    rank: "R",
+    icons: "🌸",
+    color: "#ffb7d5",
+    glow: "rgba(255,183,213,0.52)",
+    desc: "桜の花びらがふんわり舞う春色フレーム"
+  },
+  "天使のはね": {
+    rank: "SSR",
+    icons: "🪽",
+    color: "#f7fbff",
+    glow: "rgba(220,240,255,0.75)",
+    desc: "天使の羽が神秘的に包み込むフレーム"
+  },
+  "雪結晶": {
+    rank: "SR",
+    icons: "❄️",
+    color: "#dff6ff",
+    glow: "rgba(223,246,255,0.62)",
+    desc: "雪の結晶が静かに輝く冬のフレーム"
+  },
+  "犬のあしあと": {
+    rank: "R",
+    icons: "🐾",
+    color: "#c48a62",
+    glow: "rgba(196,138,98,0.48)",
+    desc: "肉球の足あとがぺたぺた歩くフレーム"
   }
 };
 
