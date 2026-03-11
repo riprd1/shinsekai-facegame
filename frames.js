@@ -256,6 +256,226 @@
     ctx.restore();
   }
 
+  function drawCrown(ctx, x, y, size, color, alpha = 1, rotation = 0, blur = 10) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+
+    const grad = ctx.createLinearGradient(0, -size, 0, size);
+    grad.addColorStop(0, "rgba(255,250,195,1)");
+    grad.addColorStop(0.45, color);
+    grad.addColorStop(1, "rgba(194,126,22,1)");
+
+    ctx.fillStyle = grad;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+
+    ctx.beginPath();
+    ctx.moveTo(-size, size * 0.42);
+    ctx.lineTo(-size * 0.72, -size * 0.25);
+    ctx.lineTo(-size * 0.28, size * 0.02);
+    ctx.lineTo(0, -size * 0.58);
+    ctx.lineTo(size * 0.28, size * 0.02);
+    ctx.lineTo(size * 0.72, -size * 0.25);
+    ctx.lineTo(size, size * 0.42);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.roundRect(-size * 1.02, size * 0.3, size * 2.04, size * 0.38, size * 0.12);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.beginPath();
+    ctx.arc(0, -size * 0.58, size * 0.12, 0, Math.PI * 2);
+    ctx.arc(-size * 0.72, -size * 0.25, size * 0.1, 0, Math.PI * 2);
+    ctx.arc(size * 0.72, -size * 0.25, size * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawRose(ctx, x, y, size, petalColor, centerColor, alpha = 1, rotation = 0, blur = 10) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = petalColor;
+    ctx.shadowBlur = blur;
+
+    for (let i = 0; i < 6; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 * i) / 6);
+      ctx.beginPath();
+      ctx.ellipse(0, -size * 0.28, size * 0.3, size * 0.46, 0, 0, Math.PI * 2);
+      ctx.fillStyle = petalColor;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    for (let i = 0; i < 4; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 * i) / 4 + 0.3);
+      ctx.beginPath();
+      ctx.ellipse(0, -size * 0.14, size * 0.22, size * 0.32, 0, 0, Math.PI * 2);
+      ctx.fillStyle = centerColor;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.14, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,235,245,0.95)";
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawPetal(ctx, x, y, size, color, alpha = 1, rotation = 0, blur = 8) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.bezierCurveTo(size * 0.75, -size * 0.45, size * 0.7, size * 0.45, 0, size);
+    ctx.bezierCurveTo(-size * 0.7, size * 0.45, -size * 0.75, -size * 0.45, 0, -size);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(0, -size * 0.7);
+    ctx.quadraticCurveTo(size * 0.14, 0, 0, size * 0.62);
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.lineWidth = Math.max(0.8, size * 0.08);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawWing(ctx, x, y, size, color, alpha = 1, rotation = 0, flip = 1, blur = 12) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(flip, 1);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(size * 0.15, -size * 0.8, size * 0.86, -size * 0.92, size * 1.02, -size * 0.2);
+    ctx.bezierCurveTo(size * 0.94, size * 0.2, size * 0.55, size * 0.78, 0, size * 0.98);
+    ctx.bezierCurveTo(size * 0.16, size * 0.36, size * 0.12, size * 0.18, 0, 0);
+    ctx.closePath();
+
+    const grad = ctx.createLinearGradient(0, -size, size, size);
+    grad.addColorStop(0, "rgba(255,255,255,0.98)");
+    grad.addColorStop(0.55, color);
+    grad.addColorStop(1, "rgba(220,235,255,0.86)");
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,255,255,0.5)";
+    ctx.lineWidth = Math.max(1, size * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(size * 0.08, -size * 0.05);
+    ctx.quadraticCurveTo(size * 0.4, -size * 0.42, size * 0.86, -size * 0.12);
+    ctx.moveTo(size * 0.02, size * 0.2);
+    ctx.quadraticCurveTo(size * 0.36, size * 0.08, size * 0.72, size * 0.42);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawSnowflake(ctx, x, y, size, color, alpha = 1, rotation = 0, blur = 8) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1, size * 0.12);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+
+    for (let i = 0; i < 6; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 * i) / 6);
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(0, size);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.56);
+      ctx.lineTo(size * 0.16, -size * 0.36);
+      ctx.moveTo(0, -size * 0.56);
+      ctx.lineTo(-size * 0.16, -size * 0.36);
+      ctx.moveTo(0, size * 0.56);
+      ctx.lineTo(size * 0.16, size * 0.36);
+      ctx.moveTo(0, size * 0.56);
+      ctx.lineTo(-size * 0.16, size * 0.36);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  function drawPawPrint(ctx, x, y, size, color, alpha = 1, rotation = 0, blur = 8) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+
+    ctx.beginPath();
+    ctx.ellipse(0, size * 0.18, size * 0.42, size * 0.32, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(-size * 0.36, -size * 0.28, size * 0.16, size * 0.2, -0.25, 0, Math.PI * 2);
+    ctx.ellipse(-size * 0.1, -size * 0.44, size * 0.16, size * 0.22, -0.08, 0, Math.PI * 2);
+    ctx.ellipse(size * 0.16, -size * 0.44, size * 0.16, size * 0.22, 0.08, 0, Math.PI * 2);
+    ctx.ellipse(size * 0.42, -size * 0.28, size * 0.16, size * 0.2, 0.25, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawShootingStar(ctx, x, y, size, color, alpha = 1, rotation = 0, blur = 12) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+
+    const tailGrad = ctx.createLinearGradient(-size * 1.8, 0, size * 0.4, 0);
+    tailGrad.addColorStop(0, "rgba(255,255,255,0)");
+    tailGrad.addColorStop(0.45, alphaColor(color, 0.18));
+    tailGrad.addColorStop(0.78, alphaColor(color, 0.62));
+    tailGrad.addColorStop(1, "rgba(255,255,255,0.95)");
+
+    ctx.strokeStyle = tailGrad;
+    ctx.lineWidth = Math.max(1.6, size * 0.18);
+    ctx.lineCap = "round";
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+    ctx.beginPath();
+    ctx.moveTo(-size * 1.8, 0);
+    ctx.lineTo(size * 0.28, 0);
+    ctx.stroke();
+
+    drawSoftDiamondStar(ctx, size * 0.38, 0, size * 0.42, "rgba(255,255,255,0.98)", alpha, 0.3, blur);
+    ctx.restore();
+  }
+
   function getFrameDecorationPattern(frameName) {
     switch (frameName) {
       case "スターグロウ":
@@ -290,6 +510,20 @@
         return ["orbit","orbit","starSmall","orbit","starSmall","orbit","starSmall","orbit"];
       case "キャンディ":
         return ["candy","heart","candy","heart","candy","heart","candy","heart"];
+      case "クラウン":
+        return ["crown","sparkle","starSmall","crown","sparkle","starSmall"];
+      case "ダークローズ":
+        return ["rose","sparkle","rose","sparkle","rose","sparkle"];
+      case "流れ星":
+        return ["shootingStar","starSmall","shootingStar","starSmall","shootingStar","starSmall"];
+      case "桜":
+        return ["petal","petal","sparkle","petal","petal","sparkle","petal","petal"];
+      case "天使のはね":
+        return ["wing","sparkle","wing","sparkle","wing","sparkle"];
+      case "雪結晶":
+        return ["snowflake","sparkle","snowflake","sparkle","snowflake","sparkle"];
+      case "犬のあしあと":
+        return ["paw","paw","sparkle","paw","paw","sparkle","paw","sparkle"];
       default:
         return ["sparkle","sparkle","sparkle","sparkle","sparkle","sparkle"];
     }
@@ -348,6 +582,41 @@
 
     if (type === "candy") {
       drawCircleCandy(ctx, x, y, size * 0.5, "rgba(255,255,255,0.96)", color, alpha, rotation, blur);
+      return;
+    }
+
+    if (type === "crown") {
+      drawCrown(ctx, x, y, size, color, alpha, rotation, blur);
+      return;
+    }
+
+    if (type === "rose") {
+      drawRose(ctx, x, y, size, color, "rgba(255,210,225,0.95)", alpha, rotation, blur);
+      return;
+    }
+
+    if (type === "petal") {
+      drawPetal(ctx, x, y, size, color, alpha, rotation, blur);
+      return;
+    }
+
+    if (type === "wing") {
+      drawWing(ctx, x, y, size, color, alpha, rotation, 1, blur);
+      return;
+    }
+
+    if (type === "snowflake") {
+      drawSnowflake(ctx, x, y, size, color, alpha, rotation, blur);
+      return;
+    }
+
+    if (type === "paw") {
+      drawPawPrint(ctx, x, y, size, color, alpha, rotation, blur);
+      return;
+    }
+
+    if (type === "shootingStar") {
+      drawShootingStar(ctx, x, y, size, color, alpha, rotation, blur);
       return;
     }
 
@@ -429,6 +698,13 @@
       if (type === "moon") decoSize = Math.max(4.0, r * 0.135);
       if (type === "orbit") decoSize = Math.max(3.4, r * 0.115);
       if (type === "candy") decoSize = Math.max(3.8, r * 0.125);
+      if (type === "crown") decoSize = Math.max(4.2, r * 0.15);
+      if (type === "rose") decoSize = Math.max(4.0, r * 0.145);
+      if (type === "petal") decoSize = Math.max(3.6, r * 0.13);
+      if (type === "wing") decoSize = Math.max(4.6, r * 0.155);
+      if (type === "snowflake") decoSize = Math.max(3.8, r * 0.135);
+      if (type === "paw") decoSize = Math.max(3.7, r * 0.128);
+      if (type === "shootingStar") decoSize = Math.max(4.0, r * 0.14);
 
       const sizePulse = 1 + Math.sin(time * 0.0012 + i * 1.33) * 0.06;
       const alpha = clamp(0.76 + Math.sin(time * 0.0011 + i * 0.95) * 0.18, 0.42, 1);
@@ -943,6 +1219,243 @@
     }
   }
 
+  function drawCrownSpecial(ctx, body, meta, time) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+    const crownAngles = [-Math.PI / 2, Math.PI * 0.16, Math.PI * 0.84];
+    const crownRadius = r * 0.82;
+
+    crownAngles.forEach((angle, i) => {
+      const dx = x + Math.cos(angle) * crownRadius;
+      const dy = y + Math.sin(angle) * crownRadius;
+      const pulse = (Math.sin(time * 0.002 + i * 2.1) + 1) / 2;
+      const alpha = clamp(0.45 + pulse * 0.45, 0.28, 0.9);
+      const size = Math.max(4.5, r * 0.15) * (0.94 + pulse * 0.12);
+
+      drawCrown(ctx, dx, dy, size, meta.color, alpha, Math.sin(time * 0.0007 + i) * 0.12, 10);
+    });
+
+    for (let i = 0; i < 6; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / 6) + time * 0.00018;
+      const sx = x + Math.cos(angle) * (r * 0.75);
+      const sy = y + Math.sin(angle) * (r * 0.75);
+      const alpha = clamp(0.18 + ((Math.sin(time * 0.0032 + i * 1.3) + 1) / 2) * 0.48, 0.12, 0.68);
+      drawTinyTwinkle(ctx, sx, sy, Math.max(1.8, r * 0.058), "rgba(255,244,190,0.98)", alpha, time * 0.0008, 8);
+    }
+  }
+
+  function drawDarkRoseSpecial(ctx, body, meta, time) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+    const roseRadius = r * 0.8;
+
+    for (let i = 0; i < 4; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / 4) + Math.sin(time * 0.0007 + i) * 0.05;
+      const dx = x + Math.cos(angle) * roseRadius;
+      const dy = y + Math.sin(angle) * roseRadius;
+      const pulse = (Math.sin(time * 0.0019 + i * 1.6) + 1) / 2;
+      const alpha = clamp(0.34 + pulse * 0.56, 0.24, 0.92);
+      const size = Math.max(4.4, r * 0.152) * (0.94 + pulse * 0.12);
+
+      drawRose(ctx, dx, dy, size, "rgba(92,14,42,0.96)", "rgba(185,40,90,0.9)", alpha, time * 0.0005 + i * 0.4, 12);
+    }
+
+    for (let i = 0; i < 8; i++) {
+      const angle = time * 0.00014 + i * 0.78;
+      const px = x + Math.cos(angle) * (r * (0.52 + (i % 3) * 0.1));
+      const py = y + Math.sin(angle) * (r * (0.52 + (i % 3) * 0.1));
+      const alpha = clamp(0.08 + ((Math.sin(time * 0.0018 + i * 1.9) + 1) / 2) * 0.18, 0.06, 0.28);
+
+      drawCircleCandy(ctx, px, py, Math.max(1.6, r * 0.046), "rgba(255,145,190,0.7)", "rgba(70,0,25,0.55)", alpha, 0, 6);
+    }
+  }
+
+  function drawShootingStarSpecial(ctx, body, meta, time) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+
+    const starCount = 4;
+    for (let i = 0; i < starCount; i++) {
+      const phase = ((time * (0.00023 + i * 0.00004)) + i * 0.27) % 1;
+      const angle = -Math.PI / 4 + i * 0.22;
+      const distance = (phase * 2 - 1) * (r * 1.05);
+      const sx = x + Math.cos(angle) * distance;
+      const sy = y + Math.sin(angle) * distance;
+      const alpha = clamp(Math.sin(phase * Math.PI) * 0.92, 0.12, 0.92);
+
+      drawShootingStar(ctx, sx, sy, Math.max(4.2, r * 0.14), meta.color, alpha, angle, 12);
+    }
+
+    for (let i = 0; i < 7; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / 7);
+      const tx = x + Math.cos(angle) * (r * 0.8);
+      const ty = y + Math.sin(angle) * (r * 0.8);
+      const alpha = clamp(0.1 + ((Math.sin(time * 0.0038 + i * 1.8) + 1) / 2) * 0.6, 0.08, 0.78);
+
+      drawTinyTwinkle(ctx, tx, ty, Math.max(1.8, r * 0.058), "rgba(255,255,255,0.98)", alpha, time * 0.001, 8);
+    }
+  }
+
+  function drawSakuraSpecial(ctx, body, meta, time) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+    const petalCount = 9;
+    const ringRadius = r * 0.81;
+
+    for (let i = 0; i < petalCount; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / petalCount) + Math.sin(time * 0.00075 + i) * 0.05;
+      const dx = x + Math.cos(angle) * ringRadius;
+      const dy = y + Math.sin(angle) * ringRadius;
+      const flutter = Math.sin(time * 0.0022 + i * 1.46) * 0.22;
+      const alpha = clamp(0.34 + ((Math.sin(time * 0.0024 + i * 1.86) + 1) / 2) * 0.54, 0.22, 0.94);
+
+      drawPetal(
+        ctx,
+        dx,
+        dy,
+        Math.max(3.8, r * 0.135),
+        i % 2 === 0 ? "rgba(255,188,220,0.96)" : "rgba(255,214,232,0.96)",
+        alpha,
+        angle + flutter,
+        9
+      );
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const phase = ((time * (0.00018 + i * 0.00003)) + i * 0.22) % 1;
+      const px = x + Math.sin(phase * Math.PI * 2 + i) * (r * 0.55);
+      const py = y - r * 0.8 + phase * (r * 1.6);
+
+      drawPetal(
+        ctx,
+        px,
+        py,
+        Math.max(2.4, r * 0.09),
+        "rgba(255,205,228,0.9)",
+        clamp(0.08 + Math.sin(phase * Math.PI) * 0.42, 0.06, 0.46),
+        phase * 3 + i,
+        6
+      );
+    }
+  }
+
+  function drawAngelWingSpecial(ctx, body, meta, time) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+
+    const wingSize = Math.max(5.4, r * 0.2);
+    const flap = Math.sin(time * 0.0021) * 0.08;
+
+    drawWing(ctx, x - r * 0.8, y, wingSize, "rgba(240,248,255,0.96)", 0.82, -0.2 + flap, 1, 14);
+    drawWing(ctx, x + r * 0.8, y, wingSize, "rgba(240,248,255,0.96)", 0.82, 0.2 - flap, -1, 14);
+
+    const haloY = y - r * 0.88;
+    ctx.save();
+    ctx.globalAlpha = 0.78;
+    ctx.beginPath();
+    ctx.ellipse(x, haloY, r * 0.32, r * 0.12, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,233,165,0.96)";
+    ctx.lineWidth = Math.max(2, r * 0.08);
+    ctx.shadowColor = "rgba(255,233,165,0.9)";
+    ctx.shadowBlur = 12;
+    ctx.stroke();
+    ctx.restore();
+
+    for (let i = 0; i < 6; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / 6) + time * 0.0002;
+      const sx = x + Math.cos(angle) * (r * 0.82);
+      const sy = y + Math.sin(angle) * (r * 0.82);
+      const alpha = clamp(0.16 + ((Math.sin(time * 0.003 + i * 1.7) + 1) / 2) * 0.62, 0.14, 0.82);
+
+      drawTinyTwinkle(ctx, sx, sy, Math.max(2.1, r * 0.068), "rgba(255,252,238,0.98)", alpha, time * 0.0009, 9);
+    }
+  }
+
+  function drawSnowCrystalSpecial(ctx, body, meta, time) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+    const count = 6;
+    const ringRadius = r * 0.81;
+
+    for (let i = 0; i < count; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
+      const dx = x + Math.cos(angle) * ringRadius;
+      const dy = y + Math.sin(angle) * ringRadius;
+      const pulse = (Math.sin(time * 0.0021 + i * 1.9) + 1) / 2;
+      const alpha = clamp(0.34 + pulse * 0.58, 0.22, 0.96);
+      const size = Math.max(4.2, r * 0.145) * (0.92 + pulse * 0.16);
+
+      drawSnowflake(ctx, dx, dy, size, "rgba(226,247,255,0.98)", alpha, time * 0.00035 + i * 0.12, 10);
+    }
+
+    for (let i = 0; i < 10; i++) {
+      const phase = ((time * (0.00016 + i * 0.00002)) + i * 0.13) % 1;
+      const sx = x - r * 0.8 + phase * (r * 1.6);
+      const sy = y - r * 0.95 + ((i % 5) * r * 0.38);
+
+      drawCircleCandy(
+        ctx,
+        sx,
+        sy,
+        Math.max(1.3, r * 0.035),
+        "rgba(255,255,255,0.96)",
+        "rgba(210,240,255,0.9)",
+        clamp(0.06 + Math.sin(phase * Math.PI) * 0.36, 0.04, 0.42),
+        0,
+        5
+      );
+    }
+  }
+
+  function drawDogPawSpecial(ctx, body, meta, time) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+    const pawCount = 6;
+    const ringRadius = r * 0.8;
+
+    for (let i = 0; i < pawCount; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / pawCount) + Math.sin(time * 0.0007 + i) * 0.04;
+      const dx = x + Math.cos(angle) * ringRadius;
+      const dy = y + Math.sin(angle) * ringRadius;
+      const alpha = clamp(0.3 + ((Math.sin(time * 0.002 + i * 1.4) + 1) / 2) * 0.54, 0.2, 0.86);
+
+      drawPawPrint(
+        ctx,
+        dx,
+        dy,
+        Math.max(4.0, r * 0.135),
+        i % 2 === 0 ? "rgba(255,230,240,0.96)" : "rgba(255,188,214,0.94)",
+        alpha,
+        angle + Math.PI / 2,
+        8
+      );
+    }
+
+    for (let i = 0; i < 4; i++) {
+      const phase = ((time * (0.00018 + i * 0.00003)) + i * 0.22) % 1;
+      const px = x - r * 0.72 + phase * (r * 1.35);
+      const py = y + r * 0.58 - Math.sin(phase * Math.PI) * (r * 0.18) + (i % 2) * r * 0.08;
+
+      drawPawPrint(
+        ctx,
+        px,
+        py,
+        Math.max(2.6, r * 0.09),
+        "rgba(255,210,228,0.72)",
+        clamp(0.08 + Math.sin(phase * Math.PI) * 0.28, 0.06, 0.34),
+        0.2,
+        5
+      );
+    }
+  }
+
   function drawSSRStreak(ctx, body, meta, time) {
     if (meta.rank !== "SSR") return;
 
@@ -1028,6 +1541,20 @@
       drawGalaxySpecial(ctx, body, meta, time);
     } else if (body.frameName === "キャンディ") {
       drawCandySpecial(ctx, body, meta, time);
+    } else if (body.frameName === "クラウン") {
+      drawCrownSpecial(ctx, body, meta, time);
+    } else if (body.frameName === "ダークローズ") {
+      drawDarkRoseSpecial(ctx, body, meta, time);
+    } else if (body.frameName === "流れ星") {
+      drawShootingStarSpecial(ctx, body, meta, time);
+    } else if (body.frameName === "桜") {
+      drawSakuraSpecial(ctx, body, meta, time);
+    } else if (body.frameName === "天使のはね") {
+      drawAngelWingSpecial(ctx, body, meta, time);
+    } else if (body.frameName === "雪結晶") {
+      drawSnowCrystalSpecial(ctx, body, meta, time);
+    } else if (body.frameName === "犬のあしあと") {
+      drawDogPawSpecial(ctx, body, meta, time);
     } else {
       drawNormalDecorations(ctx, body, meta, time);
     }
