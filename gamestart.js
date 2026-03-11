@@ -117,89 +117,47 @@ const FRAME_MASTER = {
     glow: "rgba(255,241,166,0.68)",
     desc: "特別感のある豪華フレーム"
   },
-  "クリスタルフレーム": {
-    rank: "SR",
-    icons: "💎",
-    color: "#bff3ff",
-    glow: "rgba(191,243,255,0.58)",
-    desc: "氷みたいに透き通るクリスタルフレーム"
-  },
-  "リボンレース": {
-    rank: "R",
-    icons: "🎀",
-    color: "#ffc3df",
-    glow: "rgba(255,195,223,0.52)",
-    desc: "リボンとレースが上品に光るフレーム"
-  },
-  "バタフライフレーム": {
-    rank: "SR",
-    icons: "🦋",
-    color: "#a9c8ff",
-    glow: "rgba(169,200,255,0.54)",
-    desc: "蝶がふわっと羽ばたく幻想フレーム"
-  },
-  "ダークムーン": {
-    rank: "SR",
-    icons: "🌙",
-    color: "#b78cff",
-    glow: "rgba(103,48,143,0.42)",
-    desc: "三日月と紫黒のもやが妖しく揺れる"
-  },
-  "ギャラクシー": {
-    rank: "SSR",
-    icons: "🌌",
-    color: "#8ea7ff",
-    glow: "rgba(142,167,255,0.58)",
-    desc: "青紫の宇宙がゆっくり回るフレーム"
-  },
-  "キャンディ": {
-    rank: "R",
-    icons: "🍬",
-    color: "#ff9fd6",
-    glow: "rgba(255,159,214,0.5)",
-    desc: "パステルに弾けるポップなキャンディフレーム"
-  },
   "クラウン": {
     rank: "SR",
     icons: "👑",
     color: "#ffd95e",
     glow: "rgba(255,217,94,0.58)",
-    desc: "王冠モチーフがきらめく高貴なフレーム"
+    desc: "王冠が輝くロイヤルフレーム"
   },
   "ダークローズ": {
-    rank: "R",
+    rank: "SR",
     icons: "🌹",
     color: "#b03060",
     glow: "rgba(176,48,96,0.5)",
-    desc: "深紅の薔薇が妖しく咲くフレーム"
+    desc: "深紅の薔薇が妖しく揺れるフレーム"
   },
   "流れ星": {
     rank: "SSR",
     icons: "🌠",
     color: "#fff1a8",
     glow: "rgba(255,241,168,0.72)",
-    desc: "夜空を流れる星が駆け抜けるフレーム"
+    desc: "流星が駆け抜ける特別なフレーム"
   },
   "桜": {
     rank: "R",
     icons: "🌸",
     color: "#ffb7d5",
     glow: "rgba(255,183,213,0.52)",
-    desc: "桜の花びらがふんわり舞う春色フレーム"
+    desc: "桜の花びらがふわっと舞うフレーム"
   },
   "天使のはね": {
     rank: "SSR",
-    icons: "🪽",
+    icons: "👼✨",
     color: "#f7fbff",
     glow: "rgba(220,240,255,0.75)",
-    desc: "天使の羽が神秘的に包み込むフレーム"
+    desc: "天使の羽がやさしく包む神秘的なフレーム"
   },
   "雪結晶": {
     rank: "SR",
     icons: "❄️",
     color: "#dff6ff",
     glow: "rgba(223,246,255,0.62)",
-    desc: "雪の結晶が静かに輝く冬のフレーム"
+    desc: "雪の結晶がきらめく透明感フレーム"
   },
   "犬のあしあと": {
     rank: "R",
@@ -587,18 +545,79 @@ function saveOwnedSkins(list) {
   localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
 }
 
+function pickWeightedRank(availableByRank){
+  const weights = {
+    N: 38,
+    R: 34,
+    SR: 20,
+    SSR: 8
+  };
+
+  const ranks = Object.keys(availableByRank).filter(rank => availableByRank[rank].length > 0);
+  if(!ranks.length) return null;
+
+  const totalWeight = ranks.reduce((sum, rank) => sum + (weights[rank] || 0), 0);
+  let roll = Math.random() * totalWeight;
+
+  for(const rank of ranks){
+    roll -= (weights[rank] || 0);
+    if(roll < 0){
+      return rank;
+    }
+  }
+
+  return ranks[ranks.length - 1];
+}
+
 function pickDailyRewardSkins(count = 2) {
-  const allSkins = Object.keys(FRAME_MASTER);
   const owned = getOwnedSkins();
-  const unowned = allSkins.filter(name => !owned.includes(name));
-  const source = unowned.length >= count ? unowned : allSkins;
-  const shuffled = seededShuffle(source, hashString(`${dailyMissionState.date}-reward-${owned.length}`));
-  const selected = shuffled.slice(0, count);
+  const tempCounts = {};
 
-  const merged = [...new Set([...owned, ...selected])];
-  saveOwnedSkins(merged);
+  owned.forEach(name => {
+    tempCounts[name] = (tempCounts[name] || 0) + 1;
+  });
 
-  return selected;
+  const rewards = [];
+  const allSkins = Object.keys(FRAME_MASTER);
+
+  for(let i = 0; i < count; i++){
+    const availableFrames = allSkins.filter(name => (tempCounts[name] || 0) < 5);
+
+    if(!availableFrames.length){
+      break;
+    }
+
+    const availableByRank = {
+      N: [],
+      R: [],
+      SR: [],
+      SSR: []
+    };
+
+    availableFrames.forEach(name => {
+      const meta = getFrameMeta(name);
+      if(meta && availableByRank[meta.rank]){
+        availableByRank[meta.rank].push(name);
+      }
+    });
+
+    const pickedRank = pickWeightedRank(availableByRank);
+    if(!pickedRank || !availableByRank[pickedRank].length){
+      break;
+    }
+
+    const rankFrames = availableByRank[pickedRank];
+    const pickedFrame = rankFrames[Math.floor(Math.random() * rankFrames.length)];
+
+    rewards.push(pickedFrame);
+    tempCounts[pickedFrame] = (tempCounts[pickedFrame] || 0) + 1;
+  }
+
+  if (rewards.length) {
+    saveOwnedSkins([...owned, ...rewards]);
+  }
+
+  return rewards;
 }
 
 function checkMissionReward() {
@@ -735,10 +754,18 @@ function showSkinRewardOverlay(rewards) {
   skinRewardListEl.classList.add("roulette");
   skinRewardResultEl.textContent = "";
 
-  skinRewardListEl.innerHTML = `
+  if (!rewards.length) {
+    skinRewardListEl.classList.remove("roulette");
+    skinRewardListEl.innerHTML = `<div class="skin-reward-item revealed">受け取れるフレームがありません</div>`;
+    skinRewardResultEl.textContent = "受け取れるフレームがありません。";
+    skinRewardCloseBtn.disabled = false;
+    rewardAnimating = false;
+    return;
+  }
+
+  skinRewardListEl.innerHTML = rewards.map(() => `
     <div class="skin-reward-item">？？？</div>
-    <div class="skin-reward-item">？？？</div>
-  `;
+  `).join("");
 
   const itemEls = [...skinRewardListEl.querySelectorAll(".skin-reward-item")];
   const allSkins = Object.keys(FRAME_MASTER);
@@ -761,10 +788,10 @@ function showSkinRewardOverlay(rewards) {
 
   setTimeout(() => {
     skinRewardListEl.classList.remove("roulette");
-    skinRewardResultEl.innerHTML = `・${rewards[0]}<br>・${rewards[1]}<br><br>のスキンが手に入りました。`;
+    skinRewardResultEl.innerHTML = `${rewards.map(name => `・${name}`).join("<br>")}<br><br>のスキンが手に入りました。`;
     skinRewardCloseBtn.disabled = false;
     rewardAnimating = false;
-  }, 2600);
+  }, 1200 + (rewards.length - 1) * 500 + 900);
 }
 
 skinRewardCloseBtn.addEventListener("click", () => {
@@ -1165,13 +1192,14 @@ async function openMissionChest() {
 
   await wait(850);
 
+  const rewards = pickDailyRewardSkins(2);
+
   dailyMissionState.rewardClaimed = true;
   saveDailyMissionState();
 
   dailyMissionChestEl.classList.remove("opening");
   dailyMissionChestEl.classList.add("opened");
 
-  const rewards = pickDailyRewardSkins(2);
   renderMissionProgress();
 
   if (missionOverlayEl) {
