@@ -297,6 +297,107 @@
     });
   }
 
+  function drawShinyGoldSpecial(ctx, body, meta, time, core) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+
+    const bands = [
+      { speed: 0.00042, len: 1.22, thickness: 0.16, shift: 0.0, alpha: 0.92 },
+      { speed: -0.00031, len: 1.05, thickness: 0.13, shift: 0.9, alpha: 0.82 },
+      { speed: 0.00056, len: 1.36, thickness: 0.18, shift: 1.8, alpha: 0.72 }
+    ];
+
+    bands.forEach((band, i) => {
+      const center = time * band.speed + band.shift + i * 0.25;
+      const startAngle = center - band.len * 0.5;
+      const endAngle = center + band.len * 0.5;
+
+      const outerR = r - 2.4 - i * 0.55;
+      const innerR = outerR - Math.max(4.4, r * band.thickness);
+
+      const colors = [
+        "rgba(255,255,255,0)",
+        "rgba(255,255,255,0.18)",
+        "rgba(255,244,190,0.70)",
+        "rgba(255,225,110,0.92)",
+        "rgba(255,255,255,0.34)",
+        "rgba(255,255,255,0)"
+      ];
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, outerR, startAngle, endAngle);
+      ctx.arc(x, y, innerR, endAngle, startAngle, true);
+      ctx.closePath();
+
+      const gx1 = x + Math.cos(center) * innerR;
+      const gy1 = y + Math.sin(center) * innerR;
+      const gx2 = x + Math.cos(center) * outerR;
+      const gy2 = y + Math.sin(center) * outerR;
+
+      const grad = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
+      grad.addColorStop(0.00, colors[0]);
+      grad.addColorStop(0.16, colors[1]);
+      grad.addColorStop(0.38, colors[2]);
+      grad.addColorStop(0.62, colors[3]);
+      grad.addColorStop(0.84, colors[4]);
+      grad.addColorStop(1.00, colors[5]);
+
+      ctx.globalAlpha = band.alpha;
+      ctx.fillStyle = grad;
+      ctx.shadowColor = "rgba(255,232,120,0.95)";
+      ctx.shadowBlur = 16;
+      ctx.fill();
+      ctx.restore();
+    });
+
+    const sparkleCount = 16;
+    for (let i = 0; i < sparkleCount; i++) {
+      const angle = (Math.PI * 2 * i / sparkleCount) + Math.sin(time * 0.00035 + i) * 0.08;
+      const rr = r * (0.56 + (i % 4) * 0.07);
+      const sx = x + Math.cos(angle) * rr;
+      const sy = y + Math.sin(angle) * rr;
+
+      const blink = (Math.sin(time * 0.0038 + i * 1.7) + 1) / 2;
+      const alpha = core.clamp(0.16 + blink * 0.78, 0.12, 0.98);
+
+      if (i % 3 === 0) {
+        core.drawSoftDiamondStar(
+          ctx,
+          sx,
+          sy,
+          Math.max(2.1, r * 0.06) * (0.92 + blink * 0.22),
+          "rgba(255,238,160,0.98)",
+          alpha,
+          Math.PI / 4 + i * 0.1,
+          12
+        );
+      } else {
+        core.drawTinyTwinkle(
+          ctx,
+          sx,
+          sy,
+          Math.max(1.7, r * 0.045) * (0.92 + blink * 0.16),
+          "rgba(255,255,255,0.98)",
+          alpha,
+          time * 0.0006 + i * 0.2,
+          9
+        );
+      }
+    }
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r - 6.5, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.34)";
+    ctx.lineWidth = Math.max(1.2, r * 0.03);
+    ctx.shadowColor = "rgba(255,255,255,0.5)";
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function drawNeonPurpleSpecial(ctx, body, meta, time, core) {
     const x = body.position.x;
     const y = body.position.y;
@@ -914,6 +1015,8 @@
       drawStarGlowSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "オーロラライン") {
       drawAuroraSpecial(ctx, body, meta, time);
+    } else if (body.frameName === "シャイニーゴールド") {
+      drawShinyGoldSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "ネオンパープル") {
       drawNeonPurpleSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "クリスタルフレーム") {
