@@ -442,7 +442,11 @@ const MISSION_POOL = [
   { id:"lv8", text:"Lv.8を作成", type:"level", target:8 },
   { id:"lv9", text:"Lv.9を作成", type:"level", target:9 },
 
+  { id:"lv6x3", text:"Lv.6を3回作成", type:"levelCount", level:6, target:3 },
+  { id:"lv6x4", text:"Lv.6を4回作成", type:"levelCount", level:6, target:4 },
   { id:"lv7x2", text:"Lv.7を2回作成", type:"levelCount", level:7, target:2 },
+  { id:"lv7x3", text:"Lv.7を3回作成", type:"levelCount", level:7, target:3 },
+  { id:"lv7x4", text:"Lv.7を4回作成", type:"levelCount", level:7, target:4 },
   { id:"lv8x2", text:"Lv.8を2回作成", type:"levelCount", level:8, target:2 },
   { id:"lv9x2", text:"Lv.9を2回作成", type:"levelCount", level:9, target:2 },
 
@@ -450,16 +454,18 @@ const MISSION_POOL = [
   { id:"play5", text:"5回プレイ", type:"playCount", target:5 },
   { id:"play7", text:"7回プレイ", type:"playCount", target:7 },
 
-  { id:"combo5", text:"5コンボ達成", type:"combo", target:5 },
-  { id:"combo7", text:"7コンボ達成", type:"combo", target:7 },
-  { id:"combo8", text:"8コンボ達成", type:"combo", target:8 }
+  { id:"combo3", text:"3コンボ達成", type:"combo", target:3 },
+  { id:"combo4", text:"4コンボ達成", type:"combo", target:4 },
+  { id:"combo5", text:"5コンボ達成", type:"combo", target:5 }
 ];
+
+const DAILY_MISSION_RESET_VERSION = 2;
 
 function buildDailyMissionState() {
   const today = getTodayKey();
   const saved = JSON.parse(localStorage.getItem("facegame_daily_mission_state") || "null");
 
-  if (saved && saved.date === today) {
+  if (saved && saved.date === today && saved.resetVersion === DAILY_MISSION_RESET_VERSION) {
     if (typeof saved.dailyPlayCount !== "number") saved.dailyPlayCount = 0;
     if (!saved.dailyLevelCounts || typeof saved.dailyLevelCounts !== "object") saved.dailyLevelCounts = {};
     if (typeof saved.rewardClaimed !== "boolean") saved.rewardClaimed = false;
@@ -480,6 +486,7 @@ function buildDailyMissionState() {
 
   const state = {
     date: today,
+    resetVersion: DAILY_MISSION_RESET_VERSION,
     missions: selected,
     rewardClaimed: false,
     dailyPlayCount: 0,
@@ -500,7 +507,10 @@ function saveDailyMissionState() {
 function ensureDailyMissionStateCurrent() {
   const today = getTodayKey();
 
-  if (dailyMissionState.date !== today) {
+  if (
+    dailyMissionState.date !== today ||
+    dailyMissionState.resetVersion !== DAILY_MISSION_RESET_VERSION
+  ) {
     dailyMissionState = buildDailyMissionState();
     renderMissionProgress();
   }
@@ -718,7 +728,7 @@ function registerPlayIfNeeded(level) {
 function registerLevelCreated(level) {
   ensureDailyMissionStateCurrent();
 
-  if (level >= 7 && level <= 9) {
+  if (level >= 6 && level <= 9) {
     const key = String(level);
     dailyMissionState.dailyLevelCounts[key] = Number(dailyMissionState.dailyLevelCounts[key] || 0) + 1;
     saveDailyMissionState();
