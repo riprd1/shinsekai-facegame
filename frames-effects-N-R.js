@@ -313,46 +313,38 @@
     ctx.shadowColor = "rgba(255,255,255,0.55)";
     ctx.shadowBlur = blur;
 
-    const len = size * 1.45;
-    const shaftH = size * 0.34;
-    const endR = size * 0.28;
-    const round = shaftH * 0.45;
-    const offset = len * 0.42;
+    const len = size * 1.55;
+    const shaftW = len * 0.52;
+    const shaftH = size * 0.24;
+    const endGap = shaftW * 0.52;
+    const knobR = size * 0.26;
 
-    ctx.fillStyle = "rgba(255,250,236,0.98)";
+    ctx.fillStyle = "rgba(255,248,236,0.98)";
 
     ctx.beginPath();
-    ctx.moveTo(-len * 0.5 + round, -shaftH * 0.5);
-    ctx.lineTo(len * 0.5 - round, -shaftH * 0.5);
-    ctx.quadraticCurveTo(len * 0.5, -shaftH * 0.5, len * 0.5, -shaftH * 0.5 + round);
-    ctx.lineTo(len * 0.5, shaftH * 0.5 - round);
-    ctx.quadraticCurveTo(len * 0.5, shaftH * 0.5, len * 0.5 - round, shaftH * 0.5);
-    ctx.lineTo(-len * 0.5 + round, shaftH * 0.5);
-    ctx.quadraticCurveTo(-len * 0.5, shaftH * 0.5, -len * 0.5, shaftH * 0.5 - round);
-    ctx.lineTo(-len * 0.5, -shaftH * 0.5 + round);
-    ctx.quadraticCurveTo(-len * 0.5, -shaftH * 0.5, -len * 0.5 + round, -shaftH * 0.5);
-    ctx.closePath();
+    ctx.roundRect(-shaftW * 0.5, -shaftH * 0.5, shaftW, shaftH, shaftH * 0.55);
     ctx.fill();
 
-    function drawEnd(sign) {
-      const ex = sign * offset;
-
+    function drawKnob(cx, cy) {
       ctx.beginPath();
-      ctx.arc(ex - sign * endR * 0.35, -endR * 0.72, endR, 0, Math.PI * 2);
-      ctx.arc(ex + sign * endR * 0.35, -endR * 0.72, endR, 0, Math.PI * 2);
-      ctx.arc(ex - sign * endR * 0.35, endR * 0.72, endR, 0, Math.PI * 2);
-      ctx.arc(ex + sign * endR * 0.35, endR * 0.72, endR, 0, Math.PI * 2);
+      ctx.arc(cx, cy, knobR, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    drawEnd(-1);
-    drawEnd(1);
+    drawKnob(-endGap, -knobR * 0.7);
+    drawKnob(-endGap, knobR * 0.7);
+    drawKnob(endGap, -knobR * 0.7);
+    drawKnob(endGap, knobR * 0.7);
 
-    ctx.strokeStyle = "rgba(170,150,130,0.28)";
-    ctx.lineWidth = Math.max(0.8, size * 0.07);
     ctx.beginPath();
-    ctx.moveTo(-len * 0.24, 0);
-    ctx.lineTo(len * 0.24, 0);
+    ctx.roundRect(-shaftW * 0.44, -shaftH * 0.42, shaftW * 0.88, shaftH * 0.84, shaftH * 0.4);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(175,155,132,0.3)";
+    ctx.lineWidth = Math.max(0.8, size * 0.05);
+    ctx.beginPath();
+    ctx.moveTo(-shaftW * 0.26, 0);
+    ctx.lineTo(shaftW * 0.26, 0);
     ctx.stroke();
 
     ctx.restore();
@@ -379,26 +371,39 @@
     ctx.stroke();
     ctx.restore();
 
-    const walkRadius = r * 0.66;
-    const centerPathRadius = r * 0.54;
     const stepCount = 8;
-    const cycleMs = 2200;
-    const phase = (time % cycleMs) / cycleMs;
-    const stride = (Math.PI * 2) / stepCount;
-    const baseAngle = -Math.PI * 0.9 + phase * Math.PI * 2;
+    const cycleMs = 2400;
+    const t = (time % cycleMs) / cycleMs;
+
+    const startX = x - r * 0.82;
+    const endX = x + r * 0.82;
+    const startY = y + r * 0.58;
+    const endY = y - r * 0.72;
 
     for (let i = 0; i < stepCount; i++) {
-      const a = baseAngle + i * stride;
-      const side = i % 2 === 0 ? -1 : 1;
-      const inward = 1 - (i / (stepCount - 1)) * 0.22;
-      const px = x + Math.cos(a) * centerPathRadius * inward + Math.cos(a + Math.PI / 2) * (r * 0.12 * side);
-      const py = y + Math.sin(a) * centerPathRadius * inward + Math.sin(a + Math.PI / 2) * (r * 0.12 * side);
+      const stepProgress = ((t * stepCount) - i + stepCount * 2) % stepCount;
+      const life = 1 - stepProgress / stepCount;
 
-      const normalizedIndex = (i + phase * stepCount) % stepCount;
-      const life = 1 - (normalizedIndex / stepCount);
-      const alpha = core.clamp(0.16 + life * 0.8, 0.14, 0.95);
-      const size = Math.max(3.4, r * 0.11) * (0.9 + life * 0.16);
-      const rot = a + Math.PI / 2 + side * 0.22;
+      if (life <= 0.02) continue;
+
+      const pathT = i / (stepCount - 1);
+      const pxBase = startX + (endX - startX) * pathT;
+      const pyBase = startY + (endY - startY) * pathT;
+
+      const side = i % 2 === 0 ? -1 : 1;
+
+      const px =
+        pxBase +
+        side * r * 0.16 +
+        Math.sin(pathT * Math.PI * 1.1) * r * 0.04;
+
+      const py =
+        pyBase +
+        (side === -1 ? r * 0.03 : -r * 0.03);
+
+      const alpha = core.clamp(0.12 + life * 0.82, 0.08, 0.95);
+      const size = Math.max(3.8, r * 0.12) * (0.88 + life * 0.16);
+      const rot = -0.18 + side * 0.08;
 
       core.drawPawPrint(
         ctx,
