@@ -294,6 +294,55 @@ button:hover{
   margin-bottom:12px;
 }
 
+.frame-rank-group{
+  margin-bottom:12px;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid rgba(143,211,255,0.14);
+  background:rgba(255,255,255,0.03);
+}
+
+.frame-rank-toggle{
+  list-style:none;
+  cursor:pointer;
+  padding:12px 14px;
+  background:rgba(255,255,255,0.06);
+  color:#fff;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.frame-rank-toggle::-webkit-details-marker{
+  display:none;
+}
+
+.frame-rank-toggle::after{
+  content:"▼";
+  font-size:12px;
+  color:#d8e3ff;
+  transition:transform 0.15s ease;
+}
+
+.frame-rank-group:not([open]) .frame-rank-toggle::after{
+  transform:rotate(-90deg);
+}
+
+.frame-rank-count{
+  font-size:12px;
+  color:#d8e3ff;
+  font-weight:normal;
+}
+
+.frame-rank-body{
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
 .frame-chip{
   width:100%;
   text-align:left;
@@ -313,21 +362,8 @@ button:hover{
 }
 
 .frame-chip.locked{
-  background:rgba(255,255,255,0.035);
-  border:1px solid rgba(255,255,255,0.08);
-  color:#8fa3d8;
-  cursor:default;
   opacity:0.72;
-}
-
-.frame-chip.locked .frame-chip-name,
-.frame-chip.locked .frame-chip-rank{
-  color:#a9b7df;
-}
-
-.frame-chip.locked .frame-chip-desc,
-.frame-chip.locked .frame-chip-count{
-  color:#8fa3d8;
+  cursor:default;
 }
 
 .frame-chip-top{
@@ -943,17 +979,27 @@ function updateCount(){
   countEl.textContent=selected.length;
 }
 
+function normalizeOwnedSkins(list){
+  if(!Array.isArray(list)) return [];
+  return list.filter(name => typeof name === "string" && FRAME_MASTER[name]);
+}
+
 function getOwnedSkins(){
-  return JSON.parse(localStorage.getItem("facegame_owned_skins") || "[]");
+  const parsed = JSON.parse(localStorage.getItem("facegame_owned_skins") || "[]");
+  return normalizeOwnedSkins(parsed);
 }
 
 function saveOwnedSkins(list){
-  localStorage.setItem("facegame_owned_skins", JSON.stringify(list));
+  localStorage.setItem("facegame_owned_skins", JSON.stringify(normalizeOwnedSkins(list)));
 }
 
 function getOwnedSkinCountMap(){
   const ownedSkins = getOwnedSkins();
   const countMap = {};
+
+  Object.keys(FRAME_MASTER).forEach(name => {
+    countMap[name] = 0;
+  });
 
   ownedSkins.forEach(name => {
     countMap[name] = (countMap[name] || 0) + 1;
@@ -1044,6 +1090,10 @@ function getRewardSkins(count=2){
   const owned = getOwnedSkins();
   const tempCounts = {};
 
+  Object.keys(FRAME_MASTER).forEach(name => {
+    tempCounts[name] = 0;
+  });
+
   owned.forEach(name => {
     tempCounts[name] = (tempCounts[name] || 0) + 1;
   });
@@ -1066,14 +1116,18 @@ function getRewardSkins(count=2){
 
     availableFrames.forEach(name => {
       const meta = getFrameMeta(name);
-      if(availableByRank[meta.rank]){
+      if(meta && availableByRank[meta.rank]){
         availableByRank[meta.rank].push(name);
       }
     });
 
-    const pickedRank = pickWeightedRank(availableByRank);
+    let pickedRank = pickWeightedRank(availableByRank);
+
     if(!pickedRank || !availableByRank[pickedRank].length){
-      break;
+      const fallback = availableFrames[0];
+      rewards.push(fallback);
+      tempCounts[fallback] = (tempCounts[fallback] || 0) + 1;
+      continue;
     }
 
     const rankFrames = availableByRank[pickedRank];
@@ -1094,18 +1148,10 @@ function getFrameMeta(frameName){
   };
 }
 
-function getRankOrder(rank){
-  if(rank === "SSR") return 0;
-  if(rank === "SR") return 1;
-  if(rank === "R") return 2;
-  return 3;
-}
-
 function getAllFramesSorted(){
-  return Object.keys(FRAME_MASTER).sort((a, b) => {
-    const metaA = getFrameMeta(a);
-    const metaB = getFrameMeta(b);
-    const rankDiff = getRankOrder(metaA.rank) - getRankOrder(metaB.rank);
+  const rankOrder = { SSR: 0, SR: 1, R: 2, N: 3 };
+  return [...SKIN_POOL].sort((a, b) => {
+    const rankDiff = (rankOrder[getFrameMeta(a).rank] ?? 99) - (rankOrder[getFrameMeta(b).rank] ?? 99);
     if(rankDiff !== 0) return rankDiff;
     return a.localeCompare(b, "ja");
   });
@@ -1140,34 +1186,68 @@ function renderFrameInventory(){
   const countMap = getOwnedSkinCountMap();
   const allFrames = getAllFramesSorted();
 
-  frameListEl.innerHTML = allFrames.map(frame => {
-    const meta = getFrameMeta(frame);
-    const count = countMap[frame] || 0;
-    const isOwned = count > 0;
-    const isMax = count >= 5;
-    const isActive = selectedFrameName === frame && isOwned;
-
-    return `
-      <button
-        type="button"
-        class="frame-chip${isActive ? " active" : ""}${isOwned ? "" : " locked"}"
-        data-frame="${frame}"
-        ${isOwned ? "" : "disabled"}
-      >
-        <div class="frame-chip-top">
-          <div class="frame-chip-name">${frame}</div>
-          <div class="frame-chip-rank">[${meta.rank}]</div>
-        </div>
-        <div class="frame-chip-icons">${meta.icons}</div>
-        <div class="frame-chip-desc">${meta.desc}</div>
-        <div class="frame-chip-count${isMax ? " max" : ""}">所持数 ${count}/5${isOwned ? "" : "（未所持）"}</div>
-      </button>
-    `;
-  }).join("");
-
   if(selectedFrameName && (countMap[selectedFrameName] || 0) === 0){
     selectedFrameName = "";
   }
+
+  const rankGroups = {
+    SSR: [],
+    SR: [],
+    R: [],
+    N: []
+  };
+
+  allFrames.forEach(frame => {
+    const meta = getFrameMeta(frame);
+    rankGroups[meta.rank].push(frame);
+  });
+
+  const rankLabels = {
+    SSR: "SSR",
+    SR: "SR",
+    R: "R",
+    N: "N"
+  };
+
+  frameListEl.innerHTML = ["SSR","SR","R","N"].map(rank => {
+    const frames = rankGroups[rank];
+    const ownedCountInRank = frames.filter(frame => (countMap[frame] || 0) > 0).length;
+
+    return `
+      <details class="frame-rank-group" ${rank === "SSR" || rank === "SR" ? "open" : ""}>
+        <summary class="frame-rank-toggle">
+          <span>${rankLabels[rank]} フレーム</span>
+          <span class="frame-rank-count">所持 ${ownedCountInRank} / ${frames.length}</span>
+        </summary>
+        <div class="frame-rank-body">
+          ${frames.map(frame => {
+            const meta = getFrameMeta(frame);
+            const count = countMap[frame] || 0;
+            const isOwned = count > 0;
+            const isMax = count >= 5;
+            const isActive = selectedFrameName === frame && isOwned;
+
+            return `
+              <button
+                type="button"
+                class="frame-chip${isActive ? " active" : ""}${isOwned ? "" : " locked"}"
+                data-frame="${frame}"
+                ${isOwned ? "" : "disabled"}
+              >
+                <div class="frame-chip-top">
+                  <div class="frame-chip-name">${frame}</div>
+                  <div class="frame-chip-rank">[${meta.rank}]</div>
+                </div>
+                <div class="frame-chip-icons">${meta.icons}</div>
+                <div class="frame-chip-desc">${meta.desc}</div>
+                <div class="frame-chip-count${isMax ? " max" : ""}">所持数 ${count}/5${isOwned ? "" : "（未所持）"}</div>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </details>
+    `;
+  }).join("");
 
   frameListEl.querySelectorAll(".frame-chip").forEach(btn => {
     if(btn.disabled) return;
@@ -1246,10 +1326,17 @@ missionRewardBtn.onclick = () => {
   if(!allDone || missionState.rewardClaimed) return;
 
   const rewards = getRewardSkins(2);
+
   if(!rewards.length){
-    alert("受け取れるフレームがありません");
-    missionState.rewardClaimed = true;
-    localStorage.setItem("facegame_daily_mission_state", JSON.stringify(missionState));
+    const ownedCountMap = getOwnedSkinCountMap();
+    const remaining = SKIN_POOL.filter(name => (ownedCountMap[name] || 0) < 5);
+
+    alert(
+      remaining.length
+        ? "報酬抽選でエラーが起きました。ページを再読み込みしてもう一度受け取ってください。"
+        : "受け取れるフレームがありません"
+    );
+
     renderMissionPopup();
     return;
   }
