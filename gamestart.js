@@ -117,6 +117,41 @@ const FRAME_MASTER = {
     glow: "rgba(255,241,166,0.68)",
     desc: "特別感のある豪華フレーム"
   },
+  "クリスタルフレーム": {
+    rank: "SR",
+    icons: "💎",
+    color: "#c8f4ff",
+    glow: "rgba(200,244,255,0.6)",
+    desc: "クリスタルが輝く透明感フレーム"
+  },
+  "リボンレース": {
+    rank: "SR",
+    icons: "🎀",
+    color: "#ffb7d9",
+    glow: "rgba(255,183,217,0.56)",
+    desc: "レースとリボンが揺れる可愛いフレーム"
+  },
+  "バタフライフレーム": {
+    rank: "SR",
+    icons: "🦋",
+    color: "#b9a7ff",
+    glow: "rgba(185,167,255,0.56)",
+    desc: "蝶が舞う幻想的なフレーム"
+  },
+  "ダークムーン": {
+    rank: "SR",
+    icons: "🌙",
+    color: "#bba6ff",
+    glow: "rgba(187,166,255,0.52)",
+    desc: "闇夜の月が揺らめくミステリアスフレーム"
+  },
+  "ギャラクシー": {
+    rank: "SSR",
+    icons: "🌌",
+    color: "#9bb8ff",
+    glow: "rgba(155,184,255,0.68)",
+    desc: "銀河が流れる幻想的な宇宙フレーム"
+  },
   "クラウン": {
     rank: "SR",
     icons: "👑",
@@ -158,6 +193,13 @@ const FRAME_MASTER = {
     color: "#dff6ff",
     glow: "rgba(223,246,255,0.62)",
     desc: "雪の結晶がきらめく透明感フレーム"
+  },
+  "キャンディ": {
+    rank: "R",
+    icons: "🍬",
+    color: "#ffb6d9",
+    glow: "rgba(255,182,217,0.5)",
+    desc: "ポップで甘いキャンディフレーム"
   },
   "犬のあしあと": {
     rank: "R",
@@ -579,7 +621,7 @@ function pickWeightedRank(availableByRank){
   return ranks[ranks.length - 1];
 }
 
-function pickDailyRewardSkins(count = 60) {
+function pickDailyRewardSkins(count = 115) {
   const owned = getOwnedSkins();
   const tempCounts = {};
 
@@ -1202,7 +1244,7 @@ async function openMissionChest() {
 
   await wait(850);
 
-  const rewards = pickDailyRewardSkins(60);
+  const rewards = pickDailyRewardSkins(115);
 
   dailyMissionState.rewardClaimed = true;
   saveDailyMissionState();
