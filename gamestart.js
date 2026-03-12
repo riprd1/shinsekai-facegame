@@ -569,7 +569,7 @@ function pickWeightedRank(availableByRank){
   return ranks[ranks.length - 1];
 }
 
-function pickDailyRewardSkins(count = 2) {
+function pickDailyRewardSkins(count = 60) {
   const owned = getOwnedSkins();
   const tempCounts = {};
 
@@ -1192,7 +1192,7 @@ async function openMissionChest() {
 
   await wait(850);
 
-  const rewards = pickDailyRewardSkins(2);
+  const rewards = pickDailyRewardSkins(60);
 
   dailyMissionState.rewardClaimed = true;
   saveDailyMissionState();
