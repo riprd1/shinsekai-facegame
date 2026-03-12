@@ -1,4 +1,7 @@
 (function () {
+  const dogBoneImg = new Image();
+  dogBoneImg.src = "https://i.imgur.com/bChscTO.png";
+
   function getFrameDecorationPattern(frameName) {
     switch (frameName) {
       case "ゴールドフレーム":
@@ -379,66 +382,26 @@
   }
 
   function drawBoneIllustration(ctx, x, y, size, alpha, rotation, blur) {
+    if (!dogBoneImg.complete) return;
+
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rotation);
     ctx.globalAlpha = alpha;
 
-    const length = size * 2.2;
-    const thickness = size * 0.55;
-    const ball = size * 0.6;
-
-    ctx.shadowColor = "rgba(255,255,255,0.9)";
+    ctx.shadowColor = "rgba(255,255,255,0.6)";
     ctx.shadowBlur = blur;
 
-    ctx.fillStyle = "#f5f2e8";
-    ctx.beginPath();
-    ctx.roundRect(
-      -length / 2,
-      -thickness / 2,
-      length,
-      thickness,
-      thickness / 2
+    const w = size * 2.35;
+    const h = size * 1.3;
+
+    ctx.drawImage(
+      dogBoneImg,
+      -w / 2,
+      -h / 2,
+      w,
+      h
     );
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(-length / 2, -thickness / 2, ball, 0, Math.PI * 2);
-    ctx.arc(-length / 2, thickness / 2, ball, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(length / 2, -thickness / 2, ball, 0, Math.PI * 2);
-    ctx.arc(length / 2, thickness / 2, ball, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "#8b5a2b";
-    ctx.lineWidth = size * 0.15;
-    ctx.stroke();
-
-    const grad = ctx.createLinearGradient(
-      -length / 2,
-      -thickness,
-      length / 2,
-      thickness
-    );
-
-    grad.addColorStop(0, "rgba(255,255,255,0.9)");
-    grad.addColorStop(0.5, "rgba(255,255,255,0.4)");
-    grad.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.fillStyle = grad;
-    ctx.globalAlpha = alpha * 0.6;
-
-    ctx.beginPath();
-    ctx.roundRect(
-      -length / 2,
-      -thickness / 2,
-      length,
-      thickness / 2,
-      thickness / 2
-    );
-    ctx.fill();
 
     ctx.restore();
   }
