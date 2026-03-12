@@ -1,12 +1,13 @@
 (function () {
   const EFFECT_IMAGE_URLS = {
-    ribbonTop: "https://i.imgur.com/4tOpfNe.jpeg",
-    ribbonFrame: "https://i.imgur.com/O4UTdeP.jpeg",
+    ribbonTop: "https://i.imgur.com/mC0rYAE.png",
+    ribbonFrame: "https://i.imgur.com/9LrmdG2.png",
     ribbonDrop: "https://i.imgur.com/araNgq2.png",
     butterflyA: "https://i.imgur.com/XXc9TRN.png",
     butterflyB: "https://i.imgur.com/fzZpqV9.png",
-    darkMoonFrame: "https://i.imgur.com/2gLpDVY.jpeg",
-    crystalFrame: "https://i.imgur.com/UPBZsEK.png"
+    darkMoonFrame: "https://i.imgur.com/bk5LrCk.png",
+    crystalFrame: "https://i.imgur.com/UPBZsEK.png",
+    darkRoseFrame: "https://i.imgur.com/20C7gSN.png"
   };
 
   const effectImageCache = {};
@@ -515,8 +516,6 @@
     const ribbonTopImg = getEffectImage(EFFECT_IMAGE_URLS.ribbonTop);
     const ribbonDropImg = getEffectImage(EFFECT_IMAGE_URLS.ribbonDrop);
 
-    drawClippedCircleImage(ctx, ribbonFrameImg, x, y, r, 0.98, 1.12, 0);
-
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
@@ -547,9 +546,11 @@
 
     ctx.restore();
 
+    drawClippedCircleImage(ctx, ribbonFrameImg, x, y, r, 0.98, 1.12, 0);
+
     const ribbonW = Math.max(18, r * 1.08);
     const ribbonH = ribbonW * 0.7;
-    const ribbonY = y - r * 1.02 + Math.sin(time * 0.0015) * (r * 0.02);
+    const ribbonY = y - r * 1.05 + Math.sin(time * 0.0015) * (r * 0.02);
     drawEffectImage(ctx, ribbonTopImg, x, ribbonY, ribbonW, ribbonH, 0.98, Math.sin(time * 0.0011) * 0.03);
   }
 
@@ -674,8 +675,6 @@
     const r = body.circleRadius || 20;
     const darkMoonImg = getEffectImage(EFFECT_IMAGE_URLS.darkMoonFrame);
 
-    drawClippedCircleImage(ctx, darkMoonImg, x, y, r, 0.98, 1.12, 0);
-
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
@@ -742,6 +741,8 @@
     }
 
     ctx.restore();
+
+    drawClippedCircleImage(ctx, darkMoonImg, x, y, r, 0.98, 1.12, 0);
   }
 
   function drawGalaxySpecial(ctx, body, meta, time) {
@@ -854,175 +855,51 @@
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
+    const darkRoseImg = getEffectImage(EFFECT_IMAGE_URLS.darkRoseFrame);
 
-    const wineDark = "rgba(38,0,10,0.98)";
-    const wineDeep = "rgba(58,4,18,0.98)";
-    const wineGlow = "rgba(90,10,30,0.3)";
-    const petalDark = "rgba(48,0,12,0.98)";
-    const petalMid = "rgba(82,6,26,0.94)";
-    const petalLight = "rgba(128,18,48,0.7)";
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
 
-    function drawVine(points, width, alpha) {
-      ctx.save();
-      ctx.strokeStyle = alpha > 0.9 ? wineDark : wineDeep;
-      ctx.lineWidth = width;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.shadowColor = wineGlow;
-      ctx.shadowBlur = 6;
-      ctx.globalAlpha = alpha;
-
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        const prev = points[i - 1];
-        const curr = points[i];
-        const mx = (prev.x + curr.x) * 0.5;
-        const my = (prev.y + curr.y) * 0.5;
-        ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
-      }
-      ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
-      ctx.stroke();
-
-      for (let i = 1; i < points.length - 1; i++) {
-        const a = points[i - 1];
-        const b = points[i];
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const len = Math.max(1, Math.hypot(dx, dy));
-        const nx = -dy / len;
-        const ny = dx / len;
-        const tlen = width * (0.9 + (i % 2) * 0.3);
-
-        ctx.beginPath();
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(
-          b.x + nx * tlen * (i % 2 === 0 ? 1 : -1),
-          b.y + ny * tlen * (i % 2 === 0 ? 1 : -1)
-        );
-        ctx.stroke();
-      }
-
-      ctx.restore();
-    }
-
-    function p(ax, ay) {
-      return { x: x + ax * r, y: y + ay * r };
-    }
-
-    const sway = Math.sin(time * 0.00075) * 0.04;
-
-    const leftArc = [
-      p(-0.92, -0.9 + sway),
-      p(-1.04, -0.5),
-      p(-1.02, -0.08),
-      p(-0.92, 0.28),
-      p(-0.74, 0.62),
-      p(-0.46, 0.9),
-      p(-0.08, 1.04)
-    ];
-
-    const bottomArc = [
-      p(-0.18, 1.02),
-      p(0.14, 1.1),
-      p(0.48, 1.02),
-      p(0.84, 0.86)
-    ];
-
-    const rightArc = [
-      p(0.38, -1.04),
-      p(0.74, -0.98),
-      p(1.0, -0.78),
-      p(1.04, -0.44),
-      p(0.92, -0.12),
-      p(0.72, 0.18),
-      p(0.84, 0.66)
-    ];
-
-    drawVine(leftArc, Math.max(2.3, r * 0.088), 0.98);
-    drawVine(bottomArc, Math.max(2.1, r * 0.08), 0.96);
-    drawVine(rightArc, Math.max(2.3, r * 0.088), 0.98);
-
-    function drawLeaf(px, py, size, angle, alpha, flip) {
-      ctx.save();
-      ctx.translate(px, py);
-      ctx.rotate(angle);
-      ctx.scale(flip ? -1 : 1, 1);
-      ctx.globalAlpha = alpha;
-      ctx.shadowColor = wineGlow;
-      ctx.shadowBlur = 4;
-
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(size * 0.45, -size * 0.4, size * 0.95, -size * 0.12, size * 1.05, 0);
-      ctx.bezierCurveTo(size * 0.95, size * 0.12, size * 0.45, size * 0.4, 0, 0);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(32,8,14,0.96)";
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(size * 0.82, 0);
-      ctx.strokeStyle = "rgba(92,24,40,0.28)";
-      ctx.lineWidth = Math.max(0.8, size * 0.07);
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    drawLeaf(x - r * 0.9, y - r * 0.12, Math.max(4.4, r * 0.12), -1.9, 0.72, false);
-    drawLeaf(x - r * 0.72, y + r * 0.52, Math.max(4.8, r * 0.13), -0.9, 0.74, false);
-    drawLeaf(x + r * 0.84, y - r * 0.28, Math.max(4.4, r * 0.12), 2.2, 0.72, true);
-    drawLeaf(x + r * 0.74, y + r * 0.58, Math.max(4.8, r * 0.13), 1.02, 0.74, true);
-    drawLeaf(x + r * 0.56, y - r * 0.9, Math.max(4.1, r * 0.11), 0.2, 0.68, true);
-
-    const roses = [
-      { x: x - r * 0.96, y: y - r * 0.5, seed: 11, rot: -0.22, size: 0.18 },
-      { x: x - r * 0.84, y: y + r * 0.02, seed: 21, rot: 0.14, size: 0.17 },
-      { x: x - r * 0.6, y: y + r * 0.72, seed: 31, rot: -0.24, size: 0.18 },
-      { x: x + r * 0.82, y: y - r * 0.78, seed: 41, rot: 0.12, size: 0.17 },
-      { x: x + r * 0.98, y: y - r * 0.2, seed: 51, rot: -0.16, size: 0.18 },
-      { x: x + r * 0.78, y: y + r * 0.74, seed: 61, rot: 0.18, size: 0.17 },
-      { x: x + r * 0.08, y: y + r * 1.03, seed: 71, rot: 0.05, size: 0.16 }
-    ];
-
-    roses.forEach((rose, idx) => {
-      const bloom = (Math.sin(time * 0.0012 + rose.seed) + 1) / 2;
-      const pop = bloom > 0.48 ? Math.pow((bloom - 0.48) / 0.52, 0.74) : 0;
-      const alpha = core.clamp(pop, 0, 1) * 0.98;
-      const size = Math.max(4.8, r * rose.size) * (0.6 + pop * 0.52);
-
-      if (alpha > 0.02) {
-        core.drawRose(
-          ctx,
-          rose.x,
-          rose.y,
-          size,
-          idx % 2 === 0 ? petalDark : petalMid,
-          petalLight,
-          alpha,
-          rose.rot,
-          12
-        );
-      }
-    });
-
-    for (let i = 0; i < 10; i++) {
-      const phase = ((time * (0.00017 + i * 0.000016)) + i * 0.11) % 1;
-      const px = x - r * 0.8 + (i % 5) * r * 0.38 + Math.sin(phase * Math.PI * 2 + i) * (r * 0.06);
-      const py = y - r * 1.0 + phase * (r * 2.2);
+    for (let i = 0; i < 8; i++) {
+      const phase = ((time * (0.00017 + i * 0.000014)) + i * 0.13) % 1;
+      const px = x - r * 0.72 + (i % 4) * r * 0.48 + Math.sin(phase * Math.PI * 2 + i) * (r * 0.06);
+      const py = y - r * 0.96 + phase * (r * 2.0);
 
       core.drawPetal(
         ctx,
         px,
         py,
-        Math.max(2.3, r * 0.078),
-        i % 2 === 0 ? "rgba(72,4,20,0.92)" : "rgba(102,12,34,0.86)",
-        core.clamp(0.08 + Math.sin(phase * Math.PI) * 0.36, 0.06, 0.42),
-        phase * 3.1 + i,
+        Math.max(2.4, r * 0.08),
+        i % 2 === 0 ? "rgba(92,8,34,0.9)" : "rgba(128,18,48,0.82)",
+        core.clamp(0.08 + Math.sin(phase * Math.PI) * 0.34, 0.06, 0.38),
+        phase * 3 + i,
         7
       );
     }
+
+    for (let i = 0; i < 6; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / 6) + Math.sin(time * 0.0008 + i) * 0.04;
+      const sx = x + Math.cos(angle) * (r * 0.52);
+      const sy = y + Math.sin(angle) * (r * 0.5);
+      const alpha = core.clamp(0.04 + ((Math.sin(time * 0.0017 + i * 1.9) + 1) / 2) * 0.2, 0.03, 0.22);
+
+      core.drawTinyTwinkle(
+        ctx,
+        sx,
+        sy,
+        Math.max(1.6, r * 0.045),
+        "rgba(255,228,235,0.86)",
+        alpha,
+        time * 0.00035 + i * 0.1,
+        6
+      );
+    }
+
+    ctx.restore();
+
+    drawClippedCircleImage(ctx, darkRoseImg, x, y, r, 0.98, 1.12, 0);
   }
 
   function drawShootingStarSpecial(ctx, body, meta, time, core) {
