@@ -447,46 +447,46 @@
     ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
     ctx.clip();
 
-    const laneYTop = y - r * 0.28;
-    const laneYBottom = y + r * 0.26;
-    const leftX = x - r * 0.55;
-    const rightX = x + r * 0.55;
-    const stepCount = 10;
-    const cycleMs = 2400;
+    const stepCount = 6;
+    const cycleMs = 2100;
     const phase = (time % cycleMs) / cycleMs;
 
+    const startX = x - r * 0.48;
+    const startY = y + r * 0.42;
+    const endX = x + r * 0.38;
+    const endY = y - r * 0.38;
+
     for (let i = 0; i < stepCount; i++) {
-      const t = (phase + i / stepCount) % 1;
-      const px = leftX + (rightX - leftX) * t;
-      const isTop = i % 2 === 0;
-      const py = isTop ? laneYTop : laneYBottom;
+      let t = phase - i * 0.16;
+      while (t < 0) t += 1;
 
-      let life = 1 - i / stepCount;
-      life = Math.pow(life, 0.9);
+      const life = 1 - i / stepCount;
+      const px = startX + (endX - startX) * t;
+      const py = startY + (endY - startY) * t + (i % 2 === 0 ? -r * 0.055 : r * 0.055);
 
-      const alpha = core.clamp(0.12 + life * 0.82, 0.1, 0.94);
-      const size = Math.max(3.5, r * 0.115) * (0.92 + life * 0.18);
-      const rot = isTop ? -0.22 : 0.22;
+      const alpha = core.clamp((0.04 + life * 0.96) * (i === 0 ? 1 : 0.82), 0.06, 0.98);
+      const size = Math.max(3.8, r * 0.12) * (i === 0 ? 1.04 : (0.9 + life * 0.08));
+      const rot = i % 2 === 0 ? -0.42 : 0.28;
 
       core.drawPawPrint(
         ctx,
         px,
         py,
         size,
-        i % 3 === 0 ? "rgba(76,48,34,0.96)" : "rgba(30,22,18,0.98)",
+        i === 0 ? "rgba(28,20,18,0.99)" : "rgba(70,42,30,0.94)",
         alpha,
         rot,
-        5
+        i === 0 ? 6 : 4
       );
     }
 
-    const boneCount = 3;
+    const boneCount = 2;
     for (let i = 0; i < boneCount; i++) {
-      const fallPhase = ((time * (0.00016 + i * 0.00003)) + i * 0.31) % 1;
-      const bx = x - r * 0.55 + i * r * 0.52 + Math.sin(fallPhase * Math.PI * 2 + i) * (r * 0.12);
-      const by = y - r * 1.05 + fallPhase * (r * 2.1);
-      const alpha = core.clamp(0.08 + Math.sin(fallPhase * Math.PI) * 0.46, 0.06, 0.5);
-      const boneSize = Math.max(2.9, r * 0.086);
+      const fallPhase = ((time * (0.00016 + i * 0.00003)) + i * 0.43) % 1;
+      const bx = x - r * 0.28 + i * r * 0.38 + Math.sin(fallPhase * Math.PI * 2 + i) * (r * 0.08);
+      const by = y - r * 1.02 + fallPhase * (r * 1.95);
+      const alpha = core.clamp(0.08 + Math.sin(fallPhase * Math.PI) * 0.42, 0.06, 0.46);
+      const boneSize = Math.max(2.8, r * 0.082);
 
       drawBoneIllustration(
         ctx,
@@ -494,7 +494,7 @@
         by,
         boneSize,
         alpha,
-        Math.sin(time * 0.0012 + i) * 0.18,
+        Math.sin(time * 0.0011 + i) * 0.16,
         6
       );
     }
