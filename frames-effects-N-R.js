@@ -177,39 +177,112 @@
     }
   }
 
-  function drawHeartPinkSpecial(ctx, body, meta, time, core) {
+  function drawPinkFrameSpecial(ctx, body, meta, time, core) {
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
-    const count = 8;
-    const ringRadius = r * 0.82;
-    const palePink = "rgba(255,210,235,0.96)";
+    const count = 6;
+    const ringRadius = r * 0.8;
 
     for (let i = 0; i < count; i++) {
       const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
-      const wobble = Math.sin(time * 0.0007 + i * 1.35) * 0.04;
+      const wobble = Math.sin(time * 0.0008 + i * 1.2) * 0.03;
       const angle = baseAngle + wobble;
       const dx = x + Math.cos(angle) * ringRadius;
       const dy = y + Math.sin(angle) * ringRadius;
 
-      const pulse = (Math.sin(time * 0.0022 + i * 1.91) + 1) / 2;
-      const alphaMain = core.clamp(0.2 + pulse * 0.95, 0.14, 1);
-      const alphaSub = core.clamp(
-        0.08 + ((Math.sin(time * 0.0028 + i * 2.37 + 0.7) + 1) / 2) * 0.8,
-        0.05,
-        0.88
+      const pulse = (Math.sin(time * 0.0019 + i * 1.5) + 1) / 2;
+      const alphaHeart = core.clamp(0.22 + pulse * 0.45, 0.18, 0.7);
+      const alphaSpark = core.clamp(0.28 + pulse * 0.42, 0.2, 0.72);
+
+      if (i % 2 === 0) {
+        const heartSize = Math.max(3.7, r * 0.12) * (0.94 + pulse * 0.08);
+        core.drawHeart(
+          ctx,
+          dx,
+          dy - heartSize * 0.38,
+          heartSize,
+          "rgba(255,182,214,0.96)",
+          alphaHeart,
+          8
+        );
+      } else {
+        const sparkSize = Math.max(2.6, r * 0.09) * (0.92 + pulse * 0.12);
+        core.drawTinyTwinkle(
+          ctx,
+          dx,
+          dy,
+          sparkSize,
+          "rgba(255,240,248,0.95)",
+          alphaSpark,
+          time * 0.0005 + i * 0.3,
+          7
+        );
+      }
+    }
+  }
+
+  function drawHeartPinkSpecial(ctx, body, meta, time, core) {
+    const x = body.position.x;
+    const y = body.position.y;
+    const r = body.circleRadius || 20;
+    const count = 10;
+    const ringRadius = r * 0.82;
+
+    for (let i = 0; i < count; i++) {
+      const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
+      const wobble = Math.sin(time * 0.001 + i * 1.4) * 0.05;
+      const angle = baseAngle + wobble;
+      const dx = x + Math.cos(angle) * ringRadius;
+      const dy = y + Math.sin(angle) * ringRadius;
+
+      const pulse = (Math.sin(time * 0.0026 + i * 1.8) + 1) / 2;
+      const alphaMain = core.clamp(0.38 + pulse * 0.58, 0.26, 0.96);
+      const alphaSub = core.clamp(0.18 + pulse * 0.42, 0.14, 0.7);
+
+      const mainSize = Math.max(4.4, r * 0.15) * (0.96 + pulse * 0.14);
+      const subSize = mainSize * 0.56;
+
+      core.drawHeart(
+        ctx,
+        dx,
+        dy - mainSize * 0.42,
+        mainSize,
+        "rgba(255,105,176,0.98)",
+        alphaMain,
+        11
       );
 
-      const mainSize = Math.max(4.3, r * 0.145) * (0.94 + pulse * 0.14);
-      const subSize = mainSize * 0.58;
+      const offsetAngle = angle + 0.24;
+      const sx = dx + Math.cos(offsetAngle) * (mainSize * 0.18);
+      const sy = dy + Math.sin(offsetAngle) * (mainSize * 0.08);
 
-      core.drawHeart(ctx, dx, dy - mainSize * 0.42, mainSize, meta.color, alphaMain, 10);
+      core.drawHeart(
+        ctx,
+        sx,
+        sy - subSize * 0.38,
+        subSize,
+        "rgba(255,210,232,0.95)",
+        alphaSub,
+        8
+      );
+    }
 
-      const offsetAngle = angle + 0.22;
-      const sx = dx + Math.cos(offsetAngle) * (mainSize * 0.22);
-      const sy = dy + Math.sin(offsetAngle) * (mainSize * 0.12);
+    for (let i = 0; i < 4; i++) {
+      const phase = ((time * (0.00022 + i * 0.00003)) + i * 0.2) % 1;
+      const px = x + Math.sin(phase * Math.PI * 2 + i) * (r * 0.42);
+      const py = y - r * 0.65 + phase * (r * 1.25);
 
-      core.drawHeart(ctx, sx, sy - subSize * 0.4, subSize, palePink, alphaSub, 8);
+      core.drawTinyTwinkle(
+        ctx,
+        px,
+        py,
+        Math.max(2.1, r * 0.07),
+        "rgba(255,245,250,0.9)",
+        core.clamp(0.08 + Math.sin(phase * Math.PI) * 0.36, 0.06, 0.42),
+        phase * 4 + i,
+        6
+      );
     }
   }
 
@@ -314,37 +387,35 @@
     ctx.shadowBlur = blur;
 
     const len = size * 1.55;
-    const shaftW = len * 0.52;
-    const shaftH = size * 0.24;
-    const endGap = shaftW * 0.52;
-    const knobR = size * 0.26;
+    const shaftH = size * 0.28;
+    const endR = size * 0.24;
+    const offset = len * 0.4;
 
-    ctx.fillStyle = "rgba(255,248,236,0.98)";
+    ctx.fillStyle = "rgba(255,250,236,0.98)";
 
     ctx.beginPath();
-    ctx.roundRect(-shaftW * 0.5, -shaftH * 0.5, shaftW, shaftH, shaftH * 0.55);
+    ctx.roundRect(-len * 0.5, -shaftH * 0.5, len, shaftH, shaftH * 0.5);
     ctx.fill();
 
-    function drawKnob(cx, cy) {
+    function drawEnd(sign) {
+      const ex = sign * offset;
+
       ctx.beginPath();
-      ctx.arc(cx, cy, knobR, 0, Math.PI * 2);
+      ctx.arc(ex - sign * endR * 0.45, -endR * 0.62, endR, 0, Math.PI * 2);
+      ctx.arc(ex + sign * endR * 0.16, -endR * 0.28, endR * 0.94, 0, Math.PI * 2);
+      ctx.arc(ex - sign * endR * 0.45, endR * 0.62, endR, 0, Math.PI * 2);
+      ctx.arc(ex + sign * endR * 0.16, endR * 0.28, endR * 0.94, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    drawKnob(-endGap, -knobR * 0.7);
-    drawKnob(-endGap, knobR * 0.7);
-    drawKnob(endGap, -knobR * 0.7);
-    drawKnob(endGap, knobR * 0.7);
+    drawEnd(-1);
+    drawEnd(1);
 
+    ctx.strokeStyle = "rgba(185,165,145,0.3)";
+    ctx.lineWidth = Math.max(0.8, size * 0.06);
     ctx.beginPath();
-    ctx.roundRect(-shaftW * 0.44, -shaftH * 0.42, shaftW * 0.88, shaftH * 0.84, shaftH * 0.4);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(175,155,132,0.3)";
-    ctx.lineWidth = Math.max(0.8, size * 0.05);
-    ctx.beginPath();
-    ctx.moveTo(-shaftW * 0.26, 0);
-    ctx.lineTo(shaftW * 0.26, 0);
+    ctx.moveTo(-len * 0.18, 0);
+    ctx.lineTo(len * 0.18, 0);
     ctx.stroke();
 
     ctx.restore();
@@ -371,46 +442,38 @@
     ctx.stroke();
     ctx.restore();
 
-    const stepCount = 8;
-    const cycleMs = 2400;
-    const t = (time % cycleMs) / cycleMs;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
 
-    const startX = x - r * 0.82;
-    const endX = x + r * 0.82;
-    const startY = y + r * 0.58;
-    const endY = y - r * 0.72;
+    const laneYTop = y - r * 0.28;
+    const laneYBottom = y + r * 0.26;
+    const leftX = x - r * 0.55;
+    const rightX = x + r * 0.55;
+    const stepCount = 10;
+    const cycleMs = 2400;
+    const phase = (time % cycleMs) / cycleMs;
 
     for (let i = 0; i < stepCount; i++) {
-      const stepProgress = ((t * stepCount) - i + stepCount * 2) % stepCount;
-      const life = 1 - stepProgress / stepCount;
+      const t = (phase + i / stepCount) % 1;
+      const px = leftX + (rightX - leftX) * t;
+      const isTop = i % 2 === 0;
+      const py = isTop ? laneYTop : laneYBottom;
 
-      if (life <= 0.02) continue;
+      let life = 1 - i / stepCount;
+      life = Math.pow(life, 0.9);
 
-      const pathT = i / (stepCount - 1);
-      const pxBase = startX + (endX - startX) * pathT;
-      const pyBase = startY + (endY - startY) * pathT;
-
-      const side = i % 2 === 0 ? -1 : 1;
-
-      const px =
-        pxBase +
-        side * r * 0.16 +
-        Math.sin(pathT * Math.PI * 1.1) * r * 0.04;
-
-      const py =
-        pyBase +
-        (side === -1 ? r * 0.03 : -r * 0.03);
-
-      const alpha = core.clamp(0.12 + life * 0.82, 0.08, 0.95);
-      const size = Math.max(3.8, r * 0.12) * (0.88 + life * 0.16);
-      const rot = -0.18 + side * 0.08;
+      const alpha = core.clamp(0.12 + life * 0.82, 0.1, 0.94);
+      const size = Math.max(3.5, r * 0.115) * (0.92 + life * 0.18);
+      const rot = isTop ? -0.22 : 0.22;
 
       core.drawPawPrint(
         ctx,
         px,
         py,
         size,
-        i % 3 === 0 ? "rgba(70,42,30,0.95)" : "rgba(26,20,18,0.98)",
+        i % 3 === 0 ? "rgba(76,48,34,0.96)" : "rgba(30,22,18,0.98)",
         alpha,
         rot,
         5
@@ -423,7 +486,7 @@
       const bx = x - r * 0.55 + i * r * 0.52 + Math.sin(fallPhase * Math.PI * 2 + i) * (r * 0.12);
       const by = y - r * 1.05 + fallPhase * (r * 2.1);
       const alpha = core.clamp(0.08 + Math.sin(fallPhase * Math.PI) * 0.46, 0.06, 0.5);
-      const boneSize = Math.max(2.8, r * 0.082);
+      const boneSize = Math.max(2.9, r * 0.086);
 
       drawBoneIllustration(
         ctx,
@@ -431,10 +494,12 @@
         by,
         boneSize,
         alpha,
-        Math.sin(time * 0.0012 + i) * 0.24,
+        Math.sin(time * 0.0012 + i) * 0.18,
         6
       );
     }
+
+    ctx.restore();
   }
 
   function drawFrameForBody(ctx, body, getFrameMeta, time, core) {
@@ -453,7 +518,9 @@
     core.drawInnerGlow(ctx, x, y, r, meta);
     core.drawBaseRing(ctx, x, y, r, meta);
 
-    if (body.frameName === "ハートピンク" || body.frameName === "ピンクフレーム") {
+    if (body.frameName === "ピンクフレーム") {
+      drawPinkFrameSpecial(ctx, body, meta, time, core);
+    } else if (body.frameName === "ハートピンク") {
       drawHeartPinkSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "キャンディ") {
       drawCandySpecial(ctx, body, meta, time, core);
