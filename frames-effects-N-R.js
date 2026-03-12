@@ -184,66 +184,42 @@
     const count = 6;
     const ringRadius = r * 0.8;
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.88, 0, Math.PI * 2);
-    ctx.clip();
-
     for (let i = 0; i < count; i++) {
       const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
-      const wobble = Math.sin(time * 0.00075 + i * 1.16) * 0.028;
+      const wobble = Math.sin(time * 0.0008 + i * 1.2) * 0.03;
       const angle = baseAngle + wobble;
       const dx = x + Math.cos(angle) * ringRadius;
       const dy = y + Math.sin(angle) * ringRadius;
 
-      const pulse = (Math.sin(time * 0.0017 + i * 1.38) + 1) / 2;
-      const alphaHeart = core.clamp(0.18 + pulse * 0.26, 0.16, 0.5);
-      const alphaSpark = core.clamp(0.22 + pulse * 0.28, 0.18, 0.56);
+      const pulse = (Math.sin(time * 0.0019 + i * 1.5) + 1) / 2;
+      const alphaHeart = core.clamp(0.22 + pulse * 0.45, 0.18, 0.7);
+      const alphaSpark = core.clamp(0.28 + pulse * 0.42, 0.2, 0.72);
 
       if (i % 2 === 0) {
-        const heartSize = Math.max(3.6, r * 0.115) * (0.95 + pulse * 0.05);
+        const heartSize = Math.max(3.7, r * 0.12) * (0.94 + pulse * 0.08);
         core.drawHeart(
           ctx,
           dx,
           dy - heartSize * 0.38,
           heartSize,
-          "rgba(255,196,221,0.96)",
+          "rgba(255,182,214,0.96)",
           alphaHeart,
-          7
+          8
         );
       } else {
-        const sparkSize = Math.max(2.3, r * 0.078) * (0.9 + pulse * 0.08);
+        const sparkSize = Math.max(2.6, r * 0.09) * (0.92 + pulse * 0.12);
         core.drawTinyTwinkle(
           ctx,
           dx,
           dy,
           sparkSize,
-          "rgba(255,245,250,0.92)",
+          "rgba(255,240,248,0.95)",
           alphaSpark,
-          time * 0.00042 + i * 0.28,
-          6
+          time * 0.0005 + i * 0.3,
+          7
         );
       }
     }
-
-    for (let i = 0; i < 2; i++) {
-      const phase = ((time * (0.00016 + i * 0.00002)) + i * 0.32) % 1;
-      const px = x - r * 0.18 + i * r * 0.3;
-      const py = y - r * 0.25 + Math.sin(phase * Math.PI * 2 + i) * (r * 0.12);
-
-      core.drawTinyTwinkle(
-        ctx,
-        px,
-        py,
-        Math.max(1.9, r * 0.06),
-        "rgba(255,255,255,0.85)",
-        core.clamp(0.06 + Math.sin(phase * Math.PI) * 0.24, 0.05, 0.3),
-        phase * 4 + i,
-        5
-      );
-    }
-
-    ctx.restore();
   }
 
   function drawHeartPinkSpecial(ctx, body, meta, time, core) {
@@ -252,11 +228,6 @@
     const r = body.circleRadius || 20;
     const count = 10;
     const ringRadius = r * 0.82;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
-    ctx.clip();
 
     for (let i = 0; i < count; i++) {
       const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
@@ -313,8 +284,6 @@
         6
       );
     }
-
-    ctx.restore();
   }
 
   function drawCandySpecial(ctx, body, meta, time, core) {
@@ -414,39 +383,45 @@
     ctx.translate(x, y);
     ctx.rotate(rotation);
     ctx.globalAlpha = alpha;
-    ctx.shadowColor = "rgba(255,255,255,0.55)";
-    ctx.shadowBlur = blur;
 
-    const len = size * 1.55;
-    const shaftH = size * 0.28;
-    const endR = size * 0.24;
-    const offset = len * 0.4;
+    const len = size * 1.9;
+    const shaftH = size * 0.55;
+    const ball = size * 0.45;
 
-    ctx.fillStyle = "rgba(255,250,236,0.98)";
+    ctx.shadowColor = "rgba(255,255,255,0.9)";
+    ctx.shadowBlur = blur + 4;
+
+    const grad = ctx.createLinearGradient(0, -size, 0, size);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(0.5, "#f6efe2");
+    grad.addColorStop(1, "#e6d7b8");
+
+    ctx.fillStyle = grad;
 
     ctx.beginPath();
     ctx.roundRect(-len * 0.5, -shaftH * 0.5, len, shaftH, shaftH * 0.5);
     ctx.fill();
 
-    function drawEnd(sign) {
-      const ex = sign * offset;
+    function boneEnd(sign) {
+      const ex = sign * len * 0.45;
 
       ctx.beginPath();
-      ctx.arc(ex - sign * endR * 0.45, -endR * 0.62, endR, 0, Math.PI * 2);
-      ctx.arc(ex + sign * endR * 0.16, -endR * 0.28, endR * 0.94, 0, Math.PI * 2);
-      ctx.arc(ex - sign * endR * 0.45, endR * 0.62, endR, 0, Math.PI * 2);
-      ctx.arc(ex + sign * endR * 0.16, endR * 0.28, endR * 0.94, 0, Math.PI * 2);
+      ctx.arc(ex - sign * ball * 0.6, -ball * 0.6, ball, 0, Math.PI * 2);
+      ctx.arc(ex + sign * ball * 0.6, -ball * 0.6, ball, 0, Math.PI * 2);
+      ctx.arc(ex - sign * ball * 0.6, ball * 0.6, ball, 0, Math.PI * 2);
+      ctx.arc(ex + sign * ball * 0.6, ball * 0.6, ball, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    drawEnd(-1);
-    drawEnd(1);
+    boneEnd(-1);
+    boneEnd(1);
 
-    ctx.strokeStyle = "rgba(185,165,145,0.3)";
-    ctx.lineWidth = Math.max(0.8, size * 0.06);
+    ctx.strokeStyle = "rgba(160,130,90,0.45)";
+    ctx.lineWidth = size * 0.08;
+
     ctx.beginPath();
-    ctx.moveTo(-len * 0.18, 0);
-    ctx.lineTo(len * 0.18, 0);
+    ctx.moveTo(-len * 0.22, 0);
+    ctx.lineTo(len * 0.22, 0);
     ctx.stroke();
 
     ctx.restore();
@@ -516,8 +491,8 @@
       const fallPhase = ((time * (0.00016 + i * 0.00003)) + i * 0.43) % 1;
       const bx = x - r * 0.28 + i * r * 0.38 + Math.sin(fallPhase * Math.PI * 2 + i) * (r * 0.08);
       const by = y - r * 1.02 + fallPhase * (r * 1.95);
-      const alpha = core.clamp(0.08 + Math.sin(fallPhase * Math.PI) * 0.42, 0.06, 0.46);
-      const boneSize = Math.max(2.8, r * 0.082);
+      const alpha = core.clamp(0.18 + Math.sin(fallPhase * Math.PI) * 0.62, 0.16, 0.8);
+      const boneSize = Math.max(3.4, r * 0.1);
 
       drawBoneIllustration(
         ctx,
@@ -526,7 +501,7 @@
         boneSize,
         alpha,
         Math.sin(time * 0.0011 + i) * 0.16,
-        6
+        8
       );
     }
 
