@@ -184,42 +184,66 @@
     const count = 6;
     const ringRadius = r * 0.8;
 
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.88, 0, Math.PI * 2);
+    ctx.clip();
+
     for (let i = 0; i < count; i++) {
       const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
-      const wobble = Math.sin(time * 0.0008 + i * 1.2) * 0.03;
+      const wobble = Math.sin(time * 0.00075 + i * 1.16) * 0.028;
       const angle = baseAngle + wobble;
       const dx = x + Math.cos(angle) * ringRadius;
       const dy = y + Math.sin(angle) * ringRadius;
 
-      const pulse = (Math.sin(time * 0.0019 + i * 1.5) + 1) / 2;
-      const alphaHeart = core.clamp(0.22 + pulse * 0.45, 0.18, 0.7);
-      const alphaSpark = core.clamp(0.28 + pulse * 0.42, 0.2, 0.72);
+      const pulse = (Math.sin(time * 0.0017 + i * 1.38) + 1) / 2;
+      const alphaHeart = core.clamp(0.18 + pulse * 0.26, 0.16, 0.5);
+      const alphaSpark = core.clamp(0.22 + pulse * 0.28, 0.18, 0.56);
 
       if (i % 2 === 0) {
-        const heartSize = Math.max(3.7, r * 0.12) * (0.94 + pulse * 0.08);
+        const heartSize = Math.max(3.6, r * 0.115) * (0.95 + pulse * 0.05);
         core.drawHeart(
           ctx,
           dx,
           dy - heartSize * 0.38,
           heartSize,
-          "rgba(255,182,214,0.96)",
+          "rgba(255,196,221,0.96)",
           alphaHeart,
-          8
+          7
         );
       } else {
-        const sparkSize = Math.max(2.6, r * 0.09) * (0.92 + pulse * 0.12);
+        const sparkSize = Math.max(2.3, r * 0.078) * (0.9 + pulse * 0.08);
         core.drawTinyTwinkle(
           ctx,
           dx,
           dy,
           sparkSize,
-          "rgba(255,240,248,0.95)",
+          "rgba(255,245,250,0.92)",
           alphaSpark,
-          time * 0.0005 + i * 0.3,
-          7
+          time * 0.00042 + i * 0.28,
+          6
         );
       }
     }
+
+    for (let i = 0; i < 2; i++) {
+      const phase = ((time * (0.00016 + i * 0.00002)) + i * 0.32) % 1;
+      const px = x - r * 0.18 + i * r * 0.3;
+      const py = y - r * 0.25 + Math.sin(phase * Math.PI * 2 + i) * (r * 0.12);
+
+      core.drawTinyTwinkle(
+        ctx,
+        px,
+        py,
+        Math.max(1.9, r * 0.06),
+        "rgba(255,255,255,0.85)",
+        core.clamp(0.06 + Math.sin(phase * Math.PI) * 0.24, 0.05, 0.3),
+        phase * 4 + i,
+        5
+      );
+    }
+
+    ctx.restore();
   }
 
   function drawHeartPinkSpecial(ctx, body, meta, time, core) {
@@ -228,6 +252,11 @@
     const r = body.circleRadius || 20;
     const count = 10;
     const ringRadius = r * 0.82;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
 
     for (let i = 0; i < count; i++) {
       const baseAngle = (-Math.PI / 2) + (Math.PI * 2 * i / count);
@@ -284,6 +313,8 @@
         6
       );
     }
+
+    ctx.restore();
   }
 
   function drawCandySpecial(ctx, body, meta, time, core) {
