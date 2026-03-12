@@ -983,7 +983,46 @@ img{
 
 <script src="frames-core.js"></script>
 <script src="frames-effects-N-R.js"></script>
+<script>
+window.FaceGameFrameEffectsNR = window.FaceGameFrameEffects;
+</script>
 <script src="frames-effects-SR-SSR.js"></script>
+<script>
+window.FaceGameFrameEffectsSRSSR = window.FaceGameFrameEffects;
+
+window.FaceGameFrameEffects = {
+  drawFrameForBody(ctx, body, getFrameMeta, time, core) {
+    if (!body || !body.frameName || typeof getFrameMeta !== "function") return;
+
+    const meta = getFrameMeta(body.frameName);
+    if (!meta) return;
+
+    const rank = meta.rank || "";
+
+    if ((rank === "N" || rank === "R") &&
+        window.FaceGameFrameEffectsNR &&
+        typeof window.FaceGameFrameEffectsNR.drawFrameForBody === "function") {
+      return window.FaceGameFrameEffectsNR.drawFrameForBody(ctx, body, getFrameMeta, time, core);
+    }
+
+    if ((rank === "SR" || rank === "SSR") &&
+        window.FaceGameFrameEffectsSRSSR &&
+        typeof window.FaceGameFrameEffectsSRSSR.drawFrameForBody === "function") {
+      return window.FaceGameFrameEffectsSRSSR.drawFrameForBody(ctx, body, getFrameMeta, time, core);
+    }
+
+    if (window.FaceGameFrameEffectsSRSSR &&
+        typeof window.FaceGameFrameEffectsSRSSR.drawFrameForBody === "function") {
+      return window.FaceGameFrameEffectsSRSSR.drawFrameForBody(ctx, body, getFrameMeta, time, core);
+    }
+
+    if (window.FaceGameFrameEffectsNR &&
+        typeof window.FaceGameFrameEffectsNR.drawFrameForBody === "function") {
+      return window.FaceGameFrameEffectsNR.drawFrameForBody(ctx, body, getFrameMeta, time, core);
+    }
+  }
+};
+</script>
 <script src="gamestart.js"></script>
 
 </body>
