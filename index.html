@@ -312,6 +312,24 @@ button:hover{
   box-shadow:0 0 12px rgba(255,143,211,0.22);
 }
 
+.frame-chip.locked{
+  background:rgba(255,255,255,0.035);
+  border:1px solid rgba(255,255,255,0.08);
+  color:#8fa3d8;
+  cursor:default;
+  opacity:0.72;
+}
+
+.frame-chip.locked .frame-chip-name,
+.frame-chip.locked .frame-chip-rank{
+  color:#a9b7df;
+}
+
+.frame-chip.locked .frame-chip-desc,
+.frame-chip.locked .frame-chip-count{
+  color:#8fa3d8;
+}
+
 .frame-chip-top{
   display:flex;
   align-items:center;
@@ -1076,6 +1094,23 @@ function getFrameMeta(frameName){
   };
 }
 
+function getRankOrder(rank){
+  if(rank === "SSR") return 0;
+  if(rank === "SR") return 1;
+  if(rank === "R") return 2;
+  return 3;
+}
+
+function getAllFramesSorted(){
+  return Object.keys(FRAME_MASTER).sort((a, b) => {
+    const metaA = getFrameMeta(a);
+    const metaB = getFrameMeta(b);
+    const rankDiff = getRankOrder(metaA.rank) - getRankOrder(metaB.rank);
+    if(rankDiff !== 0) return rankDiff;
+    return a.localeCompare(b, "ja");
+  });
+}
+
 function renderEquipMemberOptions(){
   equipMemberSelect.innerHTML = `<option value="">練習生を選んでください</option>` + members.map(member => {
     return `<option value="${member.name}">${displayName(member.name)}</option>`;
@@ -1102,36 +1137,41 @@ function renderEquippedList(){
 }
 
 function renderFrameInventory(){
-  const ownedSkins = getOwnedSkins();
   const countMap = getOwnedSkinCountMap();
-  const ownedFrameNames = [...new Set(ownedSkins)];
+  const allFrames = getAllFramesSorted();
 
-  if(!ownedFrameNames.length){
-    frameListEl.innerHTML = `<div class="frame-empty">まだフレームを持っていません</div>`;
-    selectedFrameName = "";
-    equipFrameBtn.classList.remove("show");
-    return;
-  }
-
-  frameListEl.innerHTML = ownedFrameNames.map(frame => {
+  frameListEl.innerHTML = allFrames.map(frame => {
     const meta = getFrameMeta(frame);
     const count = countMap[frame] || 0;
+    const isOwned = count > 0;
     const isMax = count >= 5;
+    const isActive = selectedFrameName === frame && isOwned;
 
     return `
-      <button type="button" class="frame-chip${selectedFrameName === frame ? " active" : ""}" data-frame="${frame}">
+      <button
+        type="button"
+        class="frame-chip${isActive ? " active" : ""}${isOwned ? "" : " locked"}"
+        data-frame="${frame}"
+        ${isOwned ? "" : "disabled"}
+      >
         <div class="frame-chip-top">
           <div class="frame-chip-name">${frame}</div>
           <div class="frame-chip-rank">[${meta.rank}]</div>
         </div>
         <div class="frame-chip-icons">${meta.icons}</div>
         <div class="frame-chip-desc">${meta.desc}</div>
-        <div class="frame-chip-count${isMax ? " max" : ""}">所持数 ${count}/5</div>
+        <div class="frame-chip-count${isMax ? " max" : ""}">所持数 ${count}/5${isOwned ? "" : "（未所持）"}</div>
       </button>
     `;
   }).join("");
 
+  if(selectedFrameName && (countMap[selectedFrameName] || 0) === 0){
+    selectedFrameName = "";
+  }
+
   frameListEl.querySelectorAll(".frame-chip").forEach(btn => {
+    if(btn.disabled) return;
+
     btn.onclick = () => {
       selectedFrameName = btn.dataset.frame;
       renderFrameInventory();
@@ -1140,6 +1180,12 @@ function renderFrameInventory(){
       }
     };
   });
+
+  if(selectedFrameName && selectedEquipMemberName){
+    equipFrameBtn.classList.add("show");
+  }else{
+    equipFrameBtn.classList.remove("show");
+  }
 }
 
 function renderMissionPopup(){
