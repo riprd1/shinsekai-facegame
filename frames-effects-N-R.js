@@ -465,7 +465,7 @@
       );
     }
 
-    const boneCount = 2;
+    const boneCount = 3;
     for (let i = 0; i < boneCount; i++) {
       const fallPhase = ((time * (0.00016 + i * 0.00003)) + i * 0.43) % 1;
       const bx = x - r * 0.28 + i * r * 0.38 + Math.sin(fallPhase * Math.PI * 2 + i) * (r * 0.08);
