@@ -1,24 +1,10 @@
 (function () {
-  const registry = window.FaceGameFrameEffectsRegistry || (window.FaceGameFrameEffectsRegistry = []);
-
-  if (!window.FaceGameFrameEffects) {
-    window.FaceGameFrameEffects = {
-      drawFrameForBody(ctx, body, getFrameMeta, time, core) {
-        for (const handler of registry) {
-          if (handler && typeof handler.drawFrameForBody === "function") {
-            const handled = handler.drawFrameForBody(ctx, body, getFrameMeta, time, core);
-            if (handled) return true;
-          }
-        }
-        return false;
-      }
-    };
-  }
-
   function getFrameDecorationPattern(frameName) {
     switch (frameName) {
       case "ゴールドフレーム":
         return ["star","star","star","star","star","star"];
+      case "ハートピンク":
+        return ["heart","heart","heart","heart","heart","heart","heart","heart"];
       case "ピンクフレーム":
         return ["heart","sparkle","heart","sparkle","heart","sparkle"];
       case "ミントフレーム":
@@ -27,8 +13,6 @@
         return ["sparkle","heart","sparkle","heart","sparkle","heart"];
       case "パープルフレーム":
         return ["star","heart","star","heart","star","heart"];
-      case "ハートピンク":
-        return ["heart","heart","heart","heart","heart","heart","heart","heart"];
       case "キャンディ":
         return ["candy","heart","candy","heart","candy","heart","candy","heart"];
       case "桜":
@@ -210,7 +194,11 @@
 
       const pulse = (Math.sin(time * 0.0022 + i * 1.91) + 1) / 2;
       const alphaMain = core.clamp(0.2 + pulse * 0.95, 0.14, 1);
-      const alphaSub = core.clamp(0.08 + ((Math.sin(time * 0.0028 + i * 2.37 + 0.7) + 1) / 2) * 0.8, 0.05, 0.88);
+      const alphaSub = core.clamp(
+        0.08 + ((Math.sin(time * 0.0028 + i * 2.37 + 0.7) + 1) / 2) * 0.8,
+        0.05,
+        0.88
+      );
 
       const mainSize = Math.max(4.3, r * 0.145) * (0.94 + pulse * 0.14);
       const subSize = mainSize * 0.58;
@@ -260,7 +248,15 @@
         );
       } else {
         const heartColor = i % 3 === 0 ? "rgba(255,190,220,0.96)" : "rgba(255,140,200,0.96)";
-        core.drawHeart(ctx, dx, dy - Math.max(3.3, r * 0.11) * 0.4, Math.max(4.2, r * 0.14), heartColor, alpha, 8);
+        core.drawHeart(
+          ctx,
+          dx,
+          dy - Math.max(3.3, r * 0.11) * 0.4,
+          Math.max(4.2, r * 0.14),
+          heartColor,
+          alpha,
+          8
+        );
       }
     }
   }
@@ -309,97 +305,47 @@
     }
   }
 
-  function drawBoneShape(ctx, size) {
-    const knob = size * 0.28;
-    const shaftW = size * 0.92;
-    const shaftH = size * 0.24;
-
-    ctx.beginPath();
-    ctx.arc(-shaftW * 0.5, -shaftH * 0.4, knob, 0, Math.PI * 2);
-    ctx.arc(-shaftW * 0.5, shaftH * 0.4, knob, 0, Math.PI * 2);
-    ctx.arc(shaftW * 0.5, -shaftH * 0.4, knob, 0, Math.PI * 2);
-    ctx.arc(shaftW * 0.5, shaftH * 0.4, knob, 0, Math.PI * 2);
-    ctx.roundRect(-shaftW * 0.62, -shaftH * 0.5, shaftW * 1.24, shaftH, shaftH * 0.5);
-    ctx.fill();
-  }
-
-  function drawBone(ctx, x, y, size, alpha, rotation) {
+  function drawBoneIllustration(ctx, x, y, size, alpha, rotation, blur) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rotation);
     ctx.globalAlpha = alpha;
+    ctx.shadowColor = "rgba(255,255,255,0.55)";
+    ctx.shadowBlur = blur;
 
-    const grad = ctx.createLinearGradient(-size, -size, size, size);
-    grad.addColorStop(0, "rgba(255,255,255,0.98)");
-    grad.addColorStop(0.5, "rgba(250,244,222,0.98)");
-    grad.addColorStop(1, "rgba(232,220,190,0.98)");
+    const len = size * 1.45;
+    const shaftH = size * 0.34;
+    const endR = size * 0.28;
+    const offset = len * 0.42;
 
-    ctx.fillStyle = grad;
-    ctx.shadowColor = "rgba(255,255,255,0.42)";
-    ctx.shadowBlur = 8;
-    drawBoneShape(ctx, size);
+    ctx.fillStyle = "rgba(255,250,236,0.98)";
 
-    ctx.strokeStyle = "rgba(210,190,160,0.65)";
-    ctx.lineWidth = Math.max(0.6, size * 0.06);
     ctx.beginPath();
-    ctx.moveTo(-size * 0.42, 0);
-    ctx.lineTo(size * 0.42, 0);
+    ctx.roundRect(-len * 0.5, -shaftH * 0.5, len, shaftH, shaftH * 0.45);
+    ctx.fill();
+
+    function drawEnd(sign) {
+      const ex = sign * offset;
+
+      ctx.beginPath();
+      ctx.arc(ex - sign * endR * 0.35, -endR * 0.72, endR, 0, Math.PI * 2);
+      ctx.arc(ex + sign * endR * 0.35, -endR * 0.72, endR, 0, Math.PI * 2);
+      ctx.arc(ex - sign * endR * 0.35, endR * 0.72, endR, 0, Math.PI * 2);
+      ctx.arc(ex + sign * endR * 0.35, endR * 0.72, endR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    drawEnd(-1);
+    drawEnd(1);
+
+    ctx.strokeStyle = "rgba(170,150,130,0.28)";
+    ctx.lineWidth = Math.max(0.8, size * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(-len * 0.24, 0);
+    ctx.lineTo(len * 0.24, 0);
     ctx.stroke();
 
     ctx.restore();
-  }
-
-  function buildWalkerNodes(x, y, r, walkerIndex, timeBase, core) {
-    const seed = core.hashSeed(`dogpaw-${Math.round(x)}-${Math.round(y)}-${Math.round(r)}-${walkerIndex}-${timeBase}`);
-    const rand = core.seededRandom(seed);
-    const nodeCount = 8;
-    const nodes = [];
-
-    let angle = rand() * Math.PI * 2;
-    let dist = (0.12 + rand() * 0.16) * r;
-
-    nodes.push({
-      x: x + Math.cos(angle) * dist,
-      y: y + Math.sin(angle) * dist
-    });
-
-    for (let i = 1; i < nodeCount; i++) {
-      angle += (rand() - 0.5) * 1.55;
-      const stepLen = (0.18 + rand() * 0.15) * r;
-      let nx = nodes[i - 1].x + Math.cos(angle) * stepLen;
-      let ny = nodes[i - 1].y + Math.sin(angle) * stepLen;
-
-      const dx = nx - x;
-      const dy = ny - y;
-      const len = Math.hypot(dx, dy);
-      const limit = r * 0.58;
-
-      if (len > limit) {
-        nx = x + (dx / len) * limit;
-        ny = y + (dy / len) * limit;
-      }
-
-      nodes.push({ x: nx, y: ny });
-    }
-
-    return nodes;
-  }
-
-  function getFootprintPoint(a, b, side, spread) {
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const len = Math.max(0.0001, Math.hypot(dx, dy));
-    const nx = -dy / len;
-    const ny = dx / len;
-
-    const midX = a.x;
-    const midY = a.y;
-
-    return {
-      x: midX + nx * spread * side,
-      y: midY + ny * spread * side,
-      rot: Math.atan2(dy, dx)
-    };
   }
 
   function drawDogPawSpecial(ctx, body, meta, time, core) {
@@ -410,113 +356,80 @@
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, r - 1.4, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(78,50,34,0.96)";
-    ctx.lineWidth = Math.max(2.7, r * 0.095);
-    ctx.shadowColor = "rgba(80,52,30,0.34)";
+    ctx.strokeStyle = "rgba(60,34,26,0.95)";
+    ctx.lineWidth = Math.max(2.5, r * 0.09);
+    ctx.shadowColor = "rgba(50,25,15,0.28)";
     ctx.shadowBlur = 8;
     ctx.stroke();
 
     ctx.beginPath();
     ctx.arc(x, y, r - 5, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,244,228,0.24)";
+    ctx.strokeStyle = "rgba(255,245,235,0.2)";
     ctx.lineWidth = Math.max(0.9, r * 0.022);
     ctx.stroke();
     ctx.restore();
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.92, 0, Math.PI * 2);
-    ctx.clip();
+    const walkRadius = r * 0.66;
+    const centerPathRadius = r * 0.54;
+    const stepCount = 8;
+    const cycleMs = 2200;
+    const phase = (time % cycleMs) / cycleMs;
+    const stride = (Math.PI * 2) / stepCount;
+    const baseAngle = -Math.PI * 0.9 + phase * Math.PI * 2;
 
-    const stepMs = 700;
-    const walkers = 2;
-    const historySteps = 6;
+    for (let i = 0; i < stepCount; i++) {
+      const a = baseAngle + i * stride;
+      const side = i % 2 === 0 ? -1 : 1;
+      const inward = 1 - (i / (stepCount - 1)) * 0.22;
+      const px = x + Math.cos(a) * centerPathRadius * inward + Math.cos(a + Math.PI / 2) * (r * 0.12 * side);
+      const py = y + Math.sin(a) * centerPathRadius * inward + Math.sin(a + Math.PI / 2) * (r * 0.12 * side);
 
-    for (let w = 0; w < walkers; w++) {
-      const walkerOffset = w * 1900;
-      const localTime = time + walkerOffset;
-      const routeIndex = Math.floor(localTime / (stepMs * 7));
-      const stepClock = localTime % stepMs;
-      const progress = stepClock / stepMs;
-      const activeStep = Math.floor(localTime / stepMs);
+      const normalizedIndex = (i + phase * stepCount) % stepCount;
+      const life = 1 - (normalizedIndex / stepCount);
+      const alpha = core.clamp(0.16 + life * 0.8, 0.14, 0.95);
+      const size = Math.max(3.4, r * 0.11) * (0.9 + life * 0.16);
+      const rot = a + Math.PI / 2 + side * 0.22;
 
-      const nodes = buildWalkerNodes(x, y, r, w, routeIndex, core);
-      const spread = Math.max(3.2, r * 0.085);
-
-      for (let h = historySteps; h >= 0; h--) {
-        const stepNumber = activeStep - h;
-        if (stepNumber < 0) continue;
-
-        const leg = stepNumber % (nodes.length - 1);
-        const a = nodes[leg];
-        const b = nodes[leg + 1];
-        const side = stepNumber % 2 === 0 ? -1 : 1;
-        const fp = getFootprintPoint(a, b, side, spread);
-
-        let alpha = 0.16 + (1 - h / (historySteps + 1)) * 0.5;
-        let sizeMul = 0.88 + (1 - h / (historySteps + 1)) * 0.18;
-        let yLift = 0;
-
-        if (h === 0) {
-          const plant = Math.sin(progress * Math.PI);
-          alpha = 0.34 + plant * 0.58;
-          sizeMul = 0.92 + plant * 0.18;
-          yLift = -plant * r * 0.032;
-        }
-
-        const color = stepNumber % 4 < 2 ? "rgba(86,56,38,0.98)" : "rgba(255,249,243,0.96)";
-        core.drawPawPrint(
-          ctx,
-          fp.x,
-          fp.y + yLift,
-          Math.max(3.3, r * 0.11) * sizeMul,
-          color,
-          core.clamp(alpha, 0.08, 0.92),
-          fp.rot,
-          color.includes("255") ? 5 : 6
-        );
-      }
+      core.drawPawPrint(
+        ctx,
+        px,
+        py,
+        size,
+        i % 3 === 0 ? "rgba(70,42,30,0.95)" : "rgba(26,20,18,0.98)",
+        alpha,
+        rot,
+        5
+      );
     }
 
     const boneCount = 3;
-
     for (let i = 0; i < boneCount; i++) {
-      const seed = core.hashSeed(`bone-${Math.round(x)}-${Math.round(y)}-${Math.round(r)}-${i}`);
-      const rand = core.seededRandom(seed);
-      const fallSpeed = 0.00012 + rand() * 0.00008;
-      const phase = ((time * fallSpeed) + rand()) % 1;
-      const drift = Math.sin(time * (0.0008 + rand() * 0.0004) + rand() * Math.PI * 2);
-      const bx = x + (rand() - 0.5) * r * 0.9 + drift * r * 0.08;
-      const by = y - r * 1.05 + phase * r * 2.1;
-      const alpha = core.clamp(Math.sin(phase * Math.PI) * 0.72, 0.12, 0.72);
-      const rotation = rand() * Math.PI * 2 + phase * 2.4;
+      const fallPhase = ((time * (0.00016 + i * 0.00003)) + i * 0.31) % 1;
+      const bx = x - r * 0.55 + i * r * 0.52 + Math.sin(fallPhase * Math.PI * 2 + i) * (r * 0.12);
+      const by = y - r * 1.05 + fallPhase * (r * 2.1);
+      const alpha = core.clamp(0.08 + Math.sin(fallPhase * Math.PI) * 0.46, 0.06, 0.5);
+      const boneSize = Math.max(2.8, r * 0.082);
 
-      drawBone(ctx, bx, by, Math.max(4, r * (0.12 + rand() * 0.03)), alpha, rotation);
+      drawBoneIllustration(
+        ctx,
+        bx,
+        by,
+        boneSize,
+        alpha,
+        Math.sin(time * 0.0012 + i) * 0.24,
+        6
+      );
     }
-
-    ctx.restore();
-  }
-
-  function handlesFrame(frameName) {
-    return [
-      "ゴールドフレーム",
-      "ピンクフレーム",
-      "ミントフレーム",
-      "スカイブルー",
-      "パープルフレーム",
-      "ハートピンク",
-      "キャンディ",
-      "桜",
-      "犬のあしあと"
-    ].includes(frameName);
   }
 
   function drawFrameForBody(ctx, body, getFrameMeta, time, core) {
-    if (!body.frameName) return false;
-    if (!handlesFrame(body.frameName)) return false;
+    if (!body.frameName) return;
 
     const meta = getFrameMeta(body.frameName);
-    if (!meta) return false;
+    if (!meta) return;
+
+    const allowedRanks = { N: true, R: true };
+    if (!allowedRanks[meta.rank]) return;
 
     const x = body.position.x;
     const y = body.position.y;
@@ -536,15 +449,9 @@
     } else {
       drawNormalDecorations(ctx, body, meta, time, core);
     }
-
-    return true;
   }
 
-  const handler = {
-    handlesFrame,
+  window.FaceGameFrameEffects = {
     drawFrameForBody
   };
-
-  registry.push(handler);
-  window.FaceGameFrameEffectsNR = handler;
 })();
