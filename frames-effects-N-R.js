@@ -384,45 +384,61 @@
     ctx.rotate(rotation);
     ctx.globalAlpha = alpha;
 
-    const len = size * 1.9;
-    const shaftH = size * 0.55;
-    const ball = size * 0.45;
+    const length = size * 2.2;
+    const thickness = size * 0.55;
+    const ball = size * 0.6;
 
     ctx.shadowColor = "rgba(255,255,255,0.9)";
-    ctx.shadowBlur = blur + 4;
+    ctx.shadowBlur = blur;
 
-    const grad = ctx.createLinearGradient(0, -size, 0, size);
-    grad.addColorStop(0, "#ffffff");
-    grad.addColorStop(0.5, "#f6efe2");
-    grad.addColorStop(1, "#e6d7b8");
-
-    ctx.fillStyle = grad;
-
+    ctx.fillStyle = "#f5f2e8";
     ctx.beginPath();
-    ctx.roundRect(-len * 0.5, -shaftH * 0.5, len, shaftH, shaftH * 0.5);
+    ctx.roundRect(
+      -length / 2,
+      -thickness / 2,
+      length,
+      thickness,
+      thickness / 2
+    );
     ctx.fill();
 
-    function boneEnd(sign) {
-      const ex = sign * len * 0.45;
-
-      ctx.beginPath();
-      ctx.arc(ex - sign * ball * 0.6, -ball * 0.6, ball, 0, Math.PI * 2);
-      ctx.arc(ex + sign * ball * 0.6, -ball * 0.6, ball, 0, Math.PI * 2);
-      ctx.arc(ex - sign * ball * 0.6, ball * 0.6, ball, 0, Math.PI * 2);
-      ctx.arc(ex + sign * ball * 0.6, ball * 0.6, ball, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    boneEnd(-1);
-    boneEnd(1);
-
-    ctx.strokeStyle = "rgba(160,130,90,0.45)";
-    ctx.lineWidth = size * 0.08;
+    ctx.beginPath();
+    ctx.arc(-length / 2, -thickness / 2, ball, 0, Math.PI * 2);
+    ctx.arc(-length / 2, thickness / 2, ball, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(-len * 0.22, 0);
-    ctx.lineTo(len * 0.22, 0);
+    ctx.arc(length / 2, -thickness / 2, ball, 0, Math.PI * 2);
+    ctx.arc(length / 2, thickness / 2, ball, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#8b5a2b";
+    ctx.lineWidth = size * 0.15;
     ctx.stroke();
+
+    const grad = ctx.createLinearGradient(
+      -length / 2,
+      -thickness,
+      length / 2,
+      thickness
+    );
+
+    grad.addColorStop(0, "rgba(255,255,255,0.9)");
+    grad.addColorStop(0.5, "rgba(255,255,255,0.4)");
+    grad.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = grad;
+    ctx.globalAlpha = alpha * 0.6;
+
+    ctx.beginPath();
+    ctx.roundRect(
+      -length / 2,
+      -thickness / 2,
+      length,
+      thickness / 2,
+      thickness / 2
+    );
+    ctx.fill();
 
     ctx.restore();
   }
@@ -491,8 +507,8 @@
       const fallPhase = ((time * (0.00016 + i * 0.00003)) + i * 0.43) % 1;
       const bx = x - r * 0.28 + i * r * 0.38 + Math.sin(fallPhase * Math.PI * 2 + i) * (r * 0.08);
       const by = y - r * 1.02 + fallPhase * (r * 1.95);
-      const alpha = core.clamp(0.18 + Math.sin(fallPhase * Math.PI) * 0.62, 0.16, 0.8);
-      const boneSize = Math.max(3.4, r * 0.1);
+      const alpha = core.clamp(0.08 + Math.sin(fallPhase * Math.PI) * 0.42, 0.06, 0.46);
+      const boneSize = Math.max(2.8, r * 0.082);
 
       drawBoneIllustration(
         ctx,
@@ -501,7 +517,7 @@
         boneSize,
         alpha,
         Math.sin(time * 0.0011 + i) * 0.16,
-        8
+        6
       );
     }
 
