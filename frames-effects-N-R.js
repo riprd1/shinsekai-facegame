@@ -316,12 +316,22 @@
     const len = size * 1.45;
     const shaftH = size * 0.34;
     const endR = size * 0.28;
+    const round = shaftH * 0.45;
     const offset = len * 0.42;
 
     ctx.fillStyle = "rgba(255,250,236,0.98)";
 
     ctx.beginPath();
-    ctx.roundRect(-len * 0.5, -shaftH * 0.5, len, shaftH, shaftH * 0.45);
+    ctx.moveTo(-len * 0.5 + round, -shaftH * 0.5);
+    ctx.lineTo(len * 0.5 - round, -shaftH * 0.5);
+    ctx.quadraticCurveTo(len * 0.5, -shaftH * 0.5, len * 0.5, -shaftH * 0.5 + round);
+    ctx.lineTo(len * 0.5, shaftH * 0.5 - round);
+    ctx.quadraticCurveTo(len * 0.5, shaftH * 0.5, len * 0.5 - round, shaftH * 0.5);
+    ctx.lineTo(-len * 0.5 + round, shaftH * 0.5);
+    ctx.quadraticCurveTo(-len * 0.5, shaftH * 0.5, -len * 0.5, shaftH * 0.5 - round);
+    ctx.lineTo(-len * 0.5, -shaftH * 0.5 + round);
+    ctx.quadraticCurveTo(-len * 0.5, -shaftH * 0.5, -len * 0.5 + round, -shaftH * 0.5);
+    ctx.closePath();
     ctx.fill();
 
     function drawEnd(sign) {
