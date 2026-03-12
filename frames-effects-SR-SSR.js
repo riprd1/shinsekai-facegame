@@ -1,4 +1,103 @@
 (function () {
+  const EFFECT_IMAGE_URLS = {
+    ribbonTop: "https://i.imgur.com/4tOpfNe.jpeg",
+    ribbonFrame: "https://i.imgur.com/O4UTdeP.jpeg",
+    ribbonDrop: "https://i.imgur.com/araNgq2.png",
+    butterflyA: "https://i.imgur.com/XXc9TRN.png",
+    butterflyB: "https://i.imgur.com/fzZpqV9.png",
+    darkMoonFrame: "https://i.imgur.com/2gLpDVY.jpeg",
+    crystalFrame: "https://i.imgur.com/UPBZsEK.png"
+  };
+
+  const effectImageCache = {};
+
+  function getEffectImage(url) {
+    if (!url) return null;
+    if (effectImageCache[url]) return effectImageCache[url];
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.decoding = "async";
+    img.src = url;
+    effectImageCache[url] = img;
+    return img;
+  }
+
+  function drawEffectImage(ctx, img, x, y, width, height, alpha = 1, rotation = 0) {
+    if (!img || !img.complete || !img.naturalWidth || !img.naturalHeight) return;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(img, -width / 2, -height / 2, width, height);
+    ctx.restore();
+  }
+
+  function drawClippedCircleImage(ctx, img, x, y, r, alpha = 1, scale = 1.08, rotation = 0) {
+    if (!img || !img.complete || !img.naturalWidth || !img.naturalHeight) return;
+
+    const size = r * 2 * scale;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.02, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(img, -size / 2, -size / 2, size, size);
+    ctx.restore();
+  }
+
+  function drawSoftCloud(ctx, x, y, w, h, color, alpha, blur) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+
+    ctx.beginPath();
+    ctx.ellipse(x - w * 0.18, y, w * 0.2, h * 0.24, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y - h * 0.06, w * 0.26, h * 0.3, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + w * 0.2, y, w * 0.22, h * 0.26, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y + h * 0.12, w * 0.42, h * 0.22, 0, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawAuroraRibbon(ctx, x, y, outerR, innerR, startAngle, endAngle, colors, alpha, blur) {
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.arc(x, y, outerR, startAngle, endAngle);
+    ctx.arc(x, y, innerR, endAngle, startAngle, true);
+    ctx.closePath();
+
+    const mid = (startAngle + endAngle) / 2;
+    const gx1 = x + Math.cos(mid) * innerR;
+    const gy1 = y + Math.sin(mid) * innerR;
+    const gx2 = x + Math.cos(mid) * outerR;
+    const gy2 = y + Math.sin(mid) * outerR;
+
+    const gradient = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
+    gradient.addColorStop(0, colors[0]);
+    gradient.addColorStop(0.28, colors[1]);
+    gradient.addColorStop(0.55, colors[2]);
+    gradient.addColorStop(0.82, colors[3]);
+    gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = gradient;
+    ctx.shadowColor = colors[2];
+    ctx.shadowBlur = blur;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
   function getFrameDecorationPattern(frameName) {
     switch (frameName) {
       case "スターグロウ":
@@ -231,36 +330,6 @@
     }
   }
 
-  function drawAuroraRibbon(ctx, x, y, outerR, innerR, startAngle, endAngle, colors, alpha, blur) {
-    ctx.save();
-
-    ctx.beginPath();
-    ctx.arc(x, y, outerR, startAngle, endAngle);
-    ctx.arc(x, y, innerR, endAngle, startAngle, true);
-    ctx.closePath();
-
-    const mid = (startAngle + endAngle) / 2;
-    const gx1 = x + Math.cos(mid) * innerR;
-    const gy1 = y + Math.sin(mid) * innerR;
-    const gx2 = x + Math.cos(mid) * outerR;
-    const gy2 = y + Math.sin(mid) * outerR;
-
-    const gradient = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
-    gradient.addColorStop(0, colors[0]);
-    gradient.addColorStop(0.28, colors[1]);
-    gradient.addColorStop(0.55, colors[2]);
-    gradient.addColorStop(0.82, colors[3]);
-    gradient.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = colors[2];
-    ctx.shadowBlur = blur;
-    ctx.fill();
-
-    ctx.restore();
-  }
-
   function drawAuroraSpecial(ctx, body, meta, time) {
     const x = body.position.x;
     const y = body.position.y;
@@ -295,107 +364,6 @@
 
       drawAuroraRibbon(ctx, x, y, outerR, innerR, startAngle, endAngle, colors, band.alpha, 14);
     });
-  }
-
-  function drawShinyGoldSpecial(ctx, body, meta, time, core) {
-    const x = body.position.x;
-    const y = body.position.y;
-    const r = body.circleRadius || 20;
-
-    const bands = [
-      { speed: 0.00042, len: 1.22, thickness: 0.16, shift: 0.0, alpha: 0.92 },
-      { speed: -0.00031, len: 1.05, thickness: 0.13, shift: 0.9, alpha: 0.82 },
-      { speed: 0.00056, len: 1.36, thickness: 0.18, shift: 1.8, alpha: 0.72 }
-    ];
-
-    bands.forEach((band, i) => {
-      const center = time * band.speed + band.shift + i * 0.25;
-      const startAngle = center - band.len * 0.5;
-      const endAngle = center + band.len * 0.5;
-
-      const outerR = r - 2.4 - i * 0.55;
-      const innerR = outerR - Math.max(4.4, r * band.thickness);
-
-      const colors = [
-        "rgba(255,255,255,0)",
-        "rgba(255,255,255,0.18)",
-        "rgba(255,244,190,0.70)",
-        "rgba(255,225,110,0.92)",
-        "rgba(255,255,255,0.34)",
-        "rgba(255,255,255,0)"
-      ];
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x, y, outerR, startAngle, endAngle);
-      ctx.arc(x, y, innerR, endAngle, startAngle, true);
-      ctx.closePath();
-
-      const gx1 = x + Math.cos(center) * innerR;
-      const gy1 = y + Math.sin(center) * innerR;
-      const gx2 = x + Math.cos(center) * outerR;
-      const gy2 = y + Math.sin(center) * outerR;
-
-      const grad = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
-      grad.addColorStop(0.00, colors[0]);
-      grad.addColorStop(0.16, colors[1]);
-      grad.addColorStop(0.38, colors[2]);
-      grad.addColorStop(0.62, colors[3]);
-      grad.addColorStop(0.84, colors[4]);
-      grad.addColorStop(1.00, colors[5]);
-
-      ctx.globalAlpha = band.alpha;
-      ctx.fillStyle = grad;
-      ctx.shadowColor = "rgba(255,232,120,0.95)";
-      ctx.shadowBlur = 16;
-      ctx.fill();
-      ctx.restore();
-    });
-
-    const sparkleCount = 16;
-    for (let i = 0; i < sparkleCount; i++) {
-      const angle = (Math.PI * 2 * i / sparkleCount) + Math.sin(time * 0.00035 + i) * 0.08;
-      const rr = r * (0.56 + (i % 4) * 0.07);
-      const sx = x + Math.cos(angle) * rr;
-      const sy = y + Math.sin(angle) * rr;
-
-      const blink = (Math.sin(time * 0.0038 + i * 1.7) + 1) / 2;
-      const alpha = core.clamp(0.16 + blink * 0.78, 0.12, 0.98);
-
-      if (i % 3 === 0) {
-        core.drawSoftDiamondStar(
-          ctx,
-          sx,
-          sy,
-          Math.max(2.1, r * 0.06) * (0.92 + blink * 0.22),
-          "rgba(255,238,160,0.98)",
-          alpha,
-          Math.PI / 4 + i * 0.1,
-          12
-        );
-      } else {
-        core.drawTinyTwinkle(
-          ctx,
-          sx,
-          sy,
-          Math.max(1.7, r * 0.045) * (0.92 + blink * 0.16),
-          "rgba(255,255,255,0.98)",
-          alpha,
-          time * 0.0006 + i * 0.2,
-          9
-        );
-      }
-    }
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, r - 6.5, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.34)";
-    ctx.lineWidth = Math.max(1.2, r * 0.03);
-    ctx.shadowColor = "rgba(255,255,255,0.5)";
-    ctx.shadowBlur = 10;
-    ctx.stroke();
-    ctx.restore();
   }
 
   function drawNeonPurpleSpecial(ctx, body, meta, time, core) {
@@ -473,111 +441,253 @@
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
-    const count = 7;
-    const ringRadius = r * 0.81;
-
-    for (let i = 0; i < count; i++) {
-      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / count) + Math.sin(time * 0.0008 + i) * 0.04;
-      const dx = x + Math.cos(angle) * ringRadius;
-      const dy = y + Math.sin(angle) * ringRadius;
-
-      const shine = (Math.sin(time * 0.002 + i * 1.64) + 1) / 2;
-      const pulse = (Math.sin(time * 0.0036 + i * 2.1) + 1) / 2;
-      const alpha = core.clamp(0.38 + shine * 0.54, 0.24, 1);
-      const size = Math.max(4.2, r * 0.142) * (0.92 + pulse * 0.16);
-      const rotation = Math.PI / 4 + time * 0.0006 + i * 0.5;
-
-      core.drawDiamond(ctx, dx, dy, size, "rgba(210,248,255,0.95)", alpha, rotation, 12);
-    }
+    const crystalFrameImg = getEffectImage(EFFECT_IMAGE_URLS.crystalFrame);
 
     ctx.save();
-    const gloss = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
-    gloss.addColorStop(0, "rgba(255,255,255,0)");
-    gloss.addColorStop(0.35, "rgba(230,250,255,0.08)");
-    gloss.addColorStop(0.5, "rgba(255,255,255,0.18)");
-    gloss.addColorStop(0.65, "rgba(180,230,255,0.06)");
-    gloss.addColorStop(1, "rgba(255,255,255,0)");
-
     ctx.beginPath();
     ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
     ctx.clip();
-    ctx.globalAlpha = 0.9;
-    ctx.strokeStyle = gloss;
-    ctx.lineWidth = Math.max(6, r * 0.32);
-    ctx.shadowColor = "rgba(220,245,255,0.4)";
-    ctx.shadowBlur = 14;
-    ctx.beginPath();
-    ctx.moveTo(x - r * 0.9, y + r * 0.3);
-    ctx.lineTo(x + r * 0.75, y - r * 0.65);
-    ctx.stroke();
+
+    const seed = core.hashSeed(`crystal-${Math.round(x)}-${Math.round(y)}`);
+    const rand = core.seededRandom(seed);
+    const sparkleCount = 20;
+
+    for (let i = 0; i < sparkleCount; i++) {
+      const angle = rand() * Math.PI * 2;
+      const radius = r * (0.08 + rand() * 0.72);
+      const sx = x + Math.cos(angle) * radius;
+      const sy = y + Math.sin(angle) * radius;
+
+      const blink = (Math.sin(time * (0.0012 + rand() * 0.0022) + i * 2.17 + rand() * 6) + 1) / 2;
+      const alpha = core.clamp(0.02 + blink * (0.28 + rand() * 0.5), 0.02, 0.94);
+      const size = Math.max(1.8, r * (0.03 + rand() * 0.055)) * (0.92 + blink * 0.18);
+      const colorPick = i % 3;
+
+      let color = "rgba(255,255,255,0.98)";
+      if (colorPick === 1) color = "rgba(214,247,255,0.98)";
+      if (colorPick === 2) color = "rgba(196,241,255,0.96)";
+
+      if (i % 4 === 0) {
+        core.drawSoftDiamondStar(ctx, sx, sy, size, color, alpha, Math.PI / 4 + i * 0.13, 12);
+      } else if (i % 3 === 0) {
+        core.drawTinyTwinkle(ctx, sx, sy, size * 0.95, color, alpha, time * 0.00045 + i * 0.22, 10);
+      } else {
+        core.drawSparkle(ctx, sx, sy, size * 0.82, color, alpha * 0.78, i * 0.19, 8);
+      }
+    }
+
+    for (let i = 0; i < 4; i++) {
+      const glossPhase = ((time * (0.00016 + i * 0.00003)) + i * 0.23) % 1;
+      const gx = x - r * 1.05 + glossPhase * (r * 2.1);
+      const gy = y - r * 0.78 + i * r * 0.42;
+
+      const gloss = ctx.createLinearGradient(gx - r * 0.18, gy - r * 0.18, gx + r * 0.22, gy + r * 0.22);
+      gloss.addColorStop(0, "rgba(255,255,255,0)");
+      gloss.addColorStop(0.45, "rgba(255,255,255,0.05)");
+      gloss.addColorStop(0.55, "rgba(232,250,255,0.55)");
+      gloss.addColorStop(0.7, "rgba(255,255,255,0.08)");
+      gloss.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.save();
+      ctx.globalAlpha = 0.72;
+      ctx.strokeStyle = gloss;
+      ctx.lineWidth = Math.max(2.4, r * 0.09);
+      ctx.shadowColor = "rgba(214,247,255,0.7)";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(gx - r * 0.2, gy + r * 0.16);
+      ctx.lineTo(gx + r * 0.16, gy - r * 0.16);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     ctx.restore();
+
+    drawClippedCircleImage(ctx, crystalFrameImg, x, y, r, 0.98, 1.12, 0);
   }
 
   function drawRibbonLaceSpecial(ctx, body, meta, time, core) {
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
-    const laceCount = 12;
-    const laceRadius = r * 0.83;
-    const laceColor = "rgba(255,245,252,0.95)";
-    const ribbonColor = meta.color;
 
-    for (let i = 0; i < laceCount; i++) {
-      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / laceCount);
-      const dx = x + Math.cos(angle) * laceRadius;
-      const dy = y + Math.sin(angle) * laceRadius;
-      const alpha = core.clamp(0.34 + ((Math.sin(time * 0.0018 + i * 0.92) + 1) / 2) * 0.44, 0.22, 0.82);
+    const ribbonFrameImg = getEffectImage(EFFECT_IMAGE_URLS.ribbonFrame);
+    const ribbonTopImg = getEffectImage(EFFECT_IMAGE_URLS.ribbonTop);
+    const ribbonDropImg = getEffectImage(EFFECT_IMAGE_URLS.ribbonDrop);
 
-      core.drawCircleCandy(ctx, dx, dy, Math.max(1.7, r * 0.05), "rgba(255,255,255,0.96)", laceColor, alpha, 0, 6);
+    drawClippedCircleImage(ctx, ribbonFrameImg, x, y, r, 0.98, 1.12, 0);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
+
+    const dropCount = 3;
+    for (let i = 0; i < dropCount; i++) {
+      const phase = ((time * (0.00018 + i * 0.00002)) + i * 0.27) % 1;
+      const dx = x - r * 0.44 + i * r * 0.42 + Math.sin(phase * Math.PI * 2 + i) * (r * 0.06);
+      const dy = y - r * 0.9 + phase * (r * 1.9);
+      const alpha = core.clamp(0.14 + Math.sin(phase * Math.PI) * 0.7, 0.08, 0.88);
+      const size = Math.max(8, r * 0.34) * (0.92 + Math.sin(time * 0.0014 + i) * 0.05);
+
+      drawEffectImage(ctx, ribbonDropImg, dx, dy, size, size, alpha, Math.sin(time * 0.001 + i) * 0.08);
     }
 
-    const ribbonAngles = [-Math.PI / 2, Math.PI / 6, Math.PI * 5 / 6];
-    ribbonAngles.forEach((angle, i) => {
-      const dx = x + Math.cos(angle) * (r * 0.82);
-      const dy = y + Math.sin(angle) * (r * 0.82);
-      const pulse = (Math.sin(time * 0.0019 + i * 2.1) + 1) / 2;
-      const alpha = core.clamp(0.42 + pulse * 0.48, 0.28, 0.92);
-      const size = Math.max(4.4, r * 0.15) * (0.94 + pulse * 0.12);
+    for (let i = 0; i < 7; i++) {
+      const angle = (-Math.PI / 2) + (Math.PI * 2 * i / 7) + Math.sin(time * 0.00075 + i) * 0.04;
+      const hx = x + Math.cos(angle) * (r * (0.46 + (i % 2) * 0.12));
+      const hy = y + Math.sin(angle) * (r * (0.42 + (i % 2) * 0.1));
+      const pulse = (Math.sin(time * 0.0023 + i * 1.5) + 1) / 2;
+      const alpha = core.clamp(0.02 + pulse * 0.42, 0.02, 0.44);
+      const heartColor = i % 2 === 0 ? "rgba(255,196,220,0.96)" : "rgba(255,220,235,0.96)";
+      const heartSize = Math.max(2.6, r * 0.085) * (0.92 + pulse * 0.16);
 
-      core.drawBow(ctx, dx, dy, size, ribbonColor, alpha, 10);
-    });
+      core.drawHeart(ctx, hx, hy - heartSize * 0.4, heartSize, heartColor, alpha, 8);
+    }
+
+    ctx.restore();
+
+    const ribbonW = Math.max(18, r * 1.08);
+    const ribbonH = ribbonW * 0.7;
+    const ribbonY = y - r * 1.02 + Math.sin(time * 0.0015) * (r * 0.02);
+    drawEffectImage(ctx, ribbonTopImg, x, ribbonY, ribbonW, ribbonH, 0.98, Math.sin(time * 0.0011) * 0.03);
   }
 
   function drawButterflySpecial(ctx, body, meta, time, core) {
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
+
+    const butterflyImgA = getEffectImage(EFFECT_IMAGE_URLS.butterflyA);
+    const butterflyImgB = getEffectImage(EFFECT_IMAGE_URLS.butterflyB);
+
+    const bands = [
+      { speed: 0.00054, len: 1.36, alpha: 0.78, outerOffset: 0.2 },
+      { speed: -0.00038, len: 1.18, alpha: 0.64, outerOffset: 0.85 },
+      { speed: 0.00062, len: 0.96, alpha: 0.58, outerOffset: 1.45 }
+    ];
+
+    bands.forEach((band, i) => {
+      const center = time * band.speed + i * 1.92;
+      const startAngle = center - band.len * 0.5;
+      const endAngle = center + band.len * 0.5;
+
+      const outerR = r - 1.1 - band.outerOffset;
+      const innerR = outerR - Math.max(4.5, r * 0.155);
+
+      const colors = [
+        "rgba(122,211,255,0)",
+        "rgba(122,211,255,0.24)",
+        i % 2 === 0 ? "rgba(179,140,255,0.84)" : "rgba(122,255,213,0.82)",
+        "rgba(255,158,216,0.24)"
+      ];
+
+      drawAuroraRibbon(ctx, x, y, outerR, innerR, startAngle, endAngle, colors, band.alpha, 16);
+    });
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
+
     const butterflies = [
-      { angle: -Math.PI / 2, speed: 0.0022, radius: r * 0.8, tint: "#a98cff" },
-      { angle: Math.PI * 0.2, speed: 0.0018, radius: r * 0.76, tint: "#8fd8ff" },
-      { angle: Math.PI * 1.1, speed: 0.0025, radius: r * 0.78, tint: "#c3b3ff" }
+      {
+        img: butterflyImgA,
+        baseAngle: -Math.PI / 2,
+        orbitR: r * 0.56,
+        speed: 0.00074,
+        wobble: 0.12,
+        flapSpeed: 0.0024,
+        size: r * 0.52
+      },
+      {
+        img: butterflyImgB,
+        baseAngle: Math.PI * 0.35,
+        orbitR: r * 0.5,
+        speed: -0.00058,
+        wobble: 0.14,
+        flapSpeed: 0.0021,
+        size: r * 0.48
+      }
     ];
 
     butterflies.forEach((bf, i) => {
-      const angle = bf.angle + Math.sin(time * 0.0007 + i) * 0.1;
-      const dx = x + Math.cos(angle) * bf.radius;
-      const dy = y + Math.sin(angle) * bf.radius;
-      const flap = 0.55 + ((Math.sin(time * bf.speed + i * 1.9) + 1) / 2) * 0.9;
-      const alpha = core.clamp(0.46 + ((Math.sin(time * 0.0016 + i * 2.3) + 1) / 2) * 0.42, 0.3, 0.9);
-      const size = Math.max(4.2, r * 0.145) * (0.95 + Math.sin(time * 0.0014 + i) * 0.08);
-      const rotation = Math.sin(time * 0.0008 + i * 1.2) * 0.18;
+      const angle = bf.baseAngle + time * bf.speed + Math.sin(time * 0.001 + i * 2.1) * bf.wobble;
+      const bobY = Math.sin(time * 0.0019 + i * 1.8) * (r * 0.05);
+      const bx = x + Math.cos(angle) * bf.orbitR;
+      const by = y + Math.sin(angle) * bf.orbitR + bobY;
+      const flap = 0.94 + Math.sin(time * bf.flapSpeed + i * 1.7) * 0.08;
+      const alpha = 0.96;
+      const rot = angle + Math.PI / 2 + Math.sin(time * 0.0013 + i) * 0.12;
 
-      core.drawButterfly(ctx, dx, dy, size, bf.tint, "rgba(255,255,255,0.8)", flap, alpha, rotation, 10);
+      drawEffectImage(
+        ctx,
+        bf.img,
+        bx,
+        by,
+        bf.size * flap,
+        bf.size * 0.88,
+        alpha,
+        rot
+      );
     });
+
+    for (let i = 0; i < 8; i++) {
+      const phase = ((time * (0.00018 + i * 0.000015)) + i * 0.16) % 1;
+      const sx = x - r * 0.62 + phase * (r * 1.24);
+      const sy = y - r * 0.42 + Math.sin(phase * Math.PI * 2 + i) * (r * 0.28);
+      const alpha = core.clamp(0.04 + Math.sin(phase * Math.PI) * 0.28, 0.03, 0.32);
+
+      core.drawTinyTwinkle(
+        ctx,
+        sx,
+        sy,
+        Math.max(1.8, r * 0.05),
+        i % 2 === 0 ? "rgba(255,255,255,0.9)" : "rgba(214,247,255,0.9)",
+        alpha,
+        time * 0.0005 + i * 0.15,
+        7
+      );
+    }
+
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r - 1.5, 0, Math.PI * 2);
+    const borderGrad = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
+    borderGrad.addColorStop(0, "#7ad3ff");
+    borderGrad.addColorStop(0.33, "#b38cff");
+    borderGrad.addColorStop(0.66, "#7affd5");
+    borderGrad.addColorStop(1, "#ff9ed8");
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth = Math.max(2.6, r * 0.09);
+    ctx.shadowColor = "rgba(190,160,255,0.42)";
+    ctx.shadowBlur = 14;
+    ctx.stroke();
+    ctx.restore();
   }
 
   function drawDarkMoonSpecial(ctx, body, meta, time, core) {
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
+    const darkMoonImg = getEffectImage(EFFECT_IMAGE_URLS.darkMoonFrame);
+
+    drawClippedCircleImage(ctx, darkMoonImg, x, y, r, 0.98, 1.12, 0);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
 
     for (let i = 0; i < 3; i++) {
       const angle = time * (0.00018 + i * 0.00004) + i * 2.1;
       const cx = x + Math.cos(angle) * (r * 0.22);
       const cy = y + Math.sin(angle) * (r * 0.22);
       const grad = ctx.createRadialGradient(cx, cy, r * 0.08, x, y, r * (0.72 + i * 0.08));
-      grad.addColorStop(0, `rgba(120,70,170,${0.18 - i * 0.03})`);
-      grad.addColorStop(0.65, `rgba(55,25,85,${0.12 - i * 0.02})`);
+      grad.addColorStop(0, `rgba(120,70,170,${0.16 - i * 0.03})`);
+      grad.addColorStop(0.65, `rgba(55,25,85,${0.1 - i * 0.02})`);
       grad.addColorStop(1, "rgba(0,0,0,0)");
 
       ctx.save();
@@ -588,15 +698,50 @@
       ctx.restore();
     }
 
-    const moonAngles = [-Math.PI / 2, Math.PI * 0.72];
-    moonAngles.forEach((angle, i) => {
-      const dx = x + Math.cos(angle) * (r * 0.8);
-      const dy = y + Math.sin(angle) * (r * 0.8);
-      const alpha = core.clamp(0.46 + ((Math.sin(time * 0.0014 + i * 2.2) + 1) / 2) * 0.42, 0.28, 0.9);
-      const size = Math.max(4.3, r * 0.14);
+    const cloudConfigs = [
+      { speed: 0.000045, offset: 0.12, yMul: -0.24, width: 0.72, alpha: 0.48 },
+      { speed: 0.000038, offset: 0.48, yMul: 0.02, width: 0.62, alpha: 0.42 },
+      { speed: 0.000052, offset: 0.76, yMul: 0.28, width: 0.78, alpha: 0.36 }
+    ];
 
-      core.drawCrescentMoon(ctx, dx, dy, size, "#dbc4ff", "rgba(183,140,255,0.72)", alpha, angle + 0.6, 10);
+    cloudConfigs.forEach((cloud, i) => {
+      const phase = ((time * cloud.speed) + cloud.offset) % 1;
+      const cx = x - r * 1.1 + phase * (r * 2.3);
+      const cy = y + r * cloud.yMul + Math.sin(time * 0.0007 + i * 1.8) * (r * 0.03);
+      const fade = Math.sin(phase * Math.PI);
+      const alpha = cloud.alpha * core.clamp(fade, 0.08, 1);
+
+      drawSoftCloud(
+        ctx,
+        cx,
+        cy,
+        r * cloud.width,
+        r * 0.28,
+        i % 2 === 0 ? "rgba(122,120,168,0.96)" : "rgba(143,140,196,0.94)",
+        alpha,
+        10
+      );
     });
+
+    for (let i = 0; i < 5; i++) {
+      const angle = (-Math.PI / 2) + i * 1.2 + Math.sin(time * 0.0008 + i) * 0.04;
+      const sx = x + Math.cos(angle) * (r * (0.36 + (i % 2) * 0.14));
+      const sy = y + Math.sin(angle) * (r * (0.34 + (i % 2) * 0.12));
+      const alpha = core.clamp(0.04 + ((Math.sin(time * 0.002 + i * 2.1) + 1) / 2) * 0.22, 0.04, 0.24);
+
+      core.drawTinyTwinkle(
+        ctx,
+        sx,
+        sy,
+        Math.max(1.5, r * 0.042),
+        "rgba(235,230,255,0.9)",
+        alpha,
+        time * 0.00045 + i * 0.14,
+        6
+      );
+    }
+
+    ctx.restore();
   }
 
   function drawGalaxySpecial(ctx, body, meta, time) {
@@ -1015,8 +1160,6 @@
       drawStarGlowSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "オーロラライン") {
       drawAuroraSpecial(ctx, body, meta, time);
-    } else if (body.frameName === "シャイニーゴールド") {
-      drawShinyGoldSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "ネオンパープル") {
       drawNeonPurpleSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "クリスタルフレーム") {
