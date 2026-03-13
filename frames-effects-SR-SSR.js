@@ -863,7 +863,16 @@
 
     ctx.restore();
 
-    drawEffectImage(ctx, galaxyImg, x, y, r * 2.82, r * 2.56, 1, 0);
+    drawEffectImage(
+      ctx,
+      galaxyImg,
+      x - r * 0.05,
+      y + r * 0.06,
+      r * 2.94,
+      r * 2.72,
+      1,
+      0
+    );
   }
 
   function drawSuperSparkleCluster(ctx, x, y, r, time, core) {
@@ -1053,7 +1062,7 @@
       ctx.restore();
     });
 
-    drawEffectImage(ctx, starFrameImg, x, y, r * 2.82, r * 2.56, 1, 0);
+    drawEffectImage(ctx, starFrameImg, x, y, r * 2.62, r * 2.40, 1, 0);
   }
 
   function drawAngelWingSpecial(ctx, body, meta, time, core) {
