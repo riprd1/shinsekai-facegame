@@ -546,12 +546,12 @@
 
     ctx.restore();
 
-    drawEffectImage(ctx, ribbonFrameImg, x - r * 0.10, y, r * 2.34, r * 2.34, 1, 0);
+    drawEffectImage(ctx, ribbonFrameImg, x - r * 0.14, y - r * 0.02, r * 2.34, r * 2.26, 1, 0);
 
     const ribbonW = Math.max(30, r * 1.9);
     const ribbonH = ribbonW * 0.48;
-    const ribbonY = y - r * 0.98 + Math.sin(time * 0.0015) * (r * 0.02);
-    drawEffectImage(ctx, ribbonTopImg, x - r * 0.08, ribbonY, ribbonW, ribbonH, 1, Math.sin(time * 0.0011) * 0.02);
+    const ribbonY = y - r * 0.90 + Math.sin(time * 0.0015) * (r * 0.02);
+    drawEffectImage(ctx, ribbonTopImg, x - r * 0.10, ribbonY, ribbonW, ribbonH, 1, Math.sin(time * 0.0011) * 0.02);
   }
 
   function drawButterflySpecial(ctx, body, meta, time, core) {
@@ -742,7 +742,7 @@
 
     ctx.restore();
 
-    drawEffectImage(ctx, darkMoonImg, x - r * 0.13, y, r * 2.60, r * 2.45, 1, 0);
+    drawEffectImage(ctx, darkMoonImg, x - r * 0.16, y, r * 2.68, r * 2.45, 1, 0);
   }
 
   function drawGalaxySpecial(ctx, body, meta, time) {
@@ -899,7 +899,7 @@
 
     ctx.restore();
 
-    drawEffectImage(ctx, darkRoseImg, x, y, r * 2.62, r * 2.42, 1, 0);
+    drawEffectImage(ctx, darkRoseImg, x, y, r * 2.78, r * 2.42, 1, 0);
   }
 
   function drawShootingStarSpecial(ctx, body, meta, time, core) {
