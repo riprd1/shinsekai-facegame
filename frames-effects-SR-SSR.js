@@ -824,8 +824,8 @@
       darkMoonImg,
       x - r * 0.39,
       y,
-      r * 3.16,
-      r * 2.62,
+      r * 3.22,
+      r * 2.68,
       1,
       0
     );
@@ -866,10 +866,10 @@
     drawEffectImage(
       ctx,
       galaxyImg,
-      x,
-      y,
-      r * 2.76,
-      r * 2.78,
+      x - r * 0.035,
+      y - r * 0.015,
+      r * 2.60,
+      r * 2.84,
       1,
       0
     );
@@ -1065,10 +1065,10 @@
     drawEffectImage(
       ctx,
       starFrameImg,
-      x - r * 0.01,
-      y + r * 0.01,
-      r * 2.56,
-      r * 2.34,
+      x - r * 0.03,
+      y + r * 0.02,
+      r * 2.40,
+      r * 2.28,
       1,
       0
     );
