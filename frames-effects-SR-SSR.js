@@ -866,10 +866,10 @@
     drawEffectImage(
       ctx,
       galaxyImg,
-      x - r * 0.05,
-      y + r * 0.06,
-      r * 2.94,
-      r * 2.72,
+      x,
+      y,
+      r * 2.76,
+      r * 2.78,
       1,
       0
     );
@@ -1062,7 +1062,16 @@
       ctx.restore();
     });
 
-    drawEffectImage(ctx, starFrameImg, x, y, r * 2.62, r * 2.40, 1, 0);
+    drawEffectImage(
+      ctx,
+      starFrameImg,
+      x - r * 0.01,
+      y + r * 0.01,
+      r * 2.56,
+      r * 2.34,
+      1,
+      0
+    );
   }
 
   function drawAngelWingSpecial(ctx, body, meta, time, core) {
