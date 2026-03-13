@@ -518,7 +518,7 @@
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.arc(x, y, r * 0.84, 0, Math.PI * 2);
     ctx.clip();
 
     const dropCount = 3;
@@ -546,12 +546,12 @@
 
     ctx.restore();
 
-    drawClippedCircleImage(ctx, ribbonFrameImg, x, y, r, 0.98, 1.12, 0);
+    drawEffectImage(ctx, ribbonFrameImg, x, y, r * 2.34, r * 2.34, 1, 0);
 
-    const ribbonW = Math.max(18, r * 1.08);
-    const ribbonH = ribbonW * 0.7;
-    const ribbonY = y - r * 1.05 + Math.sin(time * 0.0015) * (r * 0.02);
-    drawEffectImage(ctx, ribbonTopImg, x, ribbonY, ribbonW, ribbonH, 0.98, Math.sin(time * 0.0011) * 0.03);
+    const ribbonW = Math.max(30, r * 1.9);
+    const ribbonH = ribbonW * 0.48;
+    const ribbonY = y - r * 1.23 + Math.sin(time * 0.0015) * (r * 0.02);
+    drawEffectImage(ctx, ribbonTopImg, x, ribbonY, ribbonW, ribbonH, 1, Math.sin(time * 0.0011) * 0.02);
   }
 
   function drawButterflySpecial(ctx, body, meta, time, core) {
@@ -677,7 +677,7 @@
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.arc(x, y, r * 0.82, 0, Math.PI * 2);
     ctx.clip();
 
     for (let i = 0; i < 3; i++) {
@@ -742,7 +742,7 @@
 
     ctx.restore();
 
-    drawClippedCircleImage(ctx, darkMoonImg, x, y, r, 0.98, 1.12, 0);
+    drawEffectImage(ctx, darkMoonImg, x, y, r * 2.45, r * 2.45, 1, 0);
   }
 
   function drawGalaxySpecial(ctx, body, meta, time) {
@@ -859,7 +859,7 @@
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.arc(x, y, r * 0.82, 0, Math.PI * 2);
     ctx.clip();
 
     for (let i = 0; i < 8; i++) {
@@ -899,7 +899,7 @@
 
     ctx.restore();
 
-    drawClippedCircleImage(ctx, darkRoseImg, x, y, r, 0.98, 1.12, 0);
+    drawEffectImage(ctx, darkRoseImg, x, y, r * 2.38, r * 2.38, 1, 0);
   }
 
   function drawShootingStarSpecial(ctx, body, meta, time, core) {
