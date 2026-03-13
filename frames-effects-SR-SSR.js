@@ -822,16 +822,16 @@
     drawEffectImage(
       ctx,
       darkMoonImg,
-      x - r * 0.39,
+      x - r * 0.40,
       y,
-      r * 3.22,
-      r * 2.68,
+      r * 3.28,
+      r * 2.74,
       1,
       0
     );
   }
 
-  function drawGalaxySpecial(ctx, body, meta, time) {
+  function drawGalaxySpecial(ctx, body, meta, time, core) {
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
@@ -861,15 +861,70 @@
       drawAuroraRibbon(ctx, x, y, outerR, innerR, start - bandLen * 0.5, start + bandLen * 0.5, colors, 0.72, 12);
     }
 
+    const seed = core.hashSeed(`galaxy-dust-${Math.round(x)}-${Math.round(y)}`);
+    const rand = core.seededRandom(seed);
+
+    for (let i = 0; i < 18; i++) {
+      const angle = rand() * Math.PI * 2;
+      const radius = r * (0.16 + rand() * 0.6);
+      const sx = x + Math.cos(angle) * radius;
+      const sy = y + Math.sin(angle) * radius;
+
+      const blink = (Math.sin(time * (0.0012 + rand() * 0.0021) + i * 1.7 + rand() * 6) + 1) / 2;
+      const alpha = core.clamp(0.08 + blink * 0.42, 0.05, 0.5);
+      const size = Math.max(1.2, r * (0.022 + rand() * 0.028)) * (0.9 + blink * 0.16);
+
+      if (i % 3 === 0) {
+        core.drawSoftDiamondStar(
+          ctx,
+          sx,
+          sy,
+          size,
+          i % 2 === 0 ? "rgba(255,255,255,0.96)" : "rgba(190,220,255,0.96)",
+          alpha,
+          time * 0.00035 + i * 0.19,
+          8
+        );
+      } else {
+        core.drawTinyTwinkle(
+          ctx,
+          sx,
+          sy,
+          size,
+          i % 2 === 0 ? "rgba(255,245,220,0.92)" : "rgba(210,230,255,0.92)",
+          alpha,
+          time * 0.00055 + i * 0.16,
+          6
+        );
+      }
+    }
+
+    for (let i = 0; i < 8; i++) {
+      const phase = ((time * (0.00016 + i * 0.00002)) + i * 0.14) % 1;
+      const trailX = x - r * 0.7 + phase * (r * 1.4);
+      const trailY = y - r * 0.28 + Math.sin(phase * Math.PI * 2 + i * 0.8) * (r * 0.22);
+
+      core.drawTinyTwinkle(
+        ctx,
+        trailX,
+        trailY,
+        Math.max(1.1, r * 0.026),
+        "rgba(255,255,255,0.85)",
+        core.clamp(0.04 + Math.sin(phase * Math.PI) * 0.24, 0.03, 0.28),
+        time * 0.0004 + i * 0.2,
+        5
+      );
+    }
+
     ctx.restore();
 
     drawEffectImage(
       ctx,
       galaxyImg,
       x - r * 0.035,
-      y - r * 0.015,
+      y + r * 0.005,
       r * 2.60,
-      r * 2.84,
+      r * 2.76,
       1,
       0
     );
@@ -1065,10 +1120,10 @@
     drawEffectImage(
       ctx,
       starFrameImg,
-      x - r * 0.03,
-      y + r * 0.02,
-      r * 2.40,
-      r * 2.28,
+      x - r * 0.022,
+      y + r * 0.015,
+      r * 2.36,
+      r * 2.26,
       1,
       0
     );
@@ -1165,7 +1220,7 @@
     } else if (body.frameName === "ダークムーン") {
       drawDarkMoonSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "ギャラクシー") {
-      drawGalaxySpecial(ctx, body, meta, time);
+      drawGalaxySpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "クラウン") {
       drawCrownSpecial(ctx, body, meta, time, core);
     } else if (body.frameName === "ダークローズ") {
