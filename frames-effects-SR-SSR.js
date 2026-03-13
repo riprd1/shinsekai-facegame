@@ -762,8 +762,8 @@
       const cx = x + Math.cos(angle) * (r * 0.22);
       const cy = y + Math.sin(angle) * (r * 0.22);
       const grad = ctx.createRadialGradient(cx, cy, r * 0.08, x, y, r * (0.72 + i * 0.08));
-      grad.addColorStop(0, `rgba(120,70,170,${0.20 - i * 0.03})`);
-      grad.addColorStop(0.65, `rgba(55,25,85,${0.14 - i * 0.02})`);
+      grad.addColorStop(0, `rgba(120,70,170,${0.14 - i * 0.022})`);
+      grad.addColorStop(0.65, `rgba(55,25,85,${0.09 - i * 0.014})`);
       grad.addColorStop(1, "rgba(0,0,0,0)");
 
       ctx.save();
@@ -775,9 +775,9 @@
     }
 
     const cloudConfigs = [
-      { speed: 0.000045, offset: 0.12, yMul: -0.24, width: 0.78, alpha: 0.66 },
-      { speed: 0.000038, offset: 0.48, yMul: 0.02, width: 0.68, alpha: 0.58 },
-      { speed: 0.000052, offset: 0.76, yMul: 0.28, width: 0.84, alpha: 0.50 }
+      { speed: 0.000045, offset: 0.12, yMul: -0.24, width: 0.78, alpha: 0.52 },
+      { speed: 0.000038, offset: 0.48, yMul: 0.02, width: 0.68, alpha: 0.46 },
+      { speed: 0.000052, offset: 0.76, yMul: 0.28, width: 0.84, alpha: 0.40 }
     ];
 
     cloudConfigs.forEach((cloud, i) => {
@@ -793,9 +793,9 @@
         cy,
         r * cloud.width,
         r * 0.31,
-        i % 2 === 0 ? "rgba(132,128,188,0.98)" : "rgba(160,150,210,0.96)",
+        i % 2 === 0 ? "rgba(132,128,188,0.90)" : "rgba(160,150,210,0.88)",
         alpha,
-        14
+        12
       );
     });
 
@@ -822,10 +822,10 @@
     drawEffectImage(
       ctx,
       darkMoonImg,
-      x - r * 0.40,
+      x - r * 0.42,
       y,
-      r * 3.28,
-      r * 2.74,
+      r * 3.36,
+      r * 2.82,
       1,
       0
     );
@@ -922,9 +922,9 @@
       ctx,
       galaxyImg,
       x - r * 0.035,
-      y + r * 0.005,
+      y + r * 0.045,
       r * 2.60,
-      r * 2.76,
+      r * 2.72,
       1,
       0
     );
@@ -1122,8 +1122,8 @@
       starFrameImg,
       x - r * 0.022,
       y + r * 0.015,
-      r * 2.36,
-      r * 2.26,
+      r * 2.32,
+      r * 2.22,
       1,
       0
     );
