@@ -1,13 +1,15 @@
 (function () {
   const EFFECT_IMAGE_URLS = {
-    ribbonTop: "https://i.imgur.com/mC0rYAE.png",
+    ribbonTop: "https://i.imgur.com/HmOMu7S.png",
     ribbonFrame: "https://i.imgur.com/9LrmdG2.png",
     ribbonDrop: "https://i.imgur.com/araNgq2.png",
     butterflyA: "https://i.imgur.com/XXc9TRN.png",
     butterflyB: "https://i.imgur.com/fzZpqV9.png",
     darkMoonFrame: "https://i.imgur.com/bk5LrCk.png",
     crystalFrame: "https://i.imgur.com/UPBZsEK.png",
-    darkRoseFrame: "https://i.imgur.com/20C7gSN.png"
+    darkRoseFrame: "https://i.imgur.com/20C7gSN.png",
+    galaxyFrame: "https://i.imgur.com/S01a5Ua.png",
+    shootingStarFrame: "https://i.imgur.com/PdN2XST.png"
   };
 
   const effectImageCache = {};
@@ -536,22 +538,44 @@
       const angle = (-Math.PI / 2) + (Math.PI * 2 * i / 7) + Math.sin(time * 0.00075 + i) * 0.04;
       const hx = x + Math.cos(angle) * (r * (0.46 + (i % 2) * 0.12));
       const hy = y + Math.sin(angle) * (r * (0.42 + (i % 2) * 0.1));
-      const pulse = (Math.sin(time * 0.0023 + i * 1.5) + 1) / 2;
-      const alpha = core.clamp(0.02 + pulse * 0.42, 0.02, 0.44);
-      const heartColor = i % 2 === 0 ? "rgba(255,196,220,0.96)" : "rgba(255,220,235,0.96)";
-      const heartSize = Math.max(2.6, r * 0.085) * (0.92 + pulse * 0.16);
+      const pulse = (Math.sin(time * 0.0027 + i * 1.5) + 1) / 2;
+      const alpha = core.clamp(0.12 + pulse * 0.62, 0.10, 0.74);
+      const heartColor = i % 2 === 0 ? "rgba(255,196,220,0.98)" : "rgba(255,225,238,0.98)";
+      const heartSize = Math.max(2.8, r * 0.09) * (0.94 + pulse * 0.22);
 
+      ctx.save();
+      ctx.shadowColor = i % 2 === 0 ? "rgba(255,170,210,0.95)" : "rgba(255,215,235,0.95)";
+      ctx.shadowBlur = 10 + pulse * 6;
       core.drawHeart(ctx, hx, hy - heartSize * 0.4, heartSize, heartColor, alpha, 8);
+      ctx.restore();
     }
 
     ctx.restore();
 
-    drawEffectImage(ctx, ribbonFrameImg, x - r * 0.24, y - r * 0.02, r * 2.42, r * 2.26, 1, 0);
+    drawEffectImage(
+      ctx,
+      ribbonFrameImg,
+      x - r * 0.24 + r * 0.015,
+      y - r * 0.02,
+      r * 2.45,
+      r * 2.26,
+      1,
+      0
+    );
 
     const ribbonW = Math.max(30, r * 1.9);
     const ribbonH = ribbonW * 0.48;
-    const ribbonY = y - r * 0.69 + Math.sin(time * 0.0015) * (r * 0.02);
-    drawEffectImage(ctx, ribbonTopImg, x - r * 0.18, ribbonY, ribbonW, ribbonH, 1, Math.sin(time * 0.0011) * 0.02);
+    const ribbonY = y - r * 0.58 + Math.sin(time * 0.0021) * (r * 0.035);
+    drawEffectImage(
+      ctx,
+      ribbonTopImg,
+      x,
+      ribbonY,
+      ribbonW * 0.98,
+      ribbonH * (0.98 + Math.sin(time * 0.0018) * 0.02),
+      1,
+      Math.sin(time * 0.0016) * 0.04
+    );
   }
 
   function drawButterflySpecial(ctx, body, meta, time, core) {
@@ -596,30 +620,39 @@
         img: butterflyImgA,
         baseAngle: -Math.PI / 2,
         orbitR: r * 0.56,
-        speed: 0.00074,
-        wobble: 0.12,
-        flapSpeed: 0.0024,
+        speed: 0.00096,
+        wobble: 0.14,
+        flapSpeed: 0.0034,
         size: r * 0.52
       },
       {
         img: butterflyImgB,
         baseAngle: Math.PI * 0.35,
         orbitR: r * 0.5,
-        speed: -0.00058,
-        wobble: 0.14,
-        flapSpeed: 0.0021,
+        speed: -0.00082,
+        wobble: 0.16,
+        flapSpeed: 0.0030,
         size: r * 0.48
+      },
+      {
+        img: butterflyImgA,
+        baseAngle: Math.PI * 1.08,
+        orbitR: r * 0.42,
+        speed: 0.00108,
+        wobble: 0.18,
+        flapSpeed: 0.0038,
+        size: r * 0.42
       }
     ];
 
     butterflies.forEach((bf, i) => {
-      const angle = bf.baseAngle + time * bf.speed + Math.sin(time * 0.001 + i * 2.1) * bf.wobble;
-      const bobY = Math.sin(time * 0.0019 + i * 1.8) * (r * 0.05);
+      const angle = bf.baseAngle + time * bf.speed + Math.sin(time * 0.0012 + i * 2.1) * bf.wobble;
+      const bobY = Math.sin(time * 0.0023 + i * 1.8) * (r * 0.06);
       const bx = x + Math.cos(angle) * bf.orbitR;
       const by = y + Math.sin(angle) * bf.orbitR + bobY;
-      const flap = 0.94 + Math.sin(time * bf.flapSpeed + i * 1.7) * 0.08;
-      const alpha = 0.96;
-      const rot = angle + Math.PI / 2 + Math.sin(time * 0.0013 + i) * 0.12;
+      const flap = 0.9 + Math.sin(time * bf.flapSpeed + i * 1.7) * 0.14;
+      const alpha = i === 2 ? 0.92 : 0.96;
+      const rot = angle + Math.PI / 2 + Math.sin(time * 0.0016 + i) * 0.14;
 
       drawEffectImage(
         ctx,
@@ -627,7 +660,7 @@
         bx,
         by,
         bf.size * flap,
-        bf.size * 0.88,
+        bf.size * (0.84 + Math.sin(time * bf.flapSpeed + i) * 0.05),
         alpha,
         rot
       );
@@ -680,13 +713,57 @@
     ctx.arc(x, y, r * 0.82, 0, Math.PI * 2);
     ctx.clip();
 
+    const moonGlowX = x + r * 0.22;
+    const moonGlowY = y - r * 0.26;
+    const moonGlow = ctx.createRadialGradient(
+      moonGlowX,
+      moonGlowY,
+      r * 0.06,
+      moonGlowX,
+      moonGlowY,
+      r * 0.95
+    );
+    moonGlow.addColorStop(0, "rgba(230,230,255,0.42)");
+    moonGlow.addColorStop(0.18, "rgba(205,200,255,0.28)");
+    moonGlow.addColorStop(0.45, "rgba(145,120,215,0.16)");
+    moonGlow.addColorStop(1, "rgba(0,0,0,0)");
+
+    ctx.save();
+    ctx.fillStyle = moonGlow;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.02, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    const moonBeam = ctx.createLinearGradient(
+      moonGlowX - r * 0.15,
+      moonGlowY - r * 0.45,
+      x - r * 0.35,
+      y + r * 0.72
+    );
+    moonBeam.addColorStop(0, "rgba(240,238,255,0.18)");
+    moonBeam.addColorStop(0.35, "rgba(195,185,255,0.12)");
+    moonBeam.addColorStop(1, "rgba(0,0,0,0)");
+
+    ctx.save();
+    ctx.fillStyle = moonBeam;
+    ctx.beginPath();
+    ctx.moveTo(moonGlowX - r * 0.12, moonGlowY - r * 0.08);
+    ctx.lineTo(x - r * 0.05, y + r * 0.18);
+    ctx.lineTo(x - r * 0.52, y + r * 0.9);
+    ctx.lineTo(x - r * 0.76, y + r * 0.9);
+    ctx.lineTo(x - r * 0.08, y + r * 0.04);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
     for (let i = 0; i < 3; i++) {
       const angle = time * (0.00018 + i * 0.00004) + i * 2.1;
       const cx = x + Math.cos(angle) * (r * 0.22);
       const cy = y + Math.sin(angle) * (r * 0.22);
       const grad = ctx.createRadialGradient(cx, cy, r * 0.08, x, y, r * (0.72 + i * 0.08));
-      grad.addColorStop(0, `rgba(120,70,170,${0.16 - i * 0.03})`);
-      grad.addColorStop(0.65, `rgba(55,25,85,${0.1 - i * 0.02})`);
+      grad.addColorStop(0, `rgba(120,70,170,${0.20 - i * 0.03})`);
+      grad.addColorStop(0.65, `rgba(55,25,85,${0.14 - i * 0.02})`);
       grad.addColorStop(1, "rgba(0,0,0,0)");
 
       ctx.save();
@@ -698,9 +775,9 @@
     }
 
     const cloudConfigs = [
-      { speed: 0.000045, offset: 0.12, yMul: -0.24, width: 0.72, alpha: 0.48 },
-      { speed: 0.000038, offset: 0.48, yMul: 0.02, width: 0.62, alpha: 0.42 },
-      { speed: 0.000052, offset: 0.76, yMul: 0.28, width: 0.78, alpha: 0.36 }
+      { speed: 0.000045, offset: 0.12, yMul: -0.24, width: 0.78, alpha: 0.66 },
+      { speed: 0.000038, offset: 0.48, yMul: 0.02, width: 0.68, alpha: 0.58 },
+      { speed: 0.000052, offset: 0.76, yMul: 0.28, width: 0.84, alpha: 0.50 }
     ];
 
     cloudConfigs.forEach((cloud, i) => {
@@ -708,17 +785,17 @@
       const cx = x - r * 1.1 + phase * (r * 2.3);
       const cy = y + r * cloud.yMul + Math.sin(time * 0.0007 + i * 1.8) * (r * 0.03);
       const fade = Math.sin(phase * Math.PI);
-      const alpha = cloud.alpha * core.clamp(fade, 0.08, 1);
+      const alpha = cloud.alpha * core.clamp(fade, 0.10, 1);
 
       drawSoftCloud(
         ctx,
         cx,
         cy,
         r * cloud.width,
-        r * 0.28,
-        i % 2 === 0 ? "rgba(122,120,168,0.96)" : "rgba(143,140,196,0.94)",
+        r * 0.31,
+        i % 2 === 0 ? "rgba(132,128,188,0.98)" : "rgba(160,150,210,0.96)",
         alpha,
-        10
+        14
       );
     });
 
@@ -742,16 +819,31 @@
 
     ctx.restore();
 
-    drawEffectImage(ctx, darkMoonImg, x - r * 0.24, y, r * 2.86, r * 2.45, 1, 0);
+    drawEffectImage(
+      ctx,
+      darkMoonImg,
+      x - r * 0.39,
+      y,
+      r * 3.16,
+      r * 2.62,
+      1,
+      0
+    );
   }
 
   function drawGalaxySpecial(ctx, body, meta, time) {
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
+    const galaxyImg = getEffectImage(EFFECT_IMAGE_URLS.galaxyFrame);
 
     const hueBase = 220 + Math.sin(time * 0.0004) * 18;
     const arms = 3;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
 
     for (let arm = 0; arm < arms; arm++) {
       const start = time * (0.00022 + arm * 0.00003) + arm * (Math.PI * 2 / arms);
@@ -768,6 +860,10 @@
 
       drawAuroraRibbon(ctx, x, y, outerR, innerR, start - bandLen * 0.5, start + bandLen * 0.5, colors, 0.72, 12);
     }
+
+    ctx.restore();
+
+    drawEffectImage(ctx, galaxyImg, x, y, r * 2.82, r * 2.56, 1, 0);
   }
 
   function drawSuperSparkleCluster(ctx, x, y, r, time, core) {
@@ -899,13 +995,14 @@
 
     ctx.restore();
 
-    drawEffectImage(ctx, darkRoseImg, x - r * 0.07, y, r * 3.08, r * 2.42, 1, 0);
+    drawEffectImage(ctx, darkRoseImg, x - r * 0.07, y + r * 0.02, r * 3.12, r * 2.46, 1, 0);
   }
 
   function drawShootingStarSpecial(ctx, body, meta, time, core) {
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
+    const starFrameImg = getEffectImage(EFFECT_IMAGE_URLS.shootingStarFrame);
 
     const lanes = [
       { sx: -0.72, sy: 0.18, angle: -0.92, speed: 0.00024, offset: 0.08 },
@@ -955,6 +1052,8 @@
 
       ctx.restore();
     });
+
+    drawEffectImage(ctx, starFrameImg, x, y, r * 2.82, r * 2.56, 1, 0);
   }
 
   function drawAngelWingSpecial(ctx, body, meta, time, core) {
