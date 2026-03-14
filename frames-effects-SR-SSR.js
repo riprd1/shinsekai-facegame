@@ -823,9 +823,9 @@
       ctx,
       darkMoonImg,
       x - r * 0.42,
-      y + r * 0.045,
+      y + r * 0.075,
       r * 3.36,
-      r * 2.98,
+      r * 2.90,
       1,
       0
     );
@@ -1120,9 +1120,9 @@
     drawEffectImage(
       ctx,
       starFrameImg,
-      x - r * 0.022,
+      x - r * 0.055,
       y + r * 0.015,
-      r * 2.32,
+      r * 2.24,
       r * 2.22,
       1,
       0
