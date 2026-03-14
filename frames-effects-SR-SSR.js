@@ -762,8 +762,8 @@
       const cx = x + Math.cos(angle) * (r * 0.22);
       const cy = y + Math.sin(angle) * (r * 0.22);
       const grad = ctx.createRadialGradient(cx, cy, r * 0.08, x, y, r * (0.72 + i * 0.08));
-      grad.addColorStop(0, `rgba(120,70,170,${0.14 - i * 0.022})`);
-      grad.addColorStop(0.65, `rgba(55,25,85,${0.09 - i * 0.014})`);
+      grad.addColorStop(0, `rgba(120,70,170,${0.10 - i * 0.016})`);
+      grad.addColorStop(0.65, `rgba(55,25,85,${0.06 - i * 0.01})`);
       grad.addColorStop(1, "rgba(0,0,0,0)");
 
       ctx.save();
@@ -775,9 +775,9 @@
     }
 
     const cloudConfigs = [
-      { speed: 0.000045, offset: 0.12, yMul: -0.24, width: 0.78, alpha: 0.52 },
-      { speed: 0.000038, offset: 0.48, yMul: 0.02, width: 0.68, alpha: 0.46 },
-      { speed: 0.000052, offset: 0.76, yMul: 0.28, width: 0.84, alpha: 0.40 }
+      { speed: 0.000045, offset: 0.12, yMul: -0.24, width: 0.78, alpha: 0.36 },
+      { speed: 0.000038, offset: 0.48, yMul: 0.02, width: 0.68, alpha: 0.31 },
+      { speed: 0.000052, offset: 0.76, yMul: 0.28, width: 0.84, alpha: 0.26 }
     ];
 
     cloudConfigs.forEach((cloud, i) => {
@@ -793,9 +793,9 @@
         cy,
         r * cloud.width,
         r * 0.31,
-        i % 2 === 0 ? "rgba(132,128,188,0.90)" : "rgba(160,150,210,0.88)",
+        i % 2 === 0 ? "rgba(132,128,188,0.78)" : "rgba(160,150,210,0.76)",
         alpha,
-        12
+        10
       );
     });
 
@@ -823,9 +823,9 @@
       ctx,
       darkMoonImg,
       x - r * 0.42,
-      y,
+      y + r * 0.03,
       r * 3.36,
-      r * 2.82,
+      r * 2.90,
       1,
       0
     );
@@ -924,7 +924,7 @@
       x - r * 0.035,
       y + r * 0.045,
       r * 2.60,
-      r * 2.72,
+      r * 2.64,
       1,
       0
     );
@@ -1201,9 +1201,15 @@
     const x = body.position.x;
     const y = body.position.y;
     const r = body.circleRadius || 20;
+    const bodyRotation = typeof body.angle === "number" ? body.angle : 0;
 
     core.drawInnerGlow(ctx, x, y, r, meta);
     core.drawBaseRing(ctx, x, y, r, meta);
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(bodyRotation);
+    ctx.translate(-x, -y);
 
     if (body.frameName === "スターグロウ") {
       drawStarGlowSpecial(ctx, body, meta, time, core);
@@ -1234,6 +1240,8 @@
     } else {
       drawNormalDecorations(ctx, body, meta, time, core);
     }
+
+    ctx.restore();
   }
 
   window.FaceGameFrameEffects = {
