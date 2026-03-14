@@ -424,6 +424,7 @@ FaceGameFrames.attachFrameRenderer(render, world, Composite, getFrameMeta);
 
 let score = 0;
 let next = createNext();
+let nextPreview = createNext();
 let canDrop = true;
 let aimX = GAME_WIDTH / 2;
 let overLineStart = null;
@@ -901,10 +902,11 @@ function formatNextLabel(level, rawName) {
 }
 
 function updateNext() {
-  const frameName = getEquippedFrameName(next.member.name);
+  const previewFrameName = getEquippedFrameName(nextPreview.member.name);
+  const ghostFrameName = getEquippedFrameName(next.member.name);
 
-  nextImgEl.src = getGameImg(next.member);
-  nextNameEl.textContent = formatNextLabel(next.evoIndex + 1, next.member.name);
+  nextImgEl.src = getGameImg(nextPreview.member);
+  nextNameEl.textContent = formatNextLabel(nextPreview.evoIndex + 1, nextPreview.member.name);
   dropGhostImgEl.src = getGameImg(next.member);
 
   const previewBase = 88;
@@ -913,8 +915,8 @@ function updateNext() {
 
   dropGhostImgEl.style.transform = `scale(${previewScale})`;
 
-  applyFrameToImgElement(nextImgEl, frameName);
-  applyFrameToGhost(frameName);
+  applyFrameToImgElement(nextImgEl, previewFrameName);
+  applyFrameToGhost(ghostFrameName);
 
   updateGhostPosition();
 }
@@ -998,7 +1000,8 @@ function spawn(x) {
   canDrop = false;
   setTimeout(() => canDrop = true, 320);
 
-  next = createNext();
+  next = nextPreview;
+  nextPreview = createNext();
   updateNext();
 }
 
@@ -1335,6 +1338,7 @@ function restart() {
   unlockOverlayEl.style.display = "none";
   effectsEl.innerHTML = "";
   next = createNext();
+  nextPreview = createNext();
   updateNext();
   updateMissionProgress();
 }
