@@ -822,7 +822,7 @@
     drawEffectImage(
       ctx,
       darkMoonImg,
-      x - r * 0.42,
+      x - r * 0.38,
       y + r * 0.075,
       r * 3.36,
       r * 2.90,
