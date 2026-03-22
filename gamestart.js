@@ -622,7 +622,7 @@ function pickWeightedRank(availableByRank){
   return ranks[ranks.length - 1];
 }
 
-function pickDailyRewardSkins(count = 115) {
+function pickDailyRewardSkins(count = 3) {
   const owned = getOwnedSkins();
   const tempCounts = {};
 
@@ -630,7 +630,7 @@ function pickDailyRewardSkins(count = 115) {
     tempCounts[name] = (tempCounts[name] || 0) + 1;
   });
 
-  const rewards = [];
+  const rewards = [];ふ
   const allSkins = Object.keys(FRAME_MASTER);
 
   for(let i = 0; i < count; i++){
@@ -1247,7 +1247,7 @@ async function openMissionChest() {
 
   await wait(850);
 
-  const rewards = pickDailyRewardSkins(115);
+  const rewards = pickDailyRewardSkins(3);
 
   dailyMissionState.rewardClaimed = true;
   saveDailyMissionState();
