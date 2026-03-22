@@ -630,7 +630,7 @@ function pickDailyRewardSkins(count = 3) {
     tempCounts[name] = (tempCounts[name] || 0) + 1;
   });
 
-  const rewards = [];ふ
+  const rewards = [];
   const allSkins = Object.keys(FRAME_MASTER);
 
   for(let i = 0; i < count; i++){
